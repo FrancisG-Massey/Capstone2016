@@ -7,7 +7,7 @@
         <key>CFBundleVersion</key>
         <string>1.0</string>
         <key>CFBundleExecutable</key>
-        <string>ProjectNest</string>
+        <string>ProjectNest-App</string>
         <key>CFBundleIconFiles</key>
         <array>
                 <string>Icon-60</string>
@@ -22,7 +22,7 @@
                 <string>Icon-Small</string>
         </array>
         <key>CFBundleName</key>
-        <string>ProjectNest</string>
+        <string>ProjectNest-App</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>LSRequiresIPhoneOS</key>
