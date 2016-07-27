@@ -1,4 +1,4 @@
-package nz.projectnest.app;
+package org.nestnz.app;
 
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.visual.Swatch;

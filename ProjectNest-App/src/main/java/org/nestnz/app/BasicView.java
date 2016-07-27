@@ -1,4 +1,4 @@
-package nz.projectnest.app;
+package org.nestnz.app;
 
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Icon;
