@@ -1,25 +1,22 @@
 package org.nestnz.app.model;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import java.net.URL;
 
-public final class Trapline {
+public class CatchType {
 	
 	/**
-	 * The internal server ID of the trapline
+	 * The internal server ID of the catch type
 	 */
 	private final int id;
 	
-	/**
-	 * The visible name of the trapline
-	 */
 	private final String name;
 	
-	private final ObservableList<Trap> traps = FXCollections.observableArrayList();
+	private final URL image;
 
-	public Trapline(int id, String name) {
+	public CatchType(int id, String name, URL image) {
 		this.id = id;
 		this.name = name;
+		this.image = image;
 	}
 
 	public int getId() {
@@ -30,8 +27,8 @@ public final class Trapline {
 		return name;
 	}
 
-	public ObservableList<Trap> getTraps() {
-		return traps;
+	public URL getImage() {
+		return image;
 	}
 
 	@Override
@@ -39,6 +36,7 @@ public final class Trapline {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + id;
+		result = prime * result + ((image == null) ? 0 : image.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
@@ -51,8 +49,13 @@ public final class Trapline {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Trapline other = (Trapline) obj;
+		CatchType other = (CatchType) obj;
 		if (id != other.id)
+			return false;
+		if (image == null) {
+			if (other.image != null)
+				return false;
+		} else if (!image.equals(other.image))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -64,6 +67,6 @@ public final class Trapline {
 
 	@Override
 	public String toString() {
-		return "Trapline [id=" + id + ", name=" + name + ", traps=" + traps + "]";
+		return "CatchType [id=" + id + ", name=" + name + ", image=" + image + "]";
 	}
 }

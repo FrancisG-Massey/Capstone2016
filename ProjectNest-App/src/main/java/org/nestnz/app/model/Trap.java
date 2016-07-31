@@ -2,8 +2,14 @@ package org.nestnz.app.model;
 
 import java.time.LocalDateTime;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 public final class Trap {
 
+	/**
+	 * The internal server ID of the trap
+	 */
 	private final int id;
 	
 	/**
@@ -25,6 +31,8 @@ public final class Trap {
 	 * The date & time the trap was last checked & reset
 	 */
 	private LocalDateTime lastReset;
+	
+	private final ObservableList<Catch> catches = FXCollections.observableArrayList();
 
 	public Trap(int id, double longitude, double latitude, TrapStatus status, LocalDateTime lastReset) {
 		this.id = id;
@@ -34,10 +42,16 @@ public final class Trap {
 		this.lastReset = lastReset;
 	}
 
+	/**
+	 * @see #id
+	 */
 	public int getId() {
 		return id;
 	}
 
+	/**
+	 * @see #longitude
+	 */
 	public double getLongitude() {
 		return longitude;
 	}
@@ -52,6 +66,10 @@ public final class Trap {
 
 	public LocalDateTime getLastReset() {
 		return lastReset;
+	}
+
+	public ObservableList<Catch> getCatches() {
+		return catches;
 	}
 
 	@Override

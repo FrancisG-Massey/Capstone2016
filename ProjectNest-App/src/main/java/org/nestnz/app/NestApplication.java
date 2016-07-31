@@ -4,7 +4,6 @@ import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.visual.Swatch;
 import javafx.scene.Scene;
 
-import javafx.stage.Stage;
 import com.gluonhq.charm.glisten.license.License;
 
 @License(key="482637c8-d766-40fa-942e-f96a11d31da8")
@@ -20,7 +19,5 @@ public class NestApplication extends MobileApplication {
     @Override
     public void postInit(Scene scene) {
         Swatch.BLUE.assignTo(scene);
-
-
     }
 }
