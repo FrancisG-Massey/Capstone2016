@@ -1,5 +1,8 @@
-package org.nestnz.app;
+package org.nestnz.app.views;
 
+import org.nestnz.app.NestApplication;
+
+import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Icon;
 import com.gluonhq.charm.glisten.mvc.View;
@@ -9,11 +12,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
-public class BasicView extends View {
+public class PrimaryView extends View {
 
-    public BasicView(String name) {
+    public PrimaryView(String name) {
         super(name);
         
+        getStylesheets().add(PrimaryView.class.getResource("primary.css").toExternalForm());
+
         Label label = new Label("Hello JavaFX World!");
 
         Button button = new Button("Change the World!");
@@ -28,8 +33,8 @@ public class BasicView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> System.out.println("Menu")));
-        appBar.setTitleText("Basic View");
+        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
+        appBar.setTitleText("Primary");
         appBar.getActionItems().add(MaterialDesignIcon.SEARCH.button(e -> System.out.println("Search")));
     }
     
