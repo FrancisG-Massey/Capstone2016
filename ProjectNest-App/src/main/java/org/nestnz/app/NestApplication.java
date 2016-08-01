@@ -1,7 +1,7 @@
 package org.nestnz.app;
 
 import org.nestnz.app.views.PrimaryView;
-import org.nestnz.app.views.SecondaryView;
+import org.nestnz.app.views.NavigationView;
 
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.Avatar;
@@ -25,7 +25,7 @@ public class NestApplication extends MobileApplication {
     @Override
     public void init() {
         addViewFactory(PRIMARY_VIEW, () -> new PrimaryView(PRIMARY_VIEW));
-        addViewFactory(SECONDARY_VIEW, () -> new SecondaryView(SECONDARY_VIEW));
+        addViewFactory(SECONDARY_VIEW, () -> new NavigationView(SECONDARY_VIEW));
         
         NavigationDrawer drawer = new NavigationDrawer();
         
