@@ -8,12 +8,20 @@ buildscript {
 }
 
 apply plugin: 'org.javafxports.jfxmobile'
+apply plugin: 'eclipse'
 
 repositories {
     jcenter()
     maven {
         url 'http://nexus.gluonhq.com/nexus/content/repositories/releases'
     }
+    maven {
+    	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-oss-daily/' 
+	  	credentials { 
+	    	username gluonNexusUsername
+	    	password gluonNexusPassword
+	  	} 
+	}    
 }
 
 mainClassName = 'org.nestnz.app.NestApplication'
@@ -27,6 +35,7 @@ dependencies {
 }
 
 jfxmobile {
+
     android {
         manifest = 'src/android/AndroidManifest.xml'
     }

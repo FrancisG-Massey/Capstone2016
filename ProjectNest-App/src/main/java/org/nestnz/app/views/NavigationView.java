@@ -4,10 +4,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.nestnz.app.NestApplication;
+import org.nestnz.app.services.HeadingService;
+import org.nestnz.app.services.NestPlatformFactory;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
 import com.gluonhq.charm.down.common.Position;
@@ -17,17 +21,31 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 public class NavigationView extends View {
+
+    private static final Logger LOG = Logger.getLogger(NavigationView.class.getName());
+    
     private Position origin = null;
     
     private Label coordStatus = new Label();
     
-    private List<Position> coords = new ArrayList<>();
+    private List<CoordTime> coords = new ArrayList<>();
+    
+    private class CoordTime {
+    	private Position coords;
+    	private LocalDateTime time;
+    	
+    	private CoordTime(Position coords, LocalDateTime time) {
+    		this.coords = coords;
+    		this.time = time;
+    	}
+    }
 
     public NavigationView(String name) {
         super(name);
@@ -46,6 +64,8 @@ public class NavigationView extends View {
         getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
             e -> System.out.println("Info")));
         
+        Label headingLabel = new Label("Heading not yet determined");
+        
         Label positionLabel = new Label("Your device does not support GPS.");
         
         Label movedLabel = new Label();
@@ -58,13 +78,15 @@ public class NavigationView extends View {
         
         clear.setOnAction(evt -> coords.clear());
         
-        controls.getChildren().addAll(positionLabel, movedLabel, save, clear, coordStatus);
+        controls.getChildren().addAll(headingLabel, positionLabel, movedLabel, save, clear, coordStatus);
         PlatformFactory.getPlatform().getPositionService().positionProperty().addListener((obs, oldPos, newPos) -> {
         	if (newPos != null) {
         		if (origin == null) {
         			origin = newPos;
         		}
-        		coords.add(newPos);
+        		LOG.info(String.format("Found coordinates: %f, %f", newPos.getLatitude(), newPos.getLongitude()));
+        		
+        		coords.add(new CoordTime(newPos, LocalDateTime.now()));
         		positionLabel.setText("Latitude: "+newPos.getLatitude()+", longitude: "+newPos.getLongitude());
         		if (oldPos != null) {
         			movedLabel.setText(String.format("Moved by %1$.2f meters (total of %2$.2f meters from origin)", getDifference(oldPos, newPos), getDifference(origin, newPos)));
@@ -72,6 +94,18 @@ public class NavigationView extends View {
         		save.setText("Save coordinate list ("+coords.size()+")");
         	}
         });
+        
+        HeadingService headingService = NestPlatformFactory.getPlatform().getHeadingService();
+        
+        if (headingService.isHeadingAvailable()) {
+        	headingService.headingProperty().addListener((obs, oldHeading, newHeading) -> {
+            	if (newHeading != null) {
+            		headingLabel.setText(String.format("Heading: %f", newHeading));
+            	}
+            });
+        } else {
+        	headingLabel.setText("Your device does not support heading!");
+        }
     }
     
     private File saveCoords () {
@@ -79,11 +113,11 @@ public class NavigationView extends View {
 	    	File path = PlatformFactory.getPlatform().getPrivateStorage();
 	    	File file = new File(path, "coords.txt");
 	    	try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
-	    		Position prev = null;
-	    		for (Position pos : coords) {
-	    			writer.print("Latitude: "+pos.getLatitude()+", longitude: "+pos.getLatitude());
+	    		CoordTime prev = null;
+	    		for (CoordTime pos : coords) {
+	    			writer.print("["+pos.time+"] Latitude: "+pos.coords.getLatitude()+", longitude: "+pos.coords.getLongitude());
 	    			if (prev != null) {
-	    				writer.print(String.format("Moved by %1$.2f meters", getDifference(prev, pos)));
+	    				writer.print(String.format(", moved by %1$.2f meters", getDifference(prev.coords, pos.coords)));
 	    			}
 	    			writer.println();
 	    			prev = pos;
@@ -157,7 +191,7 @@ public class NavigationView extends View {
     @Override
     protected void updateAppBar(AppBar appBar) {
         appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
-        appBar.setTitleText("Secondary");
+        appBar.setTitleText("Navigation");
         appBar.getActionItems().add(MaterialDesignIcon.FAVORITE.button(e -> System.out.println("Favorite")));
     }
     
