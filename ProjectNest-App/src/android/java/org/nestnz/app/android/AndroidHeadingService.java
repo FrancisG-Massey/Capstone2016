@@ -18,8 +18,8 @@ import javafxports.android.FXActivity;
 public class AndroidHeadingService implements HeadingService, SensorEventListener {
 
     private static final Logger LOG = Logger.getLogger(AndroidHeadingService.class.getName());
-	
-	private final ReadOnlyDoubleWrapper headingProperty = new ReadOnlyDoubleWrapper();
+    
+    private final ReadOnlyDoubleWrapper headingProperty = new ReadOnlyDoubleWrapper();
 	
 	private final Sensor magnetometer;
 	private final Sensor accelerometer;
@@ -70,9 +70,13 @@ public class AndroidHeadingService implements HeadingService, SensorEventListene
 	public void onSensorChanged(SensorEvent evt) {
 		//Reference: http://www.codingforandroid.com/2011/01/using-orientation-sensors-simple.html
 		if (evt.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-			gravity = evt.values;
+			gravity = lowPass(evt.values, gravity);
+			
+        	LOG.log(Level.INFO, String.format("Found accelerometer data: x=%f, y=%f, z=%f", gravity));			
 		} else if (evt.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-			magnetic = evt.values;
+			magnetic = lowPass(evt.values, magnetic);
+			
+        	LOG.log(Level.INFO, String.format("Found magnetic field data: x=%f, y=%f, z=%f", magnetic));	
 		}
 		
 		if (gravity != null && magnetic != null) {
@@ -80,12 +84,12 @@ public class AndroidHeadingService implements HeadingService, SensorEventListene
 			float I[] = new float[9];
 			boolean success = SensorManager.getRotationMatrix(R, I, gravity, magnetic);
 			if (success) {
-				float orientation[] = new float[3];
+				float orientation[] = new float[3];//Orientation contains: azimuth, pitch and roll
 				SensorManager.getOrientation(R, orientation);
-				float azimut = orientation[0]; // orientation contains: azimut, pitch and roll
-				LOG.info(String.format("Found azimut %f", azimut));
+				float azimuth = (float) (((orientation[0]*180)/Math.PI)+180);//Convert to degrees
+				LOG.info(String.format("Found azimuth %f", azimuth));
 				Platform.runLater(() -> {
-					headingProperty.set(azimut);
+					headingProperty.set(azimuth);
 				});
 			}
 		}
@@ -96,4 +100,24 @@ public class AndroidHeadingService implements HeadingService, SensorEventListene
 		return supported;
 	}
 
+	private static final float ALPHA = 0.25f; // if ALPHA = 1 OR 0, no filter applies.
+	
+	/**
+	 * Applies a low-pass filter to raw sensor values, to avoid random noise fluctuations.
+	 * 
+	 * Source: https://www.built.io/blog/applying-low-pass-filter-to-android-sensor-s-readings
+	 * 
+	 * @param input The new sensor values
+	 * @param output The old sensor values
+	 * @return The new sensor values with the filter applied to them
+	 */
+	private static float[] lowPass(float[] input, float[] output) { 
+		if ( output == null ) {
+			return input; 
+		}
+		for (int i=0; i<input.length; i++) {
+			output[i] = output[i] + ALPHA * (input[i] - output[i]); 
+		} 
+		return output;
+	} 
 }

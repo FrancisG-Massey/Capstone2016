@@ -24,8 +24,8 @@ public class NestApplication extends MobileApplication {
 
     @Override
     public void init() {
-        addViewFactory(PRIMARY_VIEW, () -> new PrimaryView(PRIMARY_VIEW));
-        addViewFactory(SECONDARY_VIEW, () -> new NavigationView(SECONDARY_VIEW));
+        addViewFactory(PRIMARY_VIEW, () -> new NavigationView(PRIMARY_VIEW));
+        addViewFactory(SECONDARY_VIEW, () -> new PrimaryView(SECONDARY_VIEW));
         
         NavigationDrawer drawer = new NavigationDrawer();
         
