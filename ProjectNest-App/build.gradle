@@ -28,6 +28,8 @@ mainClassName = 'org.nestnz.app.NestApplication'
 
 dependencies {
     compile 'com.gluonhq:charm:3.0.0'
+    
+    testCompile 'junit:junit:4.12'
 
     androidRuntime 'com.gluonhq:charm-android:3.0.0'
     iosRuntime 'com.gluonhq:charm-ios:3.0.0'
@@ -51,3 +53,12 @@ jfxmobile {
         ]
     }
 }
+
+retrolambda {
+  jdk System.getenv("JAVA8_HOME")
+  oldJdk System.getenv("JAVA7_HOME")
+  javaVersion JavaVersion.VERSION_1_7
+  defaultMethods false
+  incremental true
+}
+

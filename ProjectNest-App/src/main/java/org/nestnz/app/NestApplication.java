@@ -1,6 +1,8 @@
 package org.nestnz.app;
 
-import org.nestnz.app.views.PrimaryView;
+import org.nestnz.app.model.Region;
+import org.nestnz.app.model.Trapline;
+import org.nestnz.app.views.TraplineListView;
 import org.nestnz.app.views.NavigationView;
 
 import com.gluonhq.charm.glisten.application.MobileApplication;
@@ -10,6 +12,9 @@ import com.gluonhq.charm.glisten.control.NavigationDrawer.Item;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.charm.glisten.visual.Swatch;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 
@@ -21,11 +26,15 @@ public class NestApplication extends MobileApplication {
     public static final String PRIMARY_VIEW = HOME_VIEW;
     public static final String SECONDARY_VIEW = "Secondary View";
     public static final String MENU_LAYER = "Side Menu";
+    
+    private final ObservableList<Trapline> traplines = FXCollections.observableArrayList();
 
     @Override
     public void init() {
-        addViewFactory(PRIMARY_VIEW, () -> new NavigationView(PRIMARY_VIEW));
-        addViewFactory(SECONDARY_VIEW, () -> new PrimaryView(SECONDARY_VIEW));
+    	traplines.add(new Trapline(20, "Test trapline", new Region(20, "Test Region"), "Test Start"));
+    	
+        addViewFactory(PRIMARY_VIEW, () -> new TraplineListView(PRIMARY_VIEW, traplines));
+        addViewFactory(SECONDARY_VIEW, () -> new NavigationView(SECONDARY_VIEW));
         
         NavigationDrawer drawer = new NavigationDrawer();
         

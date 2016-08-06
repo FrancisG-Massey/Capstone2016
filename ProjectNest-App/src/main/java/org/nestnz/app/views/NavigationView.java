@@ -23,13 +23,19 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
 import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
 
 public class NavigationView extends View {
 
     private static final Logger LOG = Logger.getLogger(NavigationView.class.getName());
+    
+    private Polygon directionArrow = new Polygon(-1,0,1,0,3,0);
     
     private Position origin = null;
     
@@ -78,7 +84,12 @@ public class NavigationView extends View {
         
         clear.setOnAction(evt -> coords.clear());
         
-        controls.getChildren().addAll(headingLabel, positionLabel, movedLabel, save, clear, coordStatus);
+        Group directionGroup = new Group();
+        Scene directionView = new Scene(directionGroup, Color.BLACK);
+        directionArrow.setFill(Color.BLACK);
+        directionGroup.getChildren().add(directionArrow);
+        
+        controls.getChildren().addAll(directionGroup, headingLabel, positionLabel, movedLabel, save, clear, coordStatus);
         PlatformFactory.getPlatform().getPositionService().positionProperty().addListener((obs, oldPos, newPos) -> {
         	if (newPos != null) {
         		if (origin == null) {

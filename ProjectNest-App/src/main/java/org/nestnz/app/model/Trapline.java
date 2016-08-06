@@ -1,5 +1,7 @@
 package org.nestnz.app.model;
 
+import java.util.Optional;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -16,10 +18,32 @@ public final class Trapline {
 	private final String name;
 	
 	private final ObservableList<Trap> traps = FXCollections.observableArrayList();
+	
+	/**
+	 * The region in which this trapline is located (e.g. Auckland, Waikato, Manawatu, etc)
+	 */
+	private final Region region;
+	
+	/**
+	 * The name of the starting point of the trapline
+	 */
+	private final String start;
+	
+	/**
+	 * Optionally, the name of the end point of the trapline. For loop traplines, this will be {@link Optional#empty()}
+	 */
+	private final Optional<String> end;
+	
+	public Trapline(int id, String name, Region region, String start) {
+		this(id, name, region, start, null);
+	}
 
-	public Trapline(int id, String name) {
+	public Trapline(int id, String name, Region region, String start, String end) {
 		this.id = id;
 		this.name = name;
+		this.region = region;
+		this.start = start;
+		this.end = Optional.ofNullable(end);
 	}
 
 	public int getId() {
@@ -34,12 +58,28 @@ public final class Trapline {
 		return traps;
 	}
 
+	public Region getRegion() {
+		return region;
+	}	
+
+	public String getStart() {
+		return start;
+	}
+
+	public Optional<String> getEnd() {
+		return end;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((end == null) ? 0 : end.hashCode());
 		result = prime * result + id;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((region == null) ? 0 : region.hashCode());
+		result = prime * result + ((start == null) ? 0 : start.hashCode());
+		result = prime * result + ((traps == null) ? 0 : traps.hashCode());
 		return result;
 	}
 
@@ -52,6 +92,11 @@ public final class Trapline {
 		if (getClass() != obj.getClass())
 			return false;
 		Trapline other = (Trapline) obj;
+		if (end == null) {
+			if (other.end != null)
+				return false;
+		} else if (!end.equals(other.end))
+			return false;
 		if (id != other.id)
 			return false;
 		if (name == null) {
@@ -59,11 +104,27 @@ public final class Trapline {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (region == null) {
+			if (other.region != null)
+				return false;
+		} else if (!region.equals(other.region))
+			return false;
+		if (start == null) {
+			if (other.start != null)
+				return false;
+		} else if (!start.equals(other.start))
+			return false;
+		if (traps == null) {
+			if (other.traps != null)
+				return false;
+		} else if (!traps.equals(other.traps))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Trapline [id=" + id + ", name=" + name + ", traps=" + traps + "]";
+		return "Trapline [id=" + id + ", name=" + name + ", traps=" + traps + ", region=" + region + ", start=" + start
+				+ ", end=" + end + "]";
 	}
 }
