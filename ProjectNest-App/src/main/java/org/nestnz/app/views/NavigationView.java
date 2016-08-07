@@ -17,24 +17,19 @@ import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
+import eu.hansolo.fx.AirCompass;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.control.Label;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.shape.Line;
 
 public class NavigationView extends View {
 	
 	public static final String NAME = "navigation";
 
     private static final Logger LOG = Logger.getLogger(NavigationView.class.getName());
-    
-    private Line directionLine = new Line(0.0, 0.0, 50.0, 50.0);
     
     private final ObjectProperty<Trap> trapProperty = new SimpleObjectProperty<>();
     
@@ -46,28 +41,20 @@ public class NavigationView extends View {
         super(NAME);
         getStylesheets().add(NavigationView.class.getResource("secondary.css").toExternalForm());
         
-        VBox controls = new VBox();
-        controls.setAlignment(Pos.TOP_CENTER);
-        
-        setCenter(controls);
-        
         //setShowTransitionFactory(BounceInRightTransition::new);
         
         getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
             e -> System.out.println("Info")));
         
         Label distanceLabel = new Label("0.0");
+        distanceLabel.setMaxWidth(1000.0);
         distanceLabel.setId("distance-label");
+        distanceLabel.setAlignment(Pos.CENTER);
         
         distanceLabel.textProperty().bind(distanceToTrap);
-        
-        AnchorPane pane = new AnchorPane();
-        pane.getChildren().add(directionLine);
-        
-        //Group compass = new Group();
-        //compass.getChildren().add(directionLine);
                 
-        controls.getChildren().addAll(distanceLabel, pane);
+        setTop(distanceLabel);
+        
         initMonitors();
     }
     
@@ -91,13 +78,13 @@ public class NavigationView extends View {
         HeadingService headingService = NestPlatformFactory.getPlatform().getHeadingService();
         
         if (headingService.isHeadingAvailable()) {
+        	AirCompass compass = new AirCompass();
         	headingService.headingProperty().addListener((obs, oldHeading, newHeading) -> {
             	if (newHeading != null) {
-            		
+            		compass.setBearing(newHeading.doubleValue());
             	}
             });
-        } else {
-        	//headingLabel.setText("Your device does not support heading!");
+        	setCenter(compass);
         }
     }
     
