@@ -12,6 +12,8 @@ public final class Trap {
 	 */
 	private final int id;
 	
+	private final int number;
+	
 	/**
 	 * The longitude (x) coordinate of the trap
 	 */
@@ -34,8 +36,9 @@ public final class Trap {
 	
 	private final ObservableList<Catch> catches = FXCollections.observableArrayList();
 
-	public Trap(int id, double longitude, double latitude, TrapStatus status, LocalDateTime lastReset) {
+	public Trap(int id, int number, double longitude, double latitude, TrapStatus status, LocalDateTime lastReset) {
 		this.id = id;
+		this.number = number;
 		this.longitude = longitude;
 		this.latitude = latitude;
 		this.status = status;
@@ -47,6 +50,10 @@ public final class Trap {
 	 */
 	public int getId() {
 		return id;
+	}
+
+	public int getNumber() {
+		return number;
 	}
 
 	/**

@@ -3,6 +3,8 @@ package org.nestnz.app.views;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.nestnz.app.NestApplication;
+import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 
 import com.gluonhq.charm.glisten.control.AppBar;
@@ -19,7 +21,7 @@ public class TraplineInfoView extends View {
 	
 	public static final String NAME = "trapline_info";
 	
-	private ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
+	private final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
 	
 	private Button start = new Button("Start");
 
@@ -27,6 +29,13 @@ public class TraplineInfoView extends View {
 		super(NAME);
 		start.setMaxHeight(1000.0);
 		start.setMaxWidth(1000.0);
+		start.setOnAction(evt -> {
+			Trap trap = traplineProperty.get().getTraps().stream().findFirst().orElseThrow(() -> new IllegalStateException("Trapline has no traps!"));
+			
+			NavigationView navView = ((NestApplication) getApplication()).lookupView(NavigationView.NAME);
+			navView.setTrap(trap);
+			getApplication().switchView(NavigationView.NAME);
+		});
 		this.setBottom(start);
 	}
 	

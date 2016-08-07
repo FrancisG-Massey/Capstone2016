@@ -49,9 +49,7 @@ public class TraplineListView extends View {
         		this.setGraphic(button);
         		button.setOnAction(evt -> {
         			LOG.log(Level.INFO, "Clicked trapline: "+trapline);
-        			TraplineInfoView infoView = TraplineListView.this.getApplication().retrieveView(TraplineInfoView.NAME)
-        					.map(view -> (TraplineInfoView) view)
-        					.orElseThrow(() -> new IllegalStateException("Trapline info view not created!"));
+        			TraplineInfoView infoView = ((NestApplication) TraplineListView.this.getApplication()).lookupView(TraplineInfoView.NAME);
         			infoView.setTrapline(trapline);
         			TraplineListView.this.getApplication().switchView(TraplineInfoView.NAME);
         		});
@@ -75,7 +73,7 @@ public class TraplineListView extends View {
     @Override
     protected void updateAppBar(AppBar appBar) {
         appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
-        appBar.setTitleText("Traplines");
+        appBar.setTitleText("Nest NZ");
         //appBar.getActionItems().add(MaterialDesignIcon.SEARCH.button(e -> System.out.println("Search")));
     }
     
