@@ -14,46 +14,50 @@ import com.gluonhq.charm.glisten.control.CharmListView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.control.Button;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Button;
 import javafx.util.StringConverter;
 
 public class TraplineListView extends View {
+	
+	public static final String NAME = MobileApplication.HOME_VIEW;//"trapline_list";
 
     private static final Logger LOG = Logger.getLogger(TraplineListView.class.getName());
 	
 	private final CharmListView<Trapline, Region> traplineList;
 
-    public TraplineListView(String name, ObservableList<Trapline> traplines) {
-        super(name);
+    public TraplineListView(ObservableList<Trapline> traplines) {
+        super(NAME);
         traplineList = new CharmListView<>(traplines);
         traplineList.setHeadersFunction(Trapline::getRegion);
         traplineList.setConverter(new StringConverter <Region>() {
             @Override public String toString(Region r) {
                 return r.getName();
             }
-			@Override
-			public Region fromString(String string) {
+			@Override public Region fromString(String string) {
 				throw new UnsupportedOperationException("Not supported!");
 			}
         });
         
-        traplineList.setCellFactory(list -> new CharmListCell<Trapline>() {    
-        	
+        traplineList.setCellFactory(list -> new CharmListCell<Trapline>() {
         	Button button = new Button();
         	Trapline trapline;
         	
         	{
+        		button.setMaxHeight(1000.0);
+        		button.setMaxWidth(1000.0);
         		this.setGraphic(button);
         		button.setOnAction(evt -> {
         			LOG.log(Level.INFO, "Clicked trapline: "+trapline);
+        			TraplineInfoView infoView = TraplineListView.this.getApplication().retrieveView(TraplineInfoView.NAME)
+        					.map(view -> (TraplineInfoView) view)
+        					.orElseThrow(() -> new IllegalStateException("Trapline info view not created!"));
+        			infoView.setTrapline(trapline);
+        			TraplineListView.this.getApplication().switchView(TraplineInfoView.NAME);
         		});
         	}
         	
-        	@Override
-        	public void updateItem (Trapline item, boolean empty) {
+        	@Override public void updateItem (Trapline item, boolean empty) {
         		super.updateItem(item, empty);
         		trapline = item;
         		if(item!=null && !empty){
@@ -61,12 +65,11 @@ public class TraplineListView extends View {
                 } else {
                 	button.setText(null);
                 }
-        		
-        	}        	
+        	}
         });
         
         setCenter(traplineList);
-        getStylesheets().add(TraplineListView.class.getResource("home.css").toExternalForm());
+        getStylesheets().add(TraplineListView.class.getResource("traplineView.css").toExternalForm());
     }
 
     @Override

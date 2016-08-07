@@ -4,6 +4,7 @@ import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.views.TraplineListView;
 import org.nestnz.app.views.NavigationView;
+import org.nestnz.app.views.TraplineInfoView;
 
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.Avatar;
@@ -32,9 +33,11 @@ public class NestApplication extends MobileApplication {
     @Override
     public void init() {
     	traplines.add(new Trapline(20, "Test trapline", new Region(20, "Test Region"), "Test Start"));
+    	traplines.add(new Trapline(21, "Test trapline 2", new Region(20, "Test Region"), "Test Start 2"));
     	
-        addViewFactory(PRIMARY_VIEW, () -> new TraplineListView(PRIMARY_VIEW, traplines));
+        addViewFactory(TraplineListView.NAME, () -> new TraplineListView(traplines));
         addViewFactory(SECONDARY_VIEW, () -> new NavigationView(SECONDARY_VIEW));
+        addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView());
         
         NavigationDrawer drawer = new NavigationDrawer();
         
