@@ -40,6 +40,13 @@ jfxmobile {
 
     android {
         manifest = 'src/android/AndroidManifest.xml'
+        
+	    dexOptions {
+	        incremental true
+	        preDexLibraries = false
+	        jumboMode = false
+	        javaMaxHeapSize "2048M"
+	    }
     }
     ios {
         infoPList = file('src/ios/Default-Info.plist')

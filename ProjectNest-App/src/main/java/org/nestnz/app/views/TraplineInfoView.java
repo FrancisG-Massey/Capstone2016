@@ -14,6 +14,7 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 
 public class TraplineInfoView extends View {
 
@@ -30,7 +31,7 @@ public class TraplineInfoView extends View {
 		start.setMaxHeight(1000.0);
 		start.setMaxWidth(1000.0);
 		start.setOnAction(evt -> {
-			Trap trap = traplineProperty.get().getTraps().stream().findFirst().orElseThrow(() -> new IllegalStateException("Trapline has no traps!"));
+			Trap trap = traplineProperty.get().getTraps().get(0);
 			
 			NavigationView navView = ((NestApplication) getApplication()).lookupView(NavigationView.NAME);
 			navView.setTrap(trap);
@@ -41,6 +42,7 @@ public class TraplineInfoView extends View {
 	
 	public void setTrapline (Trapline trapline) {
 		traplineProperty.set(trapline);
+		start.setVisible(!trapline.getTraps().isEmpty());
 	}
 
     @Override
