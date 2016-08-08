@@ -30,6 +30,7 @@ public class NestApplication extends MobileApplication {
     public void init() {
     	Trapline t1 = new Trapline(20, "Test trapline", new Region(20, "Test Region"), "Test Start");
     	t1.getTraps().add(new Trap(1, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now()));
+    	t1.getTraps().add(new Trap(2, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now()));
     	traplines.add(t1);
     	traplines.add(new Trapline(21, "Test trapline 2", new Region(20, "Test Region"), "Test Start 2"));
     	

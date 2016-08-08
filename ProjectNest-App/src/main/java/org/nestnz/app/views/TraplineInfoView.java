@@ -4,7 +4,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.NestApplication;
-import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 
 import com.gluonhq.charm.glisten.control.AppBar;
@@ -14,7 +13,6 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 
 public class TraplineInfoView extends View {
 
@@ -31,10 +29,8 @@ public class TraplineInfoView extends View {
 		start.setMaxHeight(1000.0);
 		start.setMaxWidth(1000.0);
 		start.setOnAction(evt -> {
-			Trap trap = traplineProperty.get().getTraps().get(0);
-			
 			NavigationView navView = ((NestApplication) getApplication()).lookupView(NavigationView.NAME);
-			navView.setTrap(trap);
+			navView.setTrapline(traplineProperty.get());
 			getApplication().switchView(NavigationView.NAME);
 		});
 		this.setBottom(start);
