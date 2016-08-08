@@ -5,7 +5,6 @@ import static org.nestnz.app.util.NavigationTools.getDistance;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,15 +38,13 @@ public class NavigationView extends View {
 
     private static final Logger LOG = Logger.getLogger(NavigationView.class.getName());
     
-    private Trapline trapline;
-    
     private final Button prev;
     
     private final Button next;
     
     private final List<Trap> orderedTraps = new ArrayList<>();
     
-    private ListIterator<Trap> iterator;
+    private int currentPointer = 0;
     
     private final ObjectProperty<Trap> trapProperty = new SimpleObjectProperty<>();
     
@@ -61,8 +58,8 @@ public class NavigationView extends View {
         
         //setShowTransitionFactory(BounceInRightTransition::new);
         
-        getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
-            e -> System.out.println("Info")));
+        //getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
+        //    e -> System.out.println("Info")));
         
         Label distanceLabel = new Label("0.0");
         distanceLabel.setMaxWidth(1000.0);
@@ -75,6 +72,12 @@ public class NavigationView extends View {
         
         prev = MaterialDesignIcon.ARROW_BACK.button(evt -> previousTrap());
         next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
+        
+        prev.toFront();
+        prev.setAlignment(Pos.CENTER);
+        
+        next.toFront();
+        next.setAlignment(Pos.CENTER);
         
         setLeft(prev);
         setRight(next);
@@ -89,8 +92,8 @@ public class NavigationView extends View {
     			targetCoordsProperty.set(null);
     		} else {
     			targetCoordsProperty.set(new Position(newV.getLatitude(), newV.getLongitude()));
-    			prev.setVisible(iterator.hasPrevious());//FIXME: This returns "true" when we're looking at the first element in the list
-    			next.setVisible(iterator.hasNext());
+    			prev.setVisible(hasPreviousTrap());
+    			next.setVisible(hasNextTrap());
     		}
     	});
     	
@@ -111,7 +114,7 @@ public class NavigationView extends View {
             		compass.setBearing(newHeading.doubleValue());
             	}
             });
-        	//setCenter(compass);
+        	setCenter(compass);
         }
     }
     
@@ -119,18 +122,34 @@ public class NavigationView extends View {
      * Go back to the previous trap in the trapline
      */
     protected void previousTrap () {
-		LOG.log(Level.INFO, "Requested swap to previous trap");
-		iterator.previous();//Since iterator.previous() returns the current element, we need to call it twice to get the actual previous one then "next()" to select it
-    	setTrap(iterator.previous());
-		iterator.next();
+		LOG.log(Level.FINE, "Requested swap to previous trap");
+		currentPointer--;
+		setTrap(orderedTraps.get(currentPointer));
     }
     
     /**
      * Jump to the next trap in the trapline
      */
     protected void nextTrap() {
-		LOG.log(Level.INFO, "Requested swap to next trap");
-    	setTrap(iterator.next());
+		LOG.log(Level.FINE, "Requested swap to next trap");
+		currentPointer++;
+    	setTrap(orderedTraps.get(currentPointer));
+    }
+    
+    /**
+     * Checks whether a trap exists prior to the selected trap
+     * @return True if a previous trap exists, false if this is the first trap in the line
+     */
+    protected boolean hasPreviousTrap () {
+    	return currentPointer > 0;
+    }
+    
+    /**
+     * Checks whether another trap exists after the current one
+     * @return True if a next trap exists, false if this is the last trap in the trapline
+     */
+    protected boolean hasNextTrap () {
+    	return currentPointer < orderedTraps.size()-1;
     }
     
     /**
@@ -147,7 +166,6 @@ public class NavigationView extends View {
      */
     public final void setTrapline (Trapline trapline) {
     	Objects.requireNonNull(trapline);
-    	this.trapline = trapline;
     	
     	//Since Android/iOS don't support Java 8 streams, we have to do it the old way (adding the elements to another list & using Collections.sort()).
     	orderedTraps.clear();
@@ -156,8 +174,7 @@ public class NavigationView extends View {
     		return t1.getNumber() - t2.getNumber();
     	});
     	
-    	iterator = orderedTraps.listIterator();
-    	setTrap(iterator.next());    	
+    	setTrap(orderedTraps.get(0));    	
     }
 
     @Override
