@@ -47,6 +47,11 @@ import javafx.util.Duration;
  * User: hansolo
  * Date: 02.04.14
  * Time: 07:40
+ * 
+ * Modified by Francis Greatorex on 2016-08-08:
+ * - Swapped moving part from bearing to directional pin
+ * - Changed directional pin to an arrow
+ * 
  */
 public class AirCompass extends Region {
     private static final double   PREFERRED_WIDTH  = 320;
@@ -161,18 +166,18 @@ public class AirCompass extends Region {
                 rotationAngle = gamma < 0 ? gamma : -gamma;
             }            
             if (isAnimated()) {
-                KeyValue kvBearingAngleBegin = new KeyValue(bearingAngle, bearingCanvas.getRotate(), Interpolator.EASE_IN);
-                KeyValue kvBearingCanvasRotateBegin = new KeyValue(bearingCanvas.rotateProperty(), bearingCanvas.getRotate(), Interpolator.EASE_IN);
+                KeyValue kvBearingAngleBegin = new KeyValue(bearingAngle, airplaneCanvas.getRotate(), Interpolator.EASE_IN);
+                KeyValue kvBearingCanvasRotateBegin = new KeyValue(airplaneCanvas.rotateProperty(), airplaneCanvas.getRotate(), Interpolator.EASE_IN);
 
                 KeyValue kvBearingAngleEnd = new KeyValue(bearingAngle, rotationAngle, Interpolator.EASE_OUT);
-                KeyValue kvBearingCanvasRotateEnd = new KeyValue(bearingCanvas.rotateProperty(), rotationAngle, Interpolator.EASE_OUT);
+                KeyValue kvBearingCanvasRotateEnd = new KeyValue(airplaneCanvas.rotateProperty(), rotationAngle, Interpolator.EASE_OUT);
 
                 KeyFrame kfBegin = new KeyFrame(Duration.ZERO, kvBearingAngleBegin, kvBearingCanvasRotateBegin);
                 KeyFrame kfEnd = new KeyFrame(Duration.millis(800), kvBearingAngleEnd, kvBearingCanvasRotateEnd);
                 timeline.getKeyFrames().setAll(kfBegin, kfEnd);
                 timeline.play();
             } else {
-                bearingCanvas.setRotate(rotationAngle);
+            	airplaneCanvas.setRotate(rotationAngle);
             }
         }
     }
@@ -274,8 +279,17 @@ public class AirCompass extends Region {
         airplaneCtx.setEffect(dropShadow);
         // Draw the airplain
         airplaneCtx.setFillRule(FillRule.EVEN_ODD);
-        airplaneCtx.beginPath();        
-        airplaneCtx.moveTo(size * 0.4953271028037383, size * 0.2523364485981308);
+        airplaneCtx.beginPath();
+        airplaneCtx.moveTo(size * 0.5, size * 0.5);
+        airplaneCtx.lineTo(size * 0.49, size * 0.5);
+        airplaneCtx.lineTo(size * 0.49, size * 0.80);
+        airplaneCtx.lineTo(size * 0.45, size * 0.80);
+        airplaneCtx.quadraticCurveTo(size * 0.5, size, size * 0.55, size * 0.80);
+        airplaneCtx.lineTo(size * 0.51, size * 0.80);
+        airplaneCtx.lineTo(size * 0.51, size * 0.5);
+        airplaneCtx.closePath();
+        
+        /*airplaneCtx.moveTo(size * 0.4953271028037383, size * 0.2523364485981308);
         airplaneCtx.bezierCurveTo(size * 0.4953271028037383, size * 0.2523364485981308, size * 0.4766355140186916, size * 0.2850467289719626, size * 0.4719626168224299, size * 0.3130841121495327);
         airplaneCtx.bezierCurveTo(size * 0.4672897196261682, size * 0.32710280373831774, size * 0.4672897196261682, size * 0.38317757009345793, size * 0.4672897196261682, size * 0.38317757009345793);
         airplaneCtx.lineTo(size * 0.32710280373831774, size * 0.5186915887850467);
@@ -300,13 +314,16 @@ public class AirCompass extends Region {
         airplaneCtx.bezierCurveTo(size * 0.5046728971962616, size * 0.2523364485981308, size * 0.5046728971962616, size * 0.2336448598130841, size * 0.5046728971962616, size * 0.2336448598130841);
         airplaneCtx.lineTo(size * 0.5, size * 0.16822429906542055);
         airplaneCtx.lineTo(size * 0.4953271028037383, size * 0.2336448598130841);
-        airplaneCtx.bezierCurveTo(size * 0.4953271028037383, size * 0.2336448598130841, size * 0.4953271028037383, size * 0.2523364485981308, size * 0.4953271028037383, size * 0.2523364485981308);
-        airplaneCtx.closePath();                
+        airplaneCtx.bezierCurveTo(size * 0.4953271028037383, size * 0.2336448598130841, size * 0.4953271028037383, size * 0.2523364485981308, size * 0.4953271028037383, size * 0.2523364485981308);*/            
         airplaneCtx.setLineCap(StrokeLineCap.ROUND);
         airplaneCtx.setLineJoin(StrokeLineJoin.MITER);
         airplaneCtx.setLineWidth(0.01 * size);
-        airplaneCtx.setStroke(getPlaneColor());        
-        airplaneCtx.stroke();
+        airplaneCtx.setStroke(getPlaneColor());
+        airplaneCtx.setFill(getPlaneColor());
+        airplaneCtx.fill();
+        
+        airplaneCtx.fillOval(size * 0.45, size * 0.45, size * 0.1, size * 0.1);
+        
         airplaneCtx.restore();
     }
     
