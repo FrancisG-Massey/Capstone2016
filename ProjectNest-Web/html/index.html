@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-ng-app="myApp">
 
 <head>
 
@@ -14,7 +14,7 @@
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 	<!-- favicon -->
-	<link rel='shortcut icon' type='image/x-icon' href='favicon.ico' />
+	<link rel="icon" type="image/x-icon" href="favicon.ico" />
     <!-- Custom CSS -->
     <link href="css/business-frontpage.css" rel="stylesheet">
 
@@ -24,10 +24,28 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+    
+    <!-- /.container -->
+
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+	<!-- Angularjs -->
+	<script src="js/shared/angular.min.js"></script>
+        
+    <!-- Modules -->
+    <script src="js/app.js"></script>
+  
+    <!-- Controllers -->
+    <script src="js/controllers/MainController.js"></script>
+    
 
 </head>
 
-<body>
+<body data-ng-controller="MainController">
 
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -108,23 +126,22 @@
         <!-- /.row -->
 
         <hr>
-
         <div class="row">
-            <div class="col-sm-4">
-                <img class="img-circle img-responsive img-center" src="images/WoodPigeon.jpg" alt="">
-                <h2>Mobile Application</h2>
-				<p>We will describe our mobile app here and give information on how to download it.</p></div>
-            <div class="col-sm-4">
-                <img class="img-circle img-responsive img-center" src="images/TuiTwo.jpeg" alt="">
+            <div class="col-sm-4" data-ng-repeat="image in images">
+                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
+                <h2>{{image.header}}</h2>
+				<p>{{image.description}}</p></div>
+            <!-- <div class="col-sm-4">
+                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
                 <h2>Data</h2>
 				<p>View the data from the traplines where DOC volunteers use our services.</p></div>
             <div class="col-sm-4">
-                <img class="img-circle img-responsive img-center" src="images/Kea.jpg" alt="">
+                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
                 <h2>Volunteers</h2>
-				<p>View profiles of hardworker DOC volunteers from around New Zealand</p></div>
+				<p>View profiles of hardworker DOC volunteers from around New Zealand</p></div> -->
         </div>
         <!-- /.row -->
-
+		
         <hr>
 
         <!-- Footer -->
@@ -138,13 +155,6 @@
         </footer>
 
     </div>
-    <!-- /.container -->
-
-    <!-- jQuery -->
-    <script src="js/jquery.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
 
 </body>
 
