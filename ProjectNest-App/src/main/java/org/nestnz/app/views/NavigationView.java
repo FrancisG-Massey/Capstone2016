@@ -19,7 +19,6 @@ import com.gluonhq.charm.down.common.PlatformFactory;
 import com.gluonhq.charm.down.common.Position;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
@@ -38,22 +37,26 @@ public class NavigationView extends View {
 
     private static final Logger LOG = Logger.getLogger(NavigationView.class.getName());
     
-    private final Button prev;
+    final Button prev = MaterialDesignIcon.ARROW_BACK.button(evt -> previousTrap());;
     
-    private final Button next;
+    final Button next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
     
-    private final List<Trap> orderedTraps = new ArrayList<>();
+    final List<Trap> orderedTraps = new ArrayList<>();
     
-    private int currentPointer = 0;
+    int currentPointer = 0;
     
-    private final ObjectProperty<Trap> trapProperty = new SimpleObjectProperty<>();
+    final ObjectProperty<Trap> trapProperty = new SimpleObjectProperty<>();
     
-    private final ObjectProperty<Position> targetCoordsProperty = new SimpleObjectProperty<>();
+    final ObjectProperty<Position> targetCoordsProperty = new SimpleObjectProperty<>();
     
-    private final StringProperty distanceToTrap = new SimpleStringProperty();
+    final StringProperty distanceToTrap = new SimpleStringProperty();
 
     public NavigationView() {
-        super(NAME);
+        this(false);
+    }
+    
+    protected NavigationView(boolean test) {
+    	super(NAME);
         getStylesheets().add(NavigationView.class.getResource("secondary.css").toExternalForm());
         
         //setShowTransitionFactory(BounceInRightTransition::new);
@@ -61,6 +64,13 @@ public class NavigationView extends View {
         //getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
         //    e -> System.out.println("Info")));
         
+        initControls();
+        if (!test) {
+        	initMonitors();
+        }
+    }
+    
+    private void initControls () {        
         Label distanceLabel = new Label("0.0");
         distanceLabel.setMaxWidth(1000.0);
         distanceLabel.setId("distance-label");
@@ -70,9 +80,6 @@ public class NavigationView extends View {
                 
         setTop(distanceLabel);
         
-        prev = MaterialDesignIcon.ARROW_BACK.button(evt -> previousTrap());
-        next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
-        
         prev.toFront();
         prev.setAlignment(Pos.CENTER);
         
@@ -81,11 +88,8 @@ public class NavigationView extends View {
         
         setLeft(prev);
         setRight(next);
-        
-        initMonitors();
-    }
-    
-    private void initMonitors () {
+    	
+    	
     	trapProperty.addListener((obs, oldV, newV) -> {
     		LOG.log(Level.INFO, "Selected trap: "+newV);
     		if (newV == null) {
@@ -96,7 +100,9 @@ public class NavigationView extends View {
     			next.setVisible(hasNextTrap());
     		}
     	});
-    	
+    }
+    
+    private void initMonitors () {    	
     	PlatformFactory.getPlatform().getPositionService().positionProperty().addListener((obs, oldPos, newPos) -> {
         	if (newPos != null && targetCoordsProperty.get() != null) {
         		double distance = getDistance(newPos, targetCoordsProperty.get());
@@ -121,7 +127,7 @@ public class NavigationView extends View {
     /**
      * Go back to the previous trap in the trapline
      */
-    protected void previousTrap () {
+    public void previousTrap () {
 		LOG.log(Level.FINE, "Requested swap to previous trap");
 		currentPointer--;
 		setTrap(orderedTraps.get(currentPointer));
@@ -130,7 +136,7 @@ public class NavigationView extends View {
     /**
      * Jump to the next trap in the trapline
      */
-    protected void nextTrap() {
+    public void nextTrap() {
 		LOG.log(Level.FINE, "Requested swap to next trap");
 		currentPointer++;
     	setTrap(orderedTraps.get(currentPointer));
@@ -140,7 +146,7 @@ public class NavigationView extends View {
      * Checks whether a trap exists prior to the selected trap
      * @return True if a previous trap exists, false if this is the first trap in the line
      */
-    protected boolean hasPreviousTrap () {
+    public boolean hasPreviousTrap () {
     	return currentPointer > 0;
     }
     
@@ -148,7 +154,7 @@ public class NavigationView extends View {
      * Checks whether another trap exists after the current one
      * @return True if a next trap exists, false if this is the last trap in the trapline
      */
-    protected boolean hasNextTrap () {
+    public boolean hasNextTrap () {
     	return currentPointer < orderedTraps.size()-1;
     }
     
@@ -156,7 +162,7 @@ public class NavigationView extends View {
      * Sets the target trap for the navigation view
      * @param trap The target trap
      */
-    public final void setTrap (Trap trap) {
+    void setTrap (Trap trap) {
     	trapProperty.set(trap);
     }
     

@@ -69,3 +69,7 @@ retrolambda {
   incremental true
 }
 
+//Stop the "test" task from using oldJdk (which doesn't include JavaFX)
+project.tasks.getByName("test").doFirst {
+	executable "java"
+}
