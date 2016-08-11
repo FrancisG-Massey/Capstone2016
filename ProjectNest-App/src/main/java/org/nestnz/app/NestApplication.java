@@ -6,6 +6,7 @@ import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.views.AddTrapView;
 import org.nestnz.app.views.NavigationView;
 import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
@@ -37,6 +38,7 @@ public class NestApplication extends MobileApplication {
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(traplines));
         addViewFactory(NavigationView.NAME, () -> new NavigationView());
         addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView());
+        addViewFactory(AddTrapView.NAME, () -> new AddTrapView());
         
         /*NavigationDrawer drawer = new NavigationDrawer();
         

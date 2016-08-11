@@ -114,13 +114,13 @@ public class NavigationView extends View {
         HeadingService headingService = NestPlatformFactory.getPlatform().getHeadingService();
         
         if (headingService.isHeadingAvailable()) {
-        	AirCompass compass = new AirCompass();
+        	/*AirCompass compass = new AirCompass();
         	headingService.headingProperty().addListener((obs, oldHeading, newHeading) -> {
             	if (newHeading != null) {
             		compass.setBearing(newHeading.doubleValue());
             	}
             });
-        	setCenter(compass);
+        	setCenter(compass);*/
         }
     }
     
