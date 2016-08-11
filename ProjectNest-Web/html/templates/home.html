@@ -1,0 +1,52 @@
+
+        <hr>
+
+        <div class="row">
+            <div class="col-sm-8">
+                <h2>What We're Doing</h2>
+				<p>Project Nest is the development of a mobile application to aid volunteers of DOC with the resetting of traplines.</p>
+				<p>Four students from Massey University are undertaking the design, implementation, testing, and deployment of this application to satisfy the requirements of a Software Engineering capstone project. We are working closely with volunteers and academic staff to provide a professional and successful cross-platform experience.</p>
+                <p>
+                    <a class="btn btn-default btn-lg" href="#">View Our Blog &raquo;</a>
+                </p>
+            </div>
+            <div class="col-sm-4">
+                <h2>Contact Us</h2>
+                <address>
+                    <strong>Capstone Team Two</strong>
+                    <br>Massey University
+                    <br>Palmerston North, NZ
+                    <br>
+                </address>
+                <address>
+                    <abbr title="Phone">P:</abbr> (+64) xxx-xxxx
+                    <br>
+                    <abbr title="Email">E:</abbr> <a href="mailto:#">projectnestnz@gmail.com</a>
+					<br>
+					<abbr title="Github">Github:</abbr> <a href="https://github.com/FrancisG-Massey/Capstone2016"> visit our code repository</a>
+
+                </address>
+            </div>
+        </div>
+        <!-- /.row -->
+
+        <hr>
+        <div class="row">
+            <div class="col-sm-4" data-ng-repeat="image in images">
+                <a href="{{image.link}}">
+                <img class="img-circle img-responsive" data-ng-src="{{image.photo}}" alt="">
+                </a>
+                <h2>{{image.header}}</h2>
+				<p>{{image.description}}</p></div>
+            <!-- <div class="col-sm-4">
+                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
+                <h2>Data</h2>
+				<p>View the data from the traplines where DOC volunteers use our services.</p></div>
+            <div class="col-sm-4">
+                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
+                <h2>Volunteers</h2>
+				<p>View profiles of hardworker DOC volunteers from around New Zealand</p></div> -->
+        </div>
+        <!-- /.row -->
+		
+        <hr>

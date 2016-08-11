@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-ng-app="myApp">
+<html lang="en" >
 
 <head>
 
@@ -35,17 +35,21 @@
 
 	<!-- Angularjs -->
 	<script src="js/shared/angular.min.js"></script>
-        
+    
+    <!-- Angularjs route provider -->
+    <script src="js/shared/angular-route.js"></script>
     <!-- Modules -->
     <script src="js/app.js"></script>
   
-    <!-- Controllers -->
-    <script src="js/controllers/MainController.js"></script>
+    <!-- Controllers --> 
+    <script src="js/controllers/HomeController.js"></script>
+    
+    <link href="css/custom-navbar.css" rel="stylesheet">
     
 
 </head>
 
-<body data-ng-controller="MainController">
+<body data-ng-app="myApp">
 
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -58,19 +62,37 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">LogIn</a>
+            <!--     <a class="navbar-brand" rel="home" href="#" title="Buy Sell Rent Everyting">
+        		<img style="max-width:80px; margin-top: -7px;" src="img/nest-logo.png">
+    			</a>-->
+    			<a class="navbar-brand" href="#" title="Nest NZ">
+        		<img class ="hidden-xs" style="max-width:70px; margin-top: -15px; margin-right:20px;float:left;" src="img/logo-white.png">
+        		<span style="display: inline-block;">
+        			<span style="margin: 0 30px;">NEST NZ</span><br><small>
+        			<em>Ōhanga o Aotearoa</em></small>
+        		</span>
+        		
+    			</a>
+                
+                <!--  <a class="navbar-brand" href="#">LogIn</a>-->
             </div>
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
+                <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="#">About</a>
+                        <a href="/#/about">About</a>
                     </li>
                     <li>
-                        <a href="#">Services</a>
+                        <a href="/#/statistics">Statistics</a>
                     </li>
                     <li>
-                        <a href="#">Contact</a>
+                    	<a href="/#/volunteer">Volunteer</a>
+                    </li>
+                    <li>
+                        <a href="/#/contact">Contact</a>
+                    </li>
+                    <li>
+                     	<a href="#" data-toggle="modal" data-target="#login">Log In</a>
                     </li>
                 </ul>
             </div>
@@ -82,67 +104,42 @@
     <!-- Image Background Page Header -->
     <!-- Note: The background image is set within the business-casual.css file. -->
     <header class="business-header">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <h1 class="tagline">Project Nest</h1>
-                </div>
-            </div>
-        </div>
+        <!--  <div class="container">
+             <h1 class="tagline">Project Nest</h1>
+        </div>-->
     </header>
 
     <!-- Page Content -->
-    <div class="container">
+    <div class="container" data-ng-view>
+	</div>
+	<div class="container">
 
-        <hr>
 
-        <div class="row">
-            <div class="col-sm-8">
-                <h2>What We're Doing</h2>
-				<p>Project Nest is the development of a mobile application to aid volunteers of DOC with the resetting of traplines.</p>
-				<p>Four students from Massey University are undertaking the design, implementation, testing, and deployment of this application to satisfy the requirements of a Software Engineering capstone project. We are working closely with volunteers and academic staff to provide a professional and successful cross-platform experience.</p>
-                <p>
-                    <a class="btn btn-default btn-lg" href="#">View Our Blog &raquo;</a>
-                </p>
-            </div>
-            <div class="col-sm-4">
-                <h2>Contact Us</h2>
-                <address>
-                    <strong>Capstone Team Two</strong>
-                    <br>Massey University
-                    <br>Palmerston North, NZ
-                    <br>
-                </address>
-                <address>
-                    <abbr title="Phone">P:</abbr> (+64) xxx-xxxx
-                    <br>
-                    <abbr title="Email">E:</abbr> <a href="mailto:#">projectnestnz@gmail.com</a>
-					<br>
-					<abbr title="Github">Github:</abbr> <a href="https://github.com/FrancisG-Massey/Capstone2016"> visit our code repository</a>
 
-                </address>
-            </div>
-        </div>
-        <!-- /.row -->
 
-        <hr>
-        <div class="row">
-            <div class="col-sm-4" data-ng-repeat="image in images">
-                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
-                <h2>{{image.header}}</h2>
-				<p>{{image.description}}</p></div>
-            <!-- <div class="col-sm-4">
-                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
-                <h2>Data</h2>
-				<p>View the data from the traplines where DOC volunteers use our services.</p></div>
-            <div class="col-sm-4">
-                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
-                <h2>Volunteers</h2>
-				<p>View profiles of hardworker DOC volunteers from around New Zealand</p></div> -->
-        </div>
-        <!-- /.row -->
-		
-        <hr>
+<div class="modal fade" id="login" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+      	<h3 class="text-center">Log In</h3>
+      	
+      	<div class="form-group">
+		  <input type="text" class="form-control" placeholder="Enter username...">
+ 		</div>
+       	<div class="form-group">
+		  <input type="password" class="form-control" placeholder="Enter password...">
+		</div>
+    	  <div class="clearfix">
+	        <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Close</button>
+	        <button type="button" class="btn btn-primary pull-right">Log In</button>
+	      </div>
+      </div>
+
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
 
         <!-- Footer -->
         <footer>
