@@ -1,16 +1,16 @@
 package org.nestnz.app.ios;
 
-import org.nestnz.app.services.HeadingService;
+import org.nestnz.app.services.CompassService;
 import org.nestnz.app.services.NestNativePlatform;
 
 public class IOSNativePlatform extends NestNativePlatform {
 	
-	private IOSHeadingService headingService;
+	private IOSCompassService headingService;
 
 	@Override
-	public HeadingService getHeadingService() {
+	public CompassService getCompassService() {
 		if (headingService == null) {
-			headingService = new IOSHeadingService();
+			headingService = new IOSCompassService();
 		}
 		return headingService;
 	}

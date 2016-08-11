@@ -3,7 +3,7 @@ package org.nestnz.app.ios;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.nestnz.app.services.HeadingService;
+import org.nestnz.app.services.CompassService;
 import org.robovm.apple.corelocation.CLHeading;
 import org.robovm.apple.corelocation.CLLocationAccuracy;
 import org.robovm.apple.corelocation.CLLocationManager;
@@ -13,9 +13,9 @@ import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 
-public class IOSHeadingService implements HeadingService {
+public class IOSCompassService implements CompassService {
 
-    private static final Logger LOG = Logger.getLogger(IOSHeadingService.class.getName());
+    private static final Logger LOG = Logger.getLogger(IOSCompassService.class.getName());
 
     private static final double DESIRED_ACCURACY = CLLocationAccuracy.Kilometer;
     private static final double DISTANCE_FILTER = 1000.0;
@@ -24,7 +24,7 @@ public class IOSHeadingService implements HeadingService {
 	
 	private boolean supported = false;
     
-    public IOSHeadingService () {
+    public IOSCompassService () {
         CLLocationManager locationManager = new CLLocationManager();
         
         locationManager.setDelegate(new CLLocationManagerDelegateAdapter() {

@@ -3,7 +3,7 @@ package org.nestnz.app.android;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.nestnz.app.services.HeadingService;
+import org.nestnz.app.services.CompassService;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -15,9 +15,9 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafxports.android.FXActivity;
 
-public class AndroidHeadingService implements HeadingService, SensorEventListener {
+public class AndroidCompassService implements CompassService, SensorEventListener {
 
-    private static final Logger LOG = Logger.getLogger(AndroidHeadingService.class.getName());
+    private static final Logger LOG = Logger.getLogger(AndroidCompassService.class.getName());
     
     private final ReadOnlyDoubleWrapper headingProperty = new ReadOnlyDoubleWrapper();
 	
@@ -28,7 +28,7 @@ public class AndroidHeadingService implements HeadingService, SensorEventListene
     
     private boolean supported = false;
     
-    public AndroidHeadingService () {
+    public AndroidCompassService () {
         Context activityContext = FXActivity.getInstance();
         Object systemService = activityContext.getSystemService(FXActivity.SENSOR_SERVICE);
         sensorManager = (SensorManager) systemService;

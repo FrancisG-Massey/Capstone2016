@@ -3,11 +3,11 @@ package org.nestnz.app.services;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 
 /**
- * The HeadingService provides details of the direction a device is currently pointing, relative to the earth's magnetic poles.
+ * The CompassService provides details of the direction a device is currently pointing, relative to the earth's magnetic poles.
  * 
  * 
  */
-public interface HeadingService {
+public interface CompassService {
 	
 	/**
 	 * Checks whether the devices has the sensors required to calculate heading

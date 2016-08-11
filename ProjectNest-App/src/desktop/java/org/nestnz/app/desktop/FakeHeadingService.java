@@ -3,7 +3,7 @@ package org.nestnz.app.desktop;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.nestnz.app.services.HeadingService;
+import org.nestnz.app.services.CompassService;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -12,7 +12,7 @@ import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.util.Duration;
 
-public class FakeHeadingService implements HeadingService {
+public class FakeHeadingService implements CompassService {
 
     private static final Logger LOG = Logger.getLogger(FakeHeadingService.class.getName());
     	

@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.services.HeadingService;
+import org.nestnz.app.services.CompassService;
 import org.nestnz.app.services.NestPlatformFactory;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
@@ -111,7 +111,7 @@ public class NavigationView extends View {
         	}
         });
         
-        HeadingService headingService = NestPlatformFactory.getPlatform().getHeadingService();
+        CompassService headingService = NestPlatformFactory.getPlatform().getCompassService();
         
         if (headingService.isHeadingAvailable()) {
         	/*AirCompass compass = new AirCompass();

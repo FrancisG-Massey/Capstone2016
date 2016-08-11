@@ -1,16 +1,16 @@
 package org.nestnz.app.android;
 
-import org.nestnz.app.services.HeadingService;
+import org.nestnz.app.services.CompassService;
 import org.nestnz.app.services.NestNativePlatform;
 
 public class AndroidNativePlatform extends NestNativePlatform {
 	
-	private AndroidHeadingService headingService;
+	private AndroidCompassService headingService;
 
 	@Override
-	public HeadingService getHeadingService() {
+	public CompassService getCompassService() {
 		if (headingService == null) {
-			headingService = new AndroidHeadingService();
+			headingService = new AndroidCompassService();
 		}
 		return headingService;
 	}
