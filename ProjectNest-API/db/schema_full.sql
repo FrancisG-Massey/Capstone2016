@@ -12,7 +12,7 @@
 /*
     Database clean setup instructions:
 
-    1. create a login role 'nestnz' with createdb permissions
+    1. create a login role 'nestnz' ensuring it has createdb permissions
     2. create a database 'nestnz' ensuring it has default schema 'public'
     3. run the sql script below to populate data table definitions,
        adding primary-key sequence tables and foreign key indexes.
@@ -24,6 +24,19 @@
 
 
 -- First create the sequences for the auto-incrememting primary keys
+
+-- Sequence: public.session_session_id_seq
+
+-- DROP SEQUENCE public.session_session_id_seq;
+
+CREATE SEQUENCE public.session_session_id_seq
+  INCREMENT 1
+  MINVALUE 1
+  MAXVALUE 9223372036854775807
+  START 1
+  CACHE 1;
+ALTER TABLE public.session_session_id_seq
+  OWNER TO nestnz;
 
 -- Sequence: public.bait_bait_id_seq
 
@@ -186,6 +199,7 @@ CREATE TABLE public.users
   user_id bigint NOT NULL DEFAULT nextval('users_user_id_seq'::regclass),
   user_name text NOT NULL,
   user_password text NOT NULL,
+  user_contact_fullname text,
   user_contact_phone text,
   user_contact_email text,
   user_created_timestamp timestamp without time zone NOT NULL DEFAULT now(),
@@ -193,13 +207,52 @@ CREATE TABLE public.users
   user_is_admin boolean NOT NULL DEFAULT false,
   user_is_inactive boolean NOT NULL DEFAULT false,
   CONSTRAINT users_pkey PRIMARY KEY (user_id),
-  CONSTRAINT valid_phone CHECK (user_contact_phone IS NULL OR user_contact_phone ~ '^\d{5,14}$'::text)
+  -- All usernames must be unique
+  CONSTRAINT users_user_name_key UNIQUE (user_name),
+  -- Phone numbers must be of length 8-15 inclusive, and contain only numerals
+  CONSTRAINT valid_phone CHECK (user_contact_phone IS NULL OR user_contact_phone ~ '^\d{5,14}$'::text),
+  -- Usernames must be at least 3 characters long and not contain colons (breaks basic auth)
+  CONSTRAINT valid_username CHECK (user_name ~ '^[^:]{3,}$'::text)
 )
 WITH (
   OIDS=FALSE
 );
 ALTER TABLE public.users
   OWNER TO nestnz;
+
+
+-- Table: public.session
+
+-- DROP TABLE public.session;
+
+CREATE TABLE public.session
+(
+  session_id bigint NOT NULL DEFAULT nextval('session_session_id_seq'::regclass),
+  session_user_id bigint NOT NULL,
+  session_token text NOT NULL,
+  session_created timestamp without time zone NOT NULL DEFAULT now(),
+  CONSTRAINT session_pkey PRIMARY KEY (session_id),
+  CONSTRAINT session_session_token UNIQUE (session_token),
+  CONSTRAINT session_session_user_id_fkey FOREIGN KEY (session_user_id)
+      REFERENCES public.users (user_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT valid_session_token CHECK (session_token ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'::text)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE public.session
+  OWNER TO nestnz;
+
+-- Index: public.s_suid_idx
+
+-- DROP INDEX public.s_suid_idx;
+
+CREATE INDEX s_suid_idx
+  ON public.session
+  USING btree
+  (session_user_id);
+
 
 
 -- Table: public.bait
@@ -450,7 +503,7 @@ CREATE TABLE public.catch
       REFERENCES public.catch_type (catch_type_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT catch_catch_user_id_fkey FOREIGN KEY (catch_user_id)
-      REFERENCES public.users (user_id) MATCH SIMPLE
+      REFERENCES public.users (user_id) MATCH SIMPLE  
       ON UPDATE CASCADE ON DELETE RESTRICT
 )
 WITH (
@@ -485,4 +538,3 @@ CREATE INDEX c_cuid_idx
   ON public.catch
   USING btree
   (catch_user_id);
-
