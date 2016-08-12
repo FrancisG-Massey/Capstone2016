@@ -12,3 +12,4 @@
 hs_err_pid*
 /ProjectNest-API/nbproject/private/
 /ProjectNest-API/build/
+/ProjectNest-API/db/dbconfig.properties
