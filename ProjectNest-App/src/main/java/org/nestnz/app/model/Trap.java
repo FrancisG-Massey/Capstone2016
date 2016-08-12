@@ -1,6 +1,7 @@
 package org.nestnz.app.model;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -8,19 +9,20 @@ import javafx.collections.ObservableList;
 public final class Trap {
 
 	/**
-	 * The internal server ID of the trap
+	 * The internal server ID of the trap, if the trap has been posted to the server.
+	 * If the trap has not yet been posted to the server, this will be Optional.empty()
 	 */
-	private final int id;
+	private Optional<Integer> id;
 	
 	private final int number;
 	
 	/**
-	 * The longitude (x) coordinate of the trap
+	 * The longitude coordinate of the trap
 	 */
 	private final double longitude;
 	
 	/**
-	 * The latitude (y) coordinate of the trap
+	 * The latitude coordinate of the trap
 	 */
 	private final double latitude;
 	
@@ -36,8 +38,17 @@ public final class Trap {
 	
 	private final ObservableList<Catch> catches = FXCollections.observableArrayList();
 
+	public Trap(int number, double longitude, double latitude) {
+		this.id = Optional.empty();
+		this.number = number;
+		this.longitude = longitude;
+		this.latitude = latitude;
+		this.status = TrapStatus.ACTIVE;
+		this.lastReset = LocalDateTime.now();
+	}
+
 	public Trap(int id, int number, double longitude, double latitude, TrapStatus status, LocalDateTime lastReset) {
-		this.id = id;
+		this.id = Optional.of(id);
 		this.number = number;
 		this.longitude = longitude;
 		this.latitude = latitude;
@@ -48,8 +59,12 @@ public final class Trap {
 	/**
 	 * @see #id
 	 */
-	public int getId() {
+	public Optional<Integer> getId() {
 		return id;
+	}
+	
+	public void setId(Optional<Integer> id) {
+		this.id = id;
 	}
 
 	public int getNumber() {
@@ -83,14 +98,16 @@ public final class Trap {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((catches == null) ? 0 : catches.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((lastReset == null) ? 0 : lastReset.hashCode());
 		long temp;
 		temp = Double.doubleToLongBits(latitude);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(longitude);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + number;
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		result = prime * result + id;
 		return result;
 	}
 
@@ -103,6 +120,16 @@ public final class Trap {
 		if (getClass() != obj.getClass())
 			return false;
 		Trap other = (Trap) obj;
+		if (catches == null) {
+			if (other.catches != null)
+				return false;
+		} else if (!catches.equals(other.catches))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
 		if (lastReset == null) {
 			if (other.lastReset != null)
 				return false;
@@ -112,9 +139,9 @@ public final class Trap {
 			return false;
 		if (Double.doubleToLongBits(longitude) != Double.doubleToLongBits(other.longitude))
 			return false;
-		if (status != other.status)
+		if (number != other.number)
 			return false;
-		if (id != other.id)
+		if (status != other.status)
 			return false;
 		return true;
 	}
