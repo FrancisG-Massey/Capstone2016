@@ -37,6 +37,7 @@ dependencies {
 }
 
 jfxmobile {
+	javafxportsVersion = '8.60.d160802'
 
     android {
         manifest = 'src/android/AndroidManifest.xml'
