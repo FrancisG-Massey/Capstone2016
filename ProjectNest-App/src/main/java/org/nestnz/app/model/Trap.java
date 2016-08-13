@@ -3,6 +3,8 @@ package org.nestnz.app.model;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.nestnz.app.parser.ParserTrap;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -15,6 +17,8 @@ public final class Trap {
 	private Optional<Integer> id;
 	
 	private final int number;
+	
+	private String docId;
 	
 	/**
 	 * The longitude coordinate of the trap
@@ -32,18 +36,32 @@ public final class Trap {
 	private TrapStatus status;
 	
 	/**
+	 * The date & time the trap was created
+	 */
+	private LocalDateTime created;
+	
+	/**
 	 * The date & time the trap was last checked & reset
 	 */
 	private LocalDateTime lastReset;
 	
 	private final ObservableList<Catch> catches = FXCollections.observableArrayList();
+	
+	public Trap(ParserTrap trap) {
+		this.id = Optional.empty();
+		this.number = trap.getNumber();
+		this.latitude = trap.getCoordLat();
+		this.longitude = trap.getCoordLong();
+	}
 
-	public Trap(int number, double longitude, double latitude) {
+	public Trap(int number, String docId, double longitude, double latitude) {
 		this.id = Optional.empty();
 		this.number = number;
+		this.docId = docId;
 		this.longitude = longitude;
 		this.latitude = latitude;
 		this.status = TrapStatus.ACTIVE;
+		this.created = LocalDateTime.now();
 		this.lastReset = LocalDateTime.now();
 	}
 
@@ -71,6 +89,10 @@ public final class Trap {
 		return number;
 	}
 
+	public String getDocId() {
+		return docId;
+	}
+
 	/**
 	 * @see #longitude
 	 */
@@ -84,6 +106,10 @@ public final class Trap {
 
 	public TrapStatus getStatus() {
 		return status;
+	}
+
+	public LocalDateTime getCreated() {
+		return created;
 	}
 
 	public LocalDateTime getLastReset() {
