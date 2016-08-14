@@ -19,3 +19,13 @@
 	width:360px;
 	height:480px;
 }
+
+
+.mast {
+  margin: 0 auto;
+  max-width: 752px;
+}
+
+.mast p {
+  margin-bottom: 30px;
+}
