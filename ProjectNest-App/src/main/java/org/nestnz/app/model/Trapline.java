@@ -1,6 +1,10 @@
 package org.nestnz.app.model;
 
+import java.util.Objects;
 import java.util.Optional;
+
+import org.nestnz.app.parser.ParserTrap;
+import org.nestnz.app.parser.ParserTrapline;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,6 +37,19 @@ public final class Trapline {
 	 * Optionally, the name of the end point of the trapline. For loop traplines, this will be {@link Optional#empty()}
 	 */
 	private final Optional<String> end;
+	
+	public Trapline (ParserTrapline pTrapline) {
+		Objects.requireNonNull(pTrapline);
+		
+		this.id = pTrapline.getId();
+		this.name = pTrapline.getName();
+		this.region = null;//TODO: Get the region data here
+		this.start = pTrapline.getStart();
+		this.end = Optional.ofNullable(pTrapline.getEnd());
+		for (ParserTrap pTrap : pTrapline.getTraps()) {
+			traps.add(new Trap(pTrap));
+		}
+	}
 	
 	public Trapline(int id, String name, Region region, String start) {
 		this(id, name, region, start, null);

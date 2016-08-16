@@ -52,9 +52,9 @@ public class TestNavigationView {
 	public void setUp() throws Exception {
 		navView = new NavigationView(true);
 		trapline = new Trapline(10, "Test trapline", new Region(20, "Test Region"), "Test Start");
-		trap1 = new Trap(1, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now());
-		trap2 = new Trap(2, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now());
-		trap3 = new Trap(3, 3, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now());
+		trap1 = new Trap(1, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+		trap2 = new Trap(2, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+		trap3 = new Trap(3, 3, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
 	}
 
 	@After

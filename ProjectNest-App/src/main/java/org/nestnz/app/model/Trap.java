@@ -65,12 +65,13 @@ public final class Trap {
 		this.lastReset = LocalDateTime.now();
 	}
 
-	public Trap(int id, int number, double longitude, double latitude, TrapStatus status, LocalDateTime lastReset) {
+	public Trap(int id, int number, double longitude, double latitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
 		this.id = Optional.of(id);
 		this.number = number;
 		this.longitude = longitude;
 		this.latitude = latitude;
 		this.status = status;
+		this.created = created;
 		this.lastReset = lastReset;
 	}
 
