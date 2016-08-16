@@ -38,7 +38,7 @@ public final class TrapDataService {
     	loadTraplines();
     }
     
-    private void loadTraplines () {
+    protected void loadTraplines () {
     	//TODO: Fetch trapline list from server
     	try (DirectoryStream<Path> stream = Files.newDirectoryStream(trapCachePath)) {
 	    	for (Path traplineFile : stream) {

@@ -96,7 +96,6 @@ public final class Trapline {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((region == null) ? 0 : region.hashCode());
 		result = prime * result + ((start == null) ? 0 : start.hashCode());
-		result = prime * result + ((traps == null) ? 0 : traps.hashCode());
 		return result;
 	}
 
@@ -130,11 +129,6 @@ public final class Trapline {
 			if (other.start != null)
 				return false;
 		} else if (!start.equals(other.start))
-			return false;
-		if (traps == null) {
-			if (other.traps != null)
-				return false;
-		} else if (!traps.equals(other.traps))
 			return false;
 		return true;
 	}

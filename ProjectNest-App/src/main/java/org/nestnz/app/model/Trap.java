@@ -54,22 +54,26 @@ public final class Trap {
 		this.longitude = trap.getCoordLong();
 	}
 
-	public Trap(int number, String docId, double longitude, double latitude) {
+	public Trap(int number, String docId, double latitude, double longitude) {
+		this(number, docId, latitude, longitude, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+	}
+
+	public Trap(int number, String docId, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
 		this.id = Optional.empty();
 		this.number = number;
 		this.docId = docId;
-		this.longitude = longitude;
 		this.latitude = latitude;
-		this.status = TrapStatus.ACTIVE;
-		this.created = LocalDateTime.now();
-		this.lastReset = LocalDateTime.now();
+		this.longitude = longitude;
+		this.status = status;
+		this.created = created;
+		this.lastReset = lastReset;
 	}
 
-	public Trap(int id, int number, double longitude, double latitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
+	public Trap(int id, int number, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
 		this.id = Optional.of(id);
 		this.number = number;
-		this.longitude = longitude;
 		this.latitude = latitude;
+		this.longitude = longitude;
 		this.status = status;
 		this.created = created;
 		this.lastReset = lastReset;
