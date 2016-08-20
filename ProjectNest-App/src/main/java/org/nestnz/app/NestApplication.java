@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,12 +38,12 @@ public class NestApplication extends MobileApplication {
     public static final String MENU_LAYER = "Side Menu";
     
     private TrapDataService trapDataService;
-    private Path appStoragePath;
+    private File appStoragePath;
 
     @Override
     public void init() throws IOException {
-        appStoragePath = PlatformFactory.getPlatform().getPrivateStorage().toPath();
-        trapDataService = new TrapDataService(appStoragePath.resolve("cache"));
+        appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
+        trapDataService = new TrapDataService(new File(appStoragePath, "cache"));
         
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService.getTraplines()));
         addViewFactory(NavigationView.NAME, () -> new NavigationView());
@@ -68,7 +67,7 @@ public class NestApplication extends MobileApplication {
 	private JsonConverter<ParserTrap> trapConverter = new JsonConverter<>(ParserTrap.class);
     
     public void saveNewTrap (String name, Trap trap) {
-    	File newTrapCache = new File(appStoragePath.toFile(), "/cache/");
+    	File newTrapCache = new File(appStoragePath, "/cache/");
     	newTrapCache.mkdir();
     	
     	JsonObject json = trapConverter.writeToJson(new ParserTrap(trap));

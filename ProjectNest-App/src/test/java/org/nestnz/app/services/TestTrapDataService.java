@@ -54,7 +54,7 @@ public class TestTrapDataService {
 	public void setUp() throws Exception {
 		cachePath = Files.createTempDirectory("trapDataCache");
 		clearDirectory(cachePath);
-		dataService = new TrapDataService(cachePath);
+		dataService = new TrapDataService(cachePath.toFile());
 	}
 	
 	/**

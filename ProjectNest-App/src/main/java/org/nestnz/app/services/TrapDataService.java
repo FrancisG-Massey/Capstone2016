@@ -1,9 +1,7 @@
 package org.nestnz.app.services;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,11 +26,11 @@ public final class TrapDataService {
     
     private final ObservableList<Trapline> traplines = FXCollections.observableArrayList();
     
-    private final Path trapCachePath;
+    private final File trapCachePath;
     
-    public TrapDataService (Path trapCachePath) throws IOException {
+    public TrapDataService (File trapCachePath) throws IOException {
     	Objects.requireNonNull(trapCachePath);
-    	Files.createDirectories(trapCachePath);
+    	trapCachePath.mkdirs();
     	
     	this.trapCachePath = trapCachePath;
     	loadTraplines();
@@ -40,26 +38,22 @@ public final class TrapDataService {
     
     protected void loadTraplines () {
     	//TODO: Fetch trapline list from server
-    	try (DirectoryStream<Path> stream = Files.newDirectoryStream(trapCachePath)) {
-	    	for (Path traplineFile : stream) {
-	        	LOG.log(Level.INFO, String.format("File: %s", traplineFile));
-	        	//TODO: Use the proper method in Java 7, rather than just converting to string & checking ends with
-	    		if (traplineFile.toString().endsWith(".json")) {
-	    			FileClient fileClient = FileClient.create(traplineFile.toFile());
-	    			
-	    			InputStreamInputConverter<ParserTrapline> converter = new JsonInputConverter<>(ParserTrapline.class);
-	
-	    			GluonObservableObject<ParserTrapline> pTrapline = DataProvider.retrieveObject(fileClient.createObjectDataReader(converter));
-	    			pTrapline.initializedProperty().addListener((obs, oldValue, newValue) -> {
-	    				if (newValue) {
-	    	    			traplines.add(new Trapline(pTrapline.get()));	    					
-	    				}
-	    			});
-	    		}
-	    	}
-    	} catch (IOException ex) {
-			LOG.log(Level.WARNING, "Failed to read trap cache directory content", ex);
-		}
+    	for (File traplineFile : trapCachePath.listFiles()) {
+        	LOG.log(Level.INFO, String.format("File: %s", traplineFile));
+        	//TODO: Use the proper method in Java 7, rather than just converting to string & checking ends with
+    		if (traplineFile.toString().endsWith(".json")) {
+    			FileClient fileClient = FileClient.create(traplineFile);
+    			
+    			InputStreamInputConverter<ParserTrapline> converter = new JsonInputConverter<>(ParserTrapline.class);
+
+    			GluonObservableObject<ParserTrapline> pTrapline = DataProvider.retrieveObject(fileClient.createObjectDataReader(converter));
+    			pTrapline.initializedProperty().addListener((obs, oldValue, newValue) -> {
+    				if (newValue) {
+    	    			traplines.add(new Trapline(pTrapline.get()));	    					
+    				}
+    			});
+    		}
+    	}
     	LOG.log(Level.INFO, String.format("Loaded data for %d traplines from file cache", traplines.size()));
     }
 
@@ -73,10 +67,10 @@ public final class TrapDataService {
 	 */
 	public void updateTrapline (Trapline trapline) {
 		//TODO: Save the changes to the server
-		Path savedFile = trapCachePath.resolve(Integer.toString(trapline.getId())+".json");
+		File savedFile = new File(trapCachePath, Integer.toString(trapline.getId())+".json");
 		
 		
-		FileClient fileClient = FileClient.create(savedFile.toFile());
+		FileClient fileClient = FileClient.create(savedFile);
 		
 		OutputStreamOutputConverter<ParserTrapline> outputConverter = new JsonOutputConverter<>(ParserTrapline.class);
 
