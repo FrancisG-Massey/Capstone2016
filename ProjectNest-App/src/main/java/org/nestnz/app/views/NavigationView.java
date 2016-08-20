@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.services.CompassService;
-import org.nestnz.app.services.NestPlatformFactory;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
 import com.gluonhq.charm.down.common.Position;
@@ -22,7 +20,6 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
-import eu.hansolo.fx.AirCompass;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -111,17 +108,17 @@ public class NavigationView extends View {
         	}
         });
         
-        CompassService headingService = NestPlatformFactory.getPlatform().getCompassService();
+        /*CompassService headingService = NestPlatformFactory.getPlatform().getCompassService();
         
         if (headingService.isHeadingAvailable()) {
-        	/*AirCompass compass = new AirCompass();
+        	AirCompass compass = new AirCompass();
         	headingService.headingProperty().addListener((obs, oldHeading, newHeading) -> {
             	if (newHeading != null) {
             		compass.setBearing(newHeading.doubleValue());
             	}
             });
-        	setCenter(compass);*/
-        }
+        	setCenter(compass);
+        }*/
     }
     
     /**
