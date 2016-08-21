@@ -38,6 +38,7 @@ public final class TrapDataService {
     
     protected void loadTraplines () {
     	//TODO: Fetch trapline list from server
+    	int count = 0;
     	for (File traplineFile : trapCachePath.listFiles()) {
         	LOG.log(Level.INFO, String.format("File: %s", traplineFile));
         	//TODO: Use the proper method in Java 7, rather than just converting to string & checking ends with
@@ -52,9 +53,10 @@ public final class TrapDataService {
     	    			traplines.add(new Trapline(pTrapline.get()));	    					
     				}
     			});
+    			count++;
     		}
     	}
-    	LOG.log(Level.INFO, String.format("Loaded data for %d traplines from file cache", traplines.size()));
+    	LOG.log(Level.INFO, String.format("Found data for %d traplines in file cache", count));
     }
 
 	public ObservableList<Trapline> getTraplines() {

@@ -18,8 +18,6 @@ public final class Trap {
 	
 	private final int number;
 	
-	private String docId;
-	
 	/**
 	 * The longitude coordinate of the trap
 	 */
@@ -52,16 +50,17 @@ public final class Trap {
 		this.number = trap.getNumber();
 		this.latitude = trap.getCoordLat();
 		this.longitude = trap.getCoordLong();
+		this.created = LocalDateTime.parse(trap.getCreated());
+		this.lastReset = LocalDateTime.parse(trap.getLastReset());
 	}
 
-	public Trap(int number, String docId, double latitude, double longitude) {
-		this(number, docId, latitude, longitude, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+	public Trap(int number, double latitude, double longitude) {
+		this(number, latitude, longitude, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
 	}
 
-	public Trap(int number, String docId, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
+	public Trap(int number, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
 		this.id = Optional.empty();
 		this.number = number;
-		this.docId = docId;
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.status = status;
@@ -92,10 +91,6 @@ public final class Trap {
 
 	public int getNumber() {
 		return number;
-	}
-
-	public String getDocId() {
-		return docId;
 	}
 
 	/**

@@ -87,7 +87,7 @@ public class AddTrapView extends View {
 		Objects.requireNonNull(position);
 		
 		int number = nextTrapNumber.get();
-		Trap trap = new Trap(number, null, position.getLatitude(), position.getLongitude());
+		Trap trap = new Trap(number, position.getLatitude(), position.getLongitude());
 		nextTrapNumber.set(number+1);
 		trapline.getTraps().add(trap);
 		((NestApplication)this.getApplication()).getTrapDataService().updateTrapline(trapline);
