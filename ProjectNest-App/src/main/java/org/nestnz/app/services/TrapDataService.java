@@ -33,7 +33,7 @@ public final class TrapDataService {
     	trapCachePath.mkdirs();
     	
     	this.trapCachePath = trapCachePath;
-    	loadTraplines();
+    	//loadTraplines();
     }
     
     protected void loadTraplines () {

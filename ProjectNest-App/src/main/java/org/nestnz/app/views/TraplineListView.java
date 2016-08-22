@@ -20,7 +20,7 @@ import javafx.util.StringConverter;
 
 public class TraplineListView extends View {
 	
-	public static final String NAME = MobileApplication.HOME_VIEW;//"trapline_list";
+	public static final String NAME = "trapline_list";
 
     private static final Logger LOG = Logger.getLogger(TraplineListView.class.getName());
 	

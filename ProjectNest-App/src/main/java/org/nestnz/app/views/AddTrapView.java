@@ -143,5 +143,5 @@ public class AddTrapView extends View {
         	}
         });
         appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
-    }	
+    }
 }

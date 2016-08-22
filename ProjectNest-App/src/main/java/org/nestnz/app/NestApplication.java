@@ -15,8 +15,10 @@ import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.ParserTrap;
+import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.views.AddTrapView;
+import org.nestnz.app.views.LoginView;
 import org.nestnz.app.views.NavigationView;
 import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
@@ -38,13 +40,16 @@ public class NestApplication extends MobileApplication {
     public static final String MENU_LAYER = "Side Menu";
     
     private TrapDataService trapDataService;
+    private LoginService loginService;
     private File appStoragePath;
 
     @Override
     public void init() throws IOException {
         appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
         trapDataService = new TrapDataService(new File(appStoragePath, "cache"));
+        loginService = new LoginService();
         
+        addViewFactory(LoginView.NAME, () -> new LoginView(loginService));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService.getTraplines()));
         addViewFactory(NavigationView.NAME, () -> new NavigationView());
         addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView());

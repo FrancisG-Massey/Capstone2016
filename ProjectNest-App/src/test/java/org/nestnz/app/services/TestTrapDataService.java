@@ -1,10 +1,11 @@
 package org.nestnz.app.services;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,30 +54,12 @@ public class TestTrapDataService {
 	@Before
 	public void setUp() throws Exception {
 		cachePath = Files.createTempDirectory("trapDataCache");
-		clearDirectory(cachePath);
 		dataService = new TrapDataService(cachePath.toFile());
-	}
-	
-	/**
-	 * Clears the specified directory of all top-level files & deletes the directory
-	 * @param path
-	 * @throws IOException
-	 */
-	private void clearDirectory (Path path) throws IOException {
-		if (Files.exists(path) && Files.isDirectory(path)) {
-			try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-		    	for (Path traplineFile : stream) {
-		    		Files.delete(traplineFile);
-		    	}
-			}
-		}
-		Files.delete(path);
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		dataService = null;
-		clearDirectory(cachePath);
 	}
 
 	/**
@@ -111,7 +94,7 @@ public class TestTrapDataService {
 			}
 		});
 		
-		Trapline trapline = future.get(1, TimeUnit.SECONDS);//Wait 1 second at most
+		Trapline trapline = future.get(2, TimeUnit.SECONDS);//Wait 2 seconds at most
 		
 		Trapline oracle = new Trapline(20, "Test trapline", null, "Test Start");
 				
@@ -152,7 +135,7 @@ public class TestTrapDataService {
 			}
 		});
 		
-		Trapline result = future.get(1, TimeUnit.SECONDS);//Wait 1 second at most
+		Trapline result = future.get(2, TimeUnit.SECONDS);//Wait 2 seconds at most
 		
 		assertEquals(trapline, result);//Make sure the trapline itself remains the same
 		
