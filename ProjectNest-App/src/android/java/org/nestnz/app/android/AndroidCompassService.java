@@ -72,11 +72,11 @@ public class AndroidCompassService implements CompassService, SensorEventListene
 		if (evt.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			gravity = lowPass(evt.values, gravity);
 			
-        	LOG.log(Level.INFO, String.format("Found accelerometer data: x=%f, y=%f, z=%f", gravity));			
+        	LOG.log(Level.INFO, String.format("Found accelerometer data: x=%1$f, y=%2$f, z=%3$f", gravity));			
 		} else if (evt.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
 			magnetic = lowPass(evt.values, magnetic);
 			
-        	LOG.log(Level.INFO, String.format("Found magnetic field data: x=%f, y=%f, z=%f", magnetic));	
+        	LOG.log(Level.INFO, String.format("Found magnetic field data: x=%1$f, y=%2$f, z=%3$f", magnetic));	
 		}
 		
 		if (gravity != null && magnetic != null) {

@@ -53,6 +53,8 @@ public class LoginView extends View {
 					visible = true;
 					break;
 				case SERVER_UNAVAILABLE:
+					getApplication().switchView(TraplineListView.NAME);
+					//For now, we'll go to the trapline view regardless
 					break;
 				case LOGGED_OUT:
 					break;
