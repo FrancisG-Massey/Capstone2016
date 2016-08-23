@@ -1,166 +1,79 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en" data-ng-app="myApp">
 
-<head>
+  <head>
+    <script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script src="//code.angularjs.org/1.2.20/angular.js"></script>
+    <script src="//code.angularjs.org/1.2.20/angular-route.js"></script>
+    <script src="//code.angularjs.org/1.2.13/angular-cookies.js"></script>
+    <script src="js/app.js"></script>
+    <script src="modules/authentication/services.js"></script>
+    <script src="modules/authentication/controllers.js"></script>
+    <script src="js/controllers.js"></script>
+    <script src="modules/admin/controllers.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    
-
-    <title>Project Nest</title>
-
-    <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <title>NestNz</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/web.css" />
 	<!-- favicon -->
 	<link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <!-- Custom CSS -->
-    <link href="css/business-frontpage.css" rel="stylesheet">
+  </head>
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+  <body>
+    <div class="{{wrapClass ? wrapClass : 'wrap'}}">
     
-    <!-- /.container -->
-
-    <!-- jQuery -->
-    <script src="js/jquery.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
-
-	<!-- Angularjs -->
-	<script src="js/shared/angular.min.js"></script>
-    
-    <!-- Angularjs route provider -->
-    <script src="js/shared/angular-route.js"></script>
-    <!-- Modules -->
-    <script src="js/app.js"></script>
-  
-    <!-- Controllers --> 
-    <script src="js/controllers/HomeController.js"></script>
-    
-    <link href="css/custom-navbar.css" rel="stylesheet">
-    
-</head>
-
-<body data-ng-app="myApp">
-
-    <!-- Navigation -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <nav class="navbar navbar-fixed-top navbar-inverse navbar-nest">
         <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-            <!--     <a class="navbar-brand" rel="home" href="#" title="Buy Sell Rent Everyting">
-        		<img style="max-width:80px; margin-top: -7px;" src="img/nest-logo.png">
-    			</a>-->
-    			<a class="navbar-brand" href="#" title="Nest NZ">
+          <div class="navbar-header">
+            <button type="button" class="collapsed navbar-toggle" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#" title="Nest NZ">
         		<img class ="hidden-xs" style="max-width:70px; margin-top: -15px; margin-right:20px;float:left;" src="img/logo-white.png">
         		<span style="display: inline-block;">
         			<span style="margin: 0 30px;">NEST NZ</span><br><small>
         			<em>Ōhanga o Aotearoa</em></small>
         		</span>
-        		
-    			</a>
-                
-                <!--  <a class="navbar-brand" href="#">LogIn</a>-->
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a data-toggle="collapse" data-target=".navbar-collapse.in" href="/#/home">Home</a>
-                    </li>
-                    <li>
-                        <a data-toggle="collapse" data-target=".navbar-collapse.in" href="/#/about">About</a>
-                    </li>
-                    <li>
-                        <a data-toggle="collapse" data-target=".navbar-collapse.in" href="/#/statistics">Statistics</a>
-                    </li>
-                    <li>
-                    	<a data-toggle="collapse" data-target=".navbar-collapse.in" href="/#/volunteer">Volunteer</a>
-                    </li>
-                    <li>
-                        <a data-toggle="collapse" data-target=".navbar-collapse.in" href="/#/contact">Contact</a>
-                    </li>
-                    <li  data-toggle="modal" data-target="#loginModal">
-                    	<a data-toggle="collapse" data-target=".navbar-collapse.in" href="#">Log In</a>
-                    <!-- 	<a data-toggle="collapse" data-target=".navbar-collapse.in" href="#">Log In</a>-->
-                    	<!--<button type="button" class="btn btn-default btn-lg" id="loginBtn">Log In</button>--> 
-                    </li>
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
+    		</a>
+          </div>
+          <div class="collapse navbar-collapse" id="navbar" bs-active-link>
+            <ul ng-if="globals.currentUser" class="nav navbar-nav navbar-right" ng-cloak>
+              <li><a href="#/trap-admin">Trap Admin</a></li>
+              <li><a href="#/volunteer-admin">Volunteer Admin</a></li>
+              <li data-ng-controller="LoginController">
+                <a  href="#"" ng-click="logout()"">Logout ({{globals.currentUser.username}})</a>
+              </li>
+            </ul>
+            <ul ng-if="!globals.currentUser" class="nav navbar-nav navbar-right" ng-cloak>
+              <li><a href="#/about">About</a></li>
+              <li><a href="#/statistics">Statistics</a></li>
+              <li><a href="#/volunteer">Volunteer</a></li>
+              <li><a href="#/contact">Contact</a></li>
+              <li><a href="#/login">Log In</a></li>
+            </ul>
+          </div>
         </div>
-        <!-- /.container -->
-    </nav>
-
-    <!-- Image Background Page Header -->
-    <!-- Note: The background image is set within the business-casual.css file. -->
-    <header class="business-header">
+      </nav>
+     
+	  <!-- Image Background Page Header -->
+		<!-- Note: The background image is set within the business-casual.css file. -->
+	  <header ng-if="!wrapClass" class="business-header">
           <div class="container">
              <!-- <h1 class="tagline">Project Nest</h1>-->
-        </div>
-    </header>
-
-    <!-- Page Content -->
-    <div class="container" data-ng-view>
-	</div>
-       
-  <footer class="container">
-  	<div class="row">
-    	<div class="col-lg-12">
-        	<p>Copyright &copy; Massey University 2016</p>
-        </div>
-   </div>
-	</footer>
-
-  <!-- Modal -->
-  <div class="modal fade" id="loginModal" role="dialog">
-    <div class="modal-dialog">
-    
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header" style="padding:35px 50px;">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4><span class="glyphicon glyphicon-lock"></span> NEST Login</h4>
-        </div>
-        <div class="modal-body" style="padding:40px 50px;">
-          <form role="form">
-            <div class="form-group">
-              <label for="usrname"><span class="glyphicon glyphicon-user"></span> Username</label>
-              <input type="text" class="form-control" id="usrname" placeholder="Enter email">
-            </div>
-            <div class="form-group">
-              <label for="psw"><span class="glyphicon glyphicon-eye-open"></span> Password</label>
-              <input type="text" class="form-control" id="psw" placeholder="Enter password">
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" value="" checked>Remember me</label>
-            </div>
-              <button type="submit" class="btn btn-success btn-block"><span class="glyphicon glyphicon-off"></span> Login</button>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-danger btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
-          <p>Not a member? <a href="#">Sign Up</a></p>
-          <p>Forgot <a href="#">Password?</a></p>
-        </div>
-      </div>
-      
+		  </div>
+	  </header>
+    <div ng-view class="container main-content"></div>
     </div>
-  </div>
-</body>
-
+    <footer>
+      <div class="container">
+        <p class="text-center">&copy; Massey University 2016</p>
+      </div>
+    </footer>
+  </body>
 </html>

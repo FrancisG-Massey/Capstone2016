@@ -1,7 +1,8 @@
 /**
  * 
  */
-app.controller('HomeController', ['$scope', function($scope) { 
+myApp.controller('HomeController', ['$scope', '$rootScope', function($scope, $rootScope) { 
+  $rootScope.wrapClass = undefined;
   $scope.images = [
   	{  
     	header: 'Mobile Application',
