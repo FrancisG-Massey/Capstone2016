@@ -16,6 +16,9 @@ repositories {
         url 'http://nexus.gluonhq.com/nexus/content/repositories/releases'
     }
     maven {
+       url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+    maven {
     	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-oss-daily/' 
 	  	credentials { 
 	    	username gluonNexusUsername
@@ -28,7 +31,7 @@ mainClassName = 'org.nestnz.app.NestApplication'
 
 dependencies {
     compile 'com.gluonhq:charm-glisten:3.0.0'
-    compile 'com.gluonhq:connect:1.0.1'
+    compile 'com.gluonhq:connect:1.0.2-SNAPSHOT'
     compile 'com.gluonhq:maps:1.0.0'
     
     testCompile 'junit:junit:4.12'

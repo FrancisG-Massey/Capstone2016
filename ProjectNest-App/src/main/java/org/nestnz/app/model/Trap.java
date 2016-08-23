@@ -51,7 +51,7 @@ public final class Trap {
 		this.latitude = trap.getCoordLat();
 		this.longitude = trap.getCoordLong();
 		this.created = LocalDateTime.parse(trap.getCreated());
-		this.lastReset = LocalDateTime.parse(trap.getLastReset());
+		this.lastReset = trap.getLastReset() == null ? null : LocalDateTime.parse(trap.getLastReset());
 	}
 
 	public Trap(int number, double latitude, double longitude) {
