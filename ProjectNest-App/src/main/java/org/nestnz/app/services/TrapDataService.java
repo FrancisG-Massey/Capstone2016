@@ -49,7 +49,7 @@ public final class TrapDataService {
     	trapCachePath.mkdirs();
     	
     	this.trapCachePath = trapCachePath;
-    	//loadTraplines();
+    	loadTraplines();
     }
     
     protected void loadTraplines () {
@@ -82,8 +82,9 @@ public final class TrapDataService {
 	/**
 	 * Updates the cached version of the trapline and flags the trapline as dirty
 	 * @param trapline The trapline to update
+	 * @return a {@link GluonObservableObject} which is set when the object is fully written
 	 */
-	public void updateTrapline (Trapline trapline) {
+	public GluonObservableObject<ParserTrapline> updateTrapline (Trapline trapline) {
 		//TODO: Save the changes to the server
 		File savedFile = new File(trapCachePath, Integer.toString(trapline.getId())+".json");
 		
@@ -92,8 +93,9 @@ public final class TrapDataService {
 		
 		OutputStreamOutputConverter<ParserTrapline> outputConverter = new JsonOutputConverter<>(ParserTrapline.class);
 
-		DataProvider.storeObject(new ParserTrapline(trapline), fileClient.createObjectDataWriter(outputConverter));
+		GluonObservableObject<ParserTrapline> result = DataProvider.storeObject(new ParserTrapline(trapline), fileClient.createObjectDataWriter(outputConverter));
 
     	LOG.log(Level.INFO, String.format("Saved trapline data for %s to %s", trapline.getName(), savedFile));		
+    	return result;
 	}
 }

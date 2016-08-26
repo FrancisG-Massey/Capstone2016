@@ -16,15 +16,25 @@
  *******************************************************************************/
 package org.nestnz.app.services;
 
+import java.io.IOException;
+import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.nestnz.app.NestApplication;
+
+import com.gluonhq.connect.provider.RestClient;
+import com.gluonhq.connect.source.RestDataSource;
+
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 
 public final class LoginService {
 	
@@ -40,6 +50,8 @@ public final class LoginService {
     
     private final ReadOnlyObjectWrapper<LoginStatus> loginStatusProperty = new ReadOnlyObjectWrapper<>();
     
+    private final ReadOnlyStringWrapper sessionTokenProperty = new ReadOnlyStringWrapper();
+    
     public LoginService () {
     	
     }
@@ -53,7 +65,39 @@ public final class LoginService {
     		Platform.runLater(() -> loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE));
     	}, 4, TimeUnit.SECONDS);
     	
-    	//RestClient loginClient = RestClient.create().method("POST").host("https://nestnz.org/api/session/").;
+    	String encodedAuth = "Basic "+Base64.getEncoder().encode((username+":"+password).getBytes());
+        
+    	RestClient loginClient = RestClient.create().method("POST").host("https://nestnz.org")
+    			.path("/api/session/").queryParam("Authorization", encodedAuth);
+    	
+    	final RestDataSource dataSource = loginClient.createRestDataSource();
+    	
+    	NestApplication.runInBackground(() -> {
+    		try {
+				dataSource.getInputStream();
+				switch (dataSource.getResponseCode()) {
+				case 200://Success
+					List<String> sessionHeaders = dataSource.getResponseHeaders().get("Session-Token");
+					if (sessionHeaders == null || sessionHeaders.size() == 0) {
+						LOG.log(Level.SEVERE, "Session token missing from server response");
+						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
+					} else {
+						sessionTokenProperty.set(sessionHeaders.get(0));
+						loginStatusProperty.set(LoginStatus.LOGGED_IN);
+					}					
+					break;
+				case 401://Invalid username/password
+					loginStatusProperty.set(LoginStatus.INVALID_CREDENTIALS);
+					break;
+				default://Some other error occured
+					LOG.log(Level.SEVERE, "Problem sending login request. Response="+dataSource.getResponseMessage());
+					loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
+				}
+			} catch (IOException ex) {
+				LOG.log(Level.SEVERE, "Problem sending login request", ex);
+				loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
+			}
+    	}); 
     }
     
     /**
@@ -66,5 +110,9 @@ public final class LoginService {
 
     public final ReadOnlyObjectProperty<LoginStatus> loginStatusProperty () {
     	return loginStatusProperty.getReadOnlyProperty();
+    }
+
+    public final ReadOnlyStringProperty sessionTokenProperty () {
+    	return sessionTokenProperty.getReadOnlyProperty();
     }
 }
