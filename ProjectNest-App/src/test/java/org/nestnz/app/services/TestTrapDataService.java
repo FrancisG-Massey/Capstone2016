@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +43,9 @@ import org.junit.Test;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.parser.ParserTrapline;
+
+import com.gluonhq.connect.GluonObservableObject;
 
 import javafx.collections.ListChangeListener;
 import javafx.embed.swing.JFXPanel;
@@ -83,10 +87,12 @@ public class TestTrapDataService {
 	 * Does not ensure the file content is valid (this is a separate test case)
 	 */
 	@Test
-	public void testFileSaved() {
+	public void testFileSaved() throws Exception {
     	assumeFalse(Files.exists(cachePath.resolve("20.json")));
 		Trapline trapline = new Trapline(20, "Test trapline", new Region(20, "Test Region"), "Test Start");
-    	dataService.updateTrapline(trapline);
+		
+		updateAndBlock(trapline);
+        
     	assertTrue(Files.exists(cachePath.resolve("20.json")));
 	}
 	
@@ -133,8 +139,8 @@ public class TestTrapDataService {
 		Trap trap2 = new Trap(2, 4.7238, 50.8456, null, LocalDateTime.parse("2016-08-16T10:37:07.565"), null);
 		trapline.getTraps().add(trap1);
 		trapline.getTraps().add(trap2);
-		
-		dataService.updateTrapline(trapline);
+
+		updateAndBlock(trapline);
     	assumeTrue(Files.exists(cachePath.resolve("20.json")));
     	
     	dataService.getTraplines().clear();
@@ -160,6 +166,21 @@ public class TestTrapDataService {
 		assertEquals(trap1, trapline.getTraps().get(0));//Make sure trap #1 is saved & loaded corr
 		
 		assertEquals(trap2, trapline.getTraps().get(1));//Make sure trap #2 is saved & loaded correctlyectly
+	}
+	
+	private void updateAndBlock (Trapline trapline) throws Exception {
+		final CountDownLatch latch = new CountDownLatch(1);
+		GluonObservableObject<ParserTrapline> results = dataService.updateTrapline(trapline);
+		results.addListener(obs -> {
+			if (results.get() != null) {	
+    			latch.countDown();
+			}
+    	});
+        
+        if (!latch.await(5, TimeUnit.SECONDS)) {
+        	LOG.log(Level.SEVERE, "Failed to save trapline. Status="+results.stateProperty().get(), results.exceptionProperty());
+            throw new TimeoutException();
+        }
 	}
 
 }
