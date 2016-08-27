@@ -107,3 +107,10 @@ footer>.container {
 .mast p {
   margin-bottom: 30px;
 }
+
+#mapid { height: 250px; }
+
+.admin td,
+.admin th {
+	cursor: pointer;
+}
