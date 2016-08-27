@@ -66,7 +66,11 @@ public final class TrapDataService {
     			GluonObservableObject<ParserTrapline> pTrapline = DataProvider.retrieveObject(fileClient.createObjectDataReader(converter));
     			pTrapline.initializedProperty().addListener((obs, oldValue, newValue) -> {
     				if (newValue) {
-    	    			traplines.add(new Trapline(pTrapline.get()));	    					
+    					try {
+    						traplines.add(new Trapline(pTrapline.get()));
+    					} catch (RuntimeException ex) {
+    						LOG.log(Level.WARNING, "Failed to load data from trapline file "+traplineFile, ex);
+    					}
     				}
     			});
     			count++;

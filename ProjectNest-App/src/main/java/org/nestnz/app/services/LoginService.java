@@ -54,8 +54,8 @@ public final class LoginService {
     }
     
     public void login (String username, String password) {
-    	if (getLoginStatus() != LoginStatus.LOGGED_OUT) {
-    		throw new IllegalStateException("Invalid login state: "+getLoginStatus());
+    	if (getLoginStatus() == LoginStatus.PENDING_LOGIN) {
+    		return;//Already logging in
     	}
     	loginStatusProperty.set(LoginStatus.PENDING_LOGIN);
     	LOG.log(Level.INFO, "Attempted to log in with credentials: "+username+", "+password);
@@ -100,8 +100,8 @@ public final class LoginService {
      * They will be unable to make any more requests to the server until {@link #login(String, String)} is called
      */
     public void logout () {
-    	if (getLoginStatus() != LoginStatus.LOGGED_IN) {
-    		throw new IllegalStateException("Invalid login state: "+getLoginStatus());
+    	if (getLoginStatus() != LoginStatus.PENDING_LOGOUT) {
+    		return;//Already logging out
     	}
     	if (getSessionToken() == null) {
     		throw new IllegalStateException("Not logged in!");    		
