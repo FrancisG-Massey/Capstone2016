@@ -10,6 +10,8 @@ buildscript {
 apply plugin: 'org.javafxports.jfxmobile'
 apply plugin: 'eclipse'
 
+def useDailyJfx = false
+
 repositories {
     jcenter()
     maven {
@@ -18,13 +20,16 @@ repositories {
     maven {
        url 'https://oss.sonatype.org/content/repositories/snapshots'
     }
-    maven {
-    	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-oss-daily/' 
-	  	credentials { 
-	    	username gluonNexusUsername
-	    	password gluonNexusPassword
-	  	} 
-	}    
+    if (gluonNexusUsername && gluonNexusPassword) {
+    	useDailyJfx = true
+	    maven {
+	    	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-oss-daily/' 
+		  	credentials { 
+		    	username gluonNexusUsername
+		    	password gluonNexusPassword
+		  	} 
+		}
+	}
 }
 
 mainClassName = 'org.nestnz.app.NestApplication'
@@ -42,7 +47,7 @@ dependencies {
 }
 
 jfxmobile {
-	javafxportsVersion = '8.60.d160802'
+	javafxportsVersion = useDailyJfx ? '8.60.d160802' : '8.60.7'
 
     android {
         manifest = 'src/android/AndroidManifest.xml'
@@ -62,7 +67,8 @@ jfxmobile {
                 'javax.annotations.**.*',
                 'javax.inject.**.*',
                 'javax.json.**.*',
-                'org.glassfish.json.**.*'
+                'org.glassfish.json.**.*',
+                'org.nestnz.app.ios.**.*'
         ]
     }
 }
