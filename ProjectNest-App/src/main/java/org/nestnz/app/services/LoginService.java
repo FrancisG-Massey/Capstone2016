@@ -35,7 +35,8 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 public final class LoginService {
 	
 	public static enum LoginStatus {
-		PENDING,
+		PENDING_LOGIN,
+		PENDING_LOGOUT,
 		LOGGED_IN,
 		LOGGED_OUT,
 		INVALID_CREDENTIALS,
@@ -44,7 +45,7 @@ public final class LoginService {
 
     private static final Logger LOG = Logger.getLogger(LoginService.class.getName());
     
-    private final ReadOnlyObjectWrapper<LoginStatus> loginStatusProperty = new ReadOnlyObjectWrapper<>();
+    private final ReadOnlyObjectWrapper<LoginStatus> loginStatusProperty = new ReadOnlyObjectWrapper<>(LoginStatus.LOGGED_OUT);
     
     private final ReadOnlyStringWrapper sessionTokenProperty = new ReadOnlyStringWrapper();
     
@@ -53,13 +54,16 @@ public final class LoginService {
     }
     
     public void login (String username, String password) {
-    	loginStatusProperty.set(LoginStatus.PENDING);
+    	if (getLoginStatus() != LoginStatus.LOGGED_OUT) {
+    		throw new IllegalStateException("Invalid login state: "+getLoginStatus());
+    	}
+    	loginStatusProperty.set(LoginStatus.PENDING_LOGIN);
     	LOG.log(Level.INFO, "Attempted to log in with credentials: "+username+", "+password);
     	
     	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode((username+":"+password).getBytes()));
         
-    	RestClient loginClient = RestClient.create().method("POST").host("https://nestnz.org")
-    			.path("/api/session/").queryParam("Authorization", encodedAuth);
+    	RestClient loginClient = RestClient.create().method("POST").host("https://api.nestnz.org")
+    			.path("/session/").queryParam("Authorization", encodedAuth);
     	
     	final RestDataSource dataSource = loginClient.createRestDataSource();
     	
@@ -86,6 +90,42 @@ public final class LoginService {
 				}
 			} catch (IOException ex) {
 				LOG.log(Level.SEVERE, "Problem sending login request", ex);
+				loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
+			}
+    	}); 
+    }
+    
+    /**
+     * Sends a request to expire the current session for the user. 
+     * They will be unable to make any more requests to the server until {@link #login(String, String)} is called
+     */
+    public void logout () {
+    	if (getLoginStatus() != LoginStatus.LOGGED_IN) {
+    		throw new IllegalStateException("Invalid login state: "+getLoginStatus());
+    	}
+    	if (getSessionToken() == null) {
+    		throw new IllegalStateException("Not logged in!");    		
+    	}
+    	loginStatusProperty.set(LoginStatus.PENDING_LOGOUT);
+    	
+    	RestClient loginClient = RestClient.create().method("DELETE").host("https://api.nestnz.org")
+    			.path("/session/").queryParam("Session-Token", getSessionToken());
+    	final RestDataSource dataSource = loginClient.createRestDataSource();
+    	NestApplication.runInBackground(() -> {
+    		try {
+				dataSource.getInputStream();
+				switch (dataSource.getResponseCode()) {
+				case 200://Success
+				case 410://Session already expired
+					sessionTokenProperty.set(null);
+					loginStatusProperty.set(LoginStatus.LOGGED_OUT);					
+					break;
+				default://Some other error occured
+					LOG.log(Level.SEVERE, "Problem sending logout request. Response="+dataSource.getResponseMessage());
+					loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
+				}
+			} catch (IOException ex) {
+				LOG.log(Level.SEVERE, "Problem sending logout request", ex);
 				loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
 			}
     	}); 

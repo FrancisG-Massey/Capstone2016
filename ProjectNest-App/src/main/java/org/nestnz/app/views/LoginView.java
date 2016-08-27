@@ -116,7 +116,7 @@ public class LoginView extends View {
 			case LOGGED_IN:
 				getApplication().switchView(TraplineListView.NAME);
 				break;
-			case PENDING:
+			case PENDING_LOGIN:
 				visible = true;
 				break;
 			case SERVER_UNAVAILABLE:
