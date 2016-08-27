@@ -1,0 +1,23 @@
+apply plugin: 'war'
+apply plugin: 'java'
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/java'
+        }
+    }
+}
+
+dependencies {
+    providedCompile "javax.servlet:servlet-api:2.5"
+    runtime "org.postgresql:postgresql:9.4.1209.jre7"
+}
+
+repositories {
+   mavenCentral()
+}
+
+war {
+    webAppDirName = 'web'
+}
