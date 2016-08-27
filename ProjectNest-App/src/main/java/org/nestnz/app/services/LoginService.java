@@ -19,9 +19,6 @@ package org.nestnz.app.services;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +27,6 @@ import org.nestnz.app.NestApplication;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
 
-import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -60,12 +56,7 @@ public final class LoginService {
     	loginStatusProperty.set(LoginStatus.PENDING);
     	LOG.log(Level.INFO, "Attempted to log in with credentials: "+username+", "+password);
     	
-    	final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-    	executorService.schedule(() -> {
-    		Platform.runLater(() -> loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE));
-    	}, 4, TimeUnit.SECONDS);
-    	
-    	String encodedAuth = "Basic "+Base64.getEncoder().encode((username+":"+password).getBytes());
+    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode((username+":"+password).getBytes()));
         
     	RestClient loginClient = RestClient.create().method("POST").host("https://nestnz.org")
     			.path("/api/session/").queryParam("Authorization", encodedAuth);
@@ -110,6 +101,10 @@ public final class LoginService {
 
     public final ReadOnlyObjectProperty<LoginStatus> loginStatusProperty () {
     	return loginStatusProperty.getReadOnlyProperty();
+    }
+    
+    public final String getSessionToken () {
+    	return sessionTokenProperty.get();
     }
 
     public final ReadOnlyStringProperty sessionTokenProperty () {

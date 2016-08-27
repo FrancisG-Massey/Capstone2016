@@ -20,12 +20,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.services.LoginService;
+import org.nestnz.app.services.LoginService.LoginStatus;
 
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.control.TextField;
 import com.gluonhq.charm.glisten.mvc.View;
 
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -56,27 +58,8 @@ public class LoginView extends View {
 		this.loginService = loginService;
 		
 		loginService.loginStatusProperty().addListener((obs, oldVal, newVal) -> {
-			if (newVal != null) {
-				LOG.log(Level.INFO, "New login status: "+newVal);
-				boolean visible = false;
-				switch (newVal) {
-				case INVALID_CREDENTIALS:
-					break;
-				case LOGGED_IN:
-					getApplication().switchView(TraplineListView.NAME);
-					break;
-				case PENDING:
-					visible = true;
-					break;
-				case SERVER_UNAVAILABLE:
-					getApplication().switchView(TraplineListView.NAME);
-					//For now, we'll go to the trapline view regardless
-					break;
-				case LOGGED_OUT:
-					break;
-				}
-				statusPopup.setVisible(visible);
-			}
+			Platform.runLater(() -> updateLogin(newVal));
+			
 		});
 		
 		StackPane layout = new StackPane();
@@ -121,6 +104,30 @@ public class LoginView extends View {
 	
 	private void runLogin () {
 		loginService.login(emailField.getText(), passwordField.getText());
+	}
+	
+	private void updateLogin (LoginStatus status) {
+		if (status != null) {
+			LOG.log(Level.INFO, "New login status: "+status);
+			boolean visible = false;
+			switch (status) {
+			case INVALID_CREDENTIALS:
+				break;
+			case LOGGED_IN:
+				getApplication().switchView(TraplineListView.NAME);
+				break;
+			case PENDING:
+				visible = true;
+				break;
+			case SERVER_UNAVAILABLE:
+				getApplication().switchView(TraplineListView.NAME);
+				//For now, we'll go to the trapline view regardless
+				break;
+			case LOGGED_OUT:
+				break;
+			}
+			statusPopup.setVisible(visible);
+		}
 	}
 
     @Override
