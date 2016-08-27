@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright (C) 2016, Nest NZ
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *******************************************************************************/
 package org.nestnz.app.services;
 
 import java.io.File;
@@ -38,6 +54,7 @@ public final class TrapDataService {
     
     protected void loadTraplines () {
     	//TODO: Fetch trapline list from server
+    	int count = 0;
     	for (File traplineFile : trapCachePath.listFiles()) {
         	LOG.log(Level.INFO, String.format("File: %s", traplineFile));
         	//TODO: Use the proper method in Java 7, rather than just converting to string & checking ends with
@@ -49,12 +66,17 @@ public final class TrapDataService {
     			GluonObservableObject<ParserTrapline> pTrapline = DataProvider.retrieveObject(fileClient.createObjectDataReader(converter));
     			pTrapline.initializedProperty().addListener((obs, oldValue, newValue) -> {
     				if (newValue) {
-    	    			traplines.add(new Trapline(pTrapline.get()));	    					
+    					try {
+    						traplines.add(new Trapline(pTrapline.get()));
+    					} catch (RuntimeException ex) {
+    						LOG.log(Level.WARNING, "Failed to load data from trapline file "+traplineFile, ex);
+    					}
     				}
     			});
+    			count++;
     		}
     	}
-    	LOG.log(Level.INFO, String.format("Loaded data for %d traplines from file cache", traplines.size()));
+    	LOG.log(Level.INFO, String.format("Found data for %d traplines in file cache", count));
     }
 
 	public ObservableList<Trapline> getTraplines() {
@@ -64,8 +86,9 @@ public final class TrapDataService {
 	/**
 	 * Updates the cached version of the trapline and flags the trapline as dirty
 	 * @param trapline The trapline to update
+	 * @return a {@link GluonObservableObject} which is set when the object is fully written
 	 */
-	public void updateTrapline (Trapline trapline) {
+	public GluonObservableObject<ParserTrapline> updateTrapline (Trapline trapline) {
 		//TODO: Save the changes to the server
 		File savedFile = new File(trapCachePath, Integer.toString(trapline.getId())+".json");
 		
@@ -74,8 +97,9 @@ public final class TrapDataService {
 		
 		OutputStreamOutputConverter<ParserTrapline> outputConverter = new JsonOutputConverter<>(ParserTrapline.class);
 
-		DataProvider.storeObject(new ParserTrapline(trapline), fileClient.createObjectDataWriter(outputConverter));
+		GluonObservableObject<ParserTrapline> result = DataProvider.storeObject(new ParserTrapline(trapline), fileClient.createObjectDataWriter(outputConverter));
 
     	LOG.log(Level.INFO, String.format("Saved trapline data for %s to %s", trapline.getName(), savedFile));		
+    	return result;
 	}
 }

@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright (C) 2016, Nest NZ
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *******************************************************************************/
 package org.nestnz.app.model;
 
 import java.time.LocalDateTime;
@@ -17,8 +33,6 @@ public final class Trap {
 	private Optional<Integer> id;
 	
 	private final int number;
-	
-	private String docId;
 	
 	/**
 	 * The longitude coordinate of the trap
@@ -52,16 +66,17 @@ public final class Trap {
 		this.number = trap.getNumber();
 		this.latitude = trap.getCoordLat();
 		this.longitude = trap.getCoordLong();
+		this.created = LocalDateTime.parse(trap.getCreated());
+		this.lastReset = trap.getLastReset() == null ? null : LocalDateTime.parse(trap.getLastReset());
 	}
 
-	public Trap(int number, String docId, double latitude, double longitude) {
-		this(number, docId, latitude, longitude, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+	public Trap(int number, double latitude, double longitude) {
+		this(number, latitude, longitude, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
 	}
 
-	public Trap(int number, String docId, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
+	public Trap(int number, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
 		this.id = Optional.empty();
 		this.number = number;
-		this.docId = docId;
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.status = status;
@@ -92,10 +107,6 @@ public final class Trap {
 
 	public int getNumber() {
 		return number;
-	}
-
-	public String getDocId() {
-		return docId;
 	}
 
 	/**
