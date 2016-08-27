@@ -7,20 +7,20 @@
           <tr>
             <th>Trap ID</th>
             <th>Location</th>
-            <th>Bait Type</th>
+            <th>Status</th>
             <th>Last Reset</th>
             <th>Placed Date</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody data-ng-repeat="trap in traps">
           <tr>
-            <td scope="row">123</td>
-            <td>123 E 123 W</td>
-            <td>Egg</td>
-            <td>1/1/2016</td>
-            <td>1/1/2015</td>
+            <td scope="row">{{trap.id}}</td>
+            <td>{{trap.coord_lat + E + coord_long + W}}</td>
+            <td>{{trap.status}}</td>
+            <td>{{trap.created}}</td>
+            <td>{{trap.last_reset}}</td>
           </tr>
-              <tr>
+<!--         <tr>
             <td scope="row">123</td>
             <td>123 E 123 W</td>
             <td>Egg</td>
@@ -46,6 +46,7 @@
             <td>1/1/2016</td>
             <td>1/1/2015</td>
           </tr>
+          -->       
         </tbody>
       </table>
     </div>
