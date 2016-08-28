@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2016, Nest NZ
+   
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+   
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+   
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.nestnz.app" android:versionCode="1" android:versionName="1.0">
         <supports-screens android:xlargeScreens="true"/>
         <uses-permission android:name="android.permission.INTERNET"/>
-        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-        <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="21"/>
-        <application android:label="ProjectNest-App" android:name="android.support.multidex.MultiDexApplication" android:icon="@mipmap/ic_launcher">
-                <activity android:name="javafxports.android.FXActivity" android:label="ProjectNest-App" android:configChanges="orientation|screenSize">
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+        <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="22"/>
+        <application android:label="Nest NZ" android:name="android.support.multidex.MultiDexApplication" android:icon="@mipmap/ic_launcher" android:allowBackup="true">
+                <activity android:name="javafxports.android.FXActivity" android:label="Nest NZ" android:configChanges="orientation|screenSize">
                         <meta-data android:name="main.class" android:value="org.nestnz.app.NestApplication"/>
                         <meta-data android:name="debug.port" android:value="0"/>
                         <intent-filter>

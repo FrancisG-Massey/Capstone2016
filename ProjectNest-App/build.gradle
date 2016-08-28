@@ -8,18 +8,38 @@ buildscript {
 }
 
 apply plugin: 'org.javafxports.jfxmobile'
+apply plugin: 'eclipse'
+
+def useDailyJfx = false
 
 repositories {
     jcenter()
     maven {
         url 'http://nexus.gluonhq.com/nexus/content/repositories/releases'
     }
+    maven {
+       url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+    if (gluonNexusUsername && gluonNexusPassword) {
+    	useDailyJfx = true
+	    maven {
+	    	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-oss-daily/' 
+		  	credentials { 
+		    	username gluonNexusUsername
+		    	password gluonNexusPassword
+		  	} 
+		}
+	}
 }
 
 mainClassName = 'org.nestnz.app.NestApplication'
 
 dependencies {
-    compile 'com.gluonhq:charm:3.0.0'
+    compile 'com.gluonhq:charm-glisten:3.0.0'
+    compile 'com.gluonhq:connect:1.0.2-SNAPSHOT'
+    compile 'com.gluonhq:maps:1.0.0'
+    
+    testCompile 'junit:junit:4.12'
 
     androidRuntime 'com.gluonhq:charm-android:3.0.0'
     iosRuntime 'com.gluonhq:charm-ios:3.0.0'
@@ -27,8 +47,17 @@ dependencies {
 }
 
 jfxmobile {
+	javafxportsVersion = useDailyJfx ? '8.60.d160802' : '8.60.7'
+
     android {
         manifest = 'src/android/AndroidManifest.xml'
+        
+	    dexOptions {
+	        incremental true
+	        preDexLibraries = false
+	        jumboMode = false
+	        javaMaxHeapSize "2048M"
+	    }
     }
     ios {
         infoPList = file('src/ios/Default-Info.plist')
@@ -38,7 +67,21 @@ jfxmobile {
                 'javax.annotations.**.*',
                 'javax.inject.**.*',
                 'javax.json.**.*',
-                'org.glassfish.json.**.*'
+                'org.glassfish.json.**.*',
+                'org.nestnz.app.ios.**.*'
         ]
     }
+}
+
+retrolambda {
+  jdk System.getenv("JAVA8_HOME")
+  oldJdk System.getenv("JAVA7_HOME")
+  javaVersion JavaVersion.VERSION_1_7
+  defaultMethods false
+  incremental true
+}
+
+//Stop the "test" task from using oldJdk (which doesn't include JavaFX)
+project.tasks.getByName("test").doFirst {
+	executable "java"
 }

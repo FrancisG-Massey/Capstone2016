@@ -1,0 +1,116 @@
+html, body {
+  height: 100%;
+}
+
+.navbar-nest {
+ background-color: #2F2F39 !important;
+ border-color: #1E1E24 !important;
+}
+
+.wrap {
+  min-height: 100%;
+  height: auto;
+  margin: 0 auto -60px;
+  padding: 0 0 60px;
+}
+
+.wrap.background-image{
+  background: url("main.jpg") center center no-repeat scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+   background-size: cover;
+   -o-background-size: cover;
+}
+
+footer {
+  height: 60px;
+  background-color: #eee; 
+}
+
+.wrap>.container {
+  padding-top: 60px;
+}
+
+footer>.container {
+  padding-top: 20px;
+}
+
+.login {
+  margin: 0 auto;
+  max-width: 330px;
+}
+
+.login .login-title {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .login {
+    margin-top: 60px;
+  }
+}
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+    display: none !important;
+}
+
+/* Header Image Background - Change the URL below to your image path (example: ../images/background.jpg) */
+
+.business-header {
+    height: 300px;
+    background: url("main.jpg") center center no-repeat scroll;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+
+/* Customize the text color and shadow color and to optimize text legibility. */
+
+.tagline {
+    text-shadow: 0 0 10px #000;
+    color: #fff;
+}
+
+.img-center {
+    margin: 0 auto;
+}
+
+.navbar-header {min-height: 60px;}
+.navbar-brand {padding:auto;}
+
+@media (min-width: 768px) {
+	.navbar-nav>li>a {
+		padding: 25px 15px;
+		font-size: 130%;
+	}	
+}
+.navbar-brand {
+	color: white !important;
+}
+
+.navbar-toggle {
+	padding: 14px;
+}
+ 
+.img-responsive{
+	width:360px;
+	height:480px;
+}
+
+
+.mast {
+  margin: 0 auto;
+  max-width: 752px;
+}
+
+.mast p {
+  margin-bottom: 30px;
+}
+
+#mapid { height: 250px; }
+
+.admin td,
+.admin th {
+	cursor: pointer;
+}

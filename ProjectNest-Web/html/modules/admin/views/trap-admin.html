@@ -1,0 +1,77 @@
+
+<h2 class="text-center">Trap Admin</h2>
+ <div class="row"> 
+    <div class="col-sm-7">   
+      <table class="table table-condensed table-hover admin">
+        <thead>
+          <tr>
+            <th>Trap ID</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Last Reset</th>
+            <th>Placed Date</th>
+          </tr>
+        </thead>
+        <tbody data-ng-repeat="trap in traps[currentPage]">
+          <tr data-ng-click="setSelected();" class="{{trap == selected ? 'success' : ''}}">
+            <td scope="row">{{trap.id}}</td>
+            <td>{{trap.coord_lat + ' '}}<b>S</b>{{' ' + trap.coord_long + ' '}}<b>E</b></td>
+            <td>{{trap.status}}</td>
+            <td>{{trap.created |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
+            <td>{{trap.last_reset| date:"dd/MM/yyyy 'at' h:mma"}}</td>
+          </tr>    
+        </tbody>
+      </table>
+      
+      <nav aria-label="Page navigation">
+		  <ul class="pagination">
+	          <li ng-class="{disabled: currentPage == 0}">
+	              <a href ng-click="prevPage()">« Prev</a>
+	          </li>
+	      
+               <li ng-repeat="n in range(traps.length, currentPage, currentPage + gap) "
+                   ng-class="{active: n == currentPage}"
+               ng-click="setPage()">
+                   <a href ng-bind="n + 1">1</a>
+               </li>
+	       
+	          <li ng-class="{disabled: (currentPage) == traps.length - 1}">
+	              <a href ng-click="nextPage()">Next »</a>
+	          </li>
+		  </ul>
+		</nav>
+    </div>
+
+    <div class="col-sm-5"> 
+      <div class="well">
+        <h3 style="margin-top: 0">Trap {{selected.id}}</h3>
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label>Latitude</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.coord_lat}}">
+              <span class="input-group-addon">S</span>
+            </div>
+          </div>
+          <div class="col-md-6 form-group">  
+            <label>Longitude</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.coord_long}}">
+              <span class="input-group-addon">E</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Bait type</label>
+          <select class="form-control">
+            <option data-ng-selected= "bait.id == selected.bait_id" value="{{bait.id}}" data-ng-repeat = "bait in baits">{{bait.name}}</option>
+          </select>
+        </div>
+        <div id="mapid"></div>
+
+        <button class="btn btn-success" type="button">Save</button>
+        <button class="btn btn-danger" type="button">Delete</button>
+      </div>
+	</div>
+</div>
