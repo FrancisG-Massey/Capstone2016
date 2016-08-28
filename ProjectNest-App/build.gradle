@@ -10,6 +10,13 @@ buildscript {
 apply plugin: 'org.javafxports.jfxmobile'
 apply plugin: 'eclipse'
 
+eclipse {
+	classpath {
+		downloadSources = true
+     	downloadJavadoc = true
+   	}
+}
+
 def useDailyJfx = false
 
 repositories {

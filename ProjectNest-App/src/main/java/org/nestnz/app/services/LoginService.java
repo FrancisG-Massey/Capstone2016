@@ -25,6 +25,8 @@ import java.util.logging.Logger;
 
 import org.nestnz.app.NestApplication;
 
+import com.gluonhq.charm.down.common.PlatformFactory;
+import com.gluonhq.charm.down.common.SettingService;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
 
@@ -50,8 +52,24 @@ public final class LoginService {
     
     private final ReadOnlyStringWrapper sessionTokenProperty = new ReadOnlyStringWrapper();
     
+    private final SettingService settingService;
+    
     public LoginService () {
-    	
+    	settingService = PlatformFactory.getPlatform().getSettingService();
+    }
+    
+    /**
+     * Tries to log in using the username & password saved in the device settings
+     * @return true if credentials were found & used, false if no credentials were found
+     */
+    public boolean login () {
+    	String email = settingService.retrieve("api.email");
+    	String password = settingService.retrieve("api.password");
+    	if (email == null || password == null) {
+    		return false;
+    	}
+    	login(email, password);
+    	return true;
     }
     
     public void login (String username, String password) {
@@ -81,6 +99,10 @@ public final class LoginService {
 						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
 					} else {
 						sessionTokenProperty.set(sessionHeaders.get(0));
+						
+						//Save the email & password for future use
+						settingService.store("api.email", username);
+						settingService.store("api.password", password);
 						loginStatusProperty.set(LoginStatus.LOGGED_IN);
 					}					
 					break;
@@ -107,9 +129,14 @@ public final class LoginService {
     		return;//Already logging out
     	}
     	if (getSessionToken() == null) {
-    		throw new IllegalStateException("Not logged in!");    		
+        	loginStatusProperty.set(LoginStatus.LOGGED_OUT);
+    		return;//Not logged in		
     	}
     	loginStatusProperty.set(LoginStatus.PENDING_LOGOUT);
+    	
+    	//Clear the saved email & password
+    	settingService.remove("api.email");
+    	settingService.remove("api.password");
     	
     	RestClient loginClient = RestClient.create().method("DELETE").host("https://api.nestnz.org")
     			.path("/session/").queryParam("Session-Token", getSessionToken());
