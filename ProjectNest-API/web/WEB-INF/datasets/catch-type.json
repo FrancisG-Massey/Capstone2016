@@ -1,0 +1,6 @@
+{
+    "GET" : "SELECT * FROM public.catch_type",
+    "POST" : "",
+    "PUT" : "",
+    "DELETE" : ""
+}

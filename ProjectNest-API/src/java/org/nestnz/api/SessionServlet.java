@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.Base64;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -36,13 +37,13 @@ import javax.servlet.http.HttpServletResponse;
  * @author Sam Hunt
  * @version 1.0
  */
-public class NestSessionServlet extends HttpServlet {
+public class SessionServlet extends HttpServlet {
 
-    private String propPath = null;
-    private Connection dbh = null;
+    private static String propPath = null;
     
     /**
      * Attempt to connect to the database on servlet creation
+     * @param config for super
      * @throws ServletException 
      */
     @Override
@@ -55,8 +56,8 @@ public class NestSessionServlet extends HttpServlet {
         
         // Attempt the initial connection to the database.
         try {
-            dbh = NestDBHandler.getDbConnection(propPath);
-        } catch (IOException | ClassNotFoundException | SQLException ex) {
+            Common.getNestDS(propPath);
+        } catch (IOException ex) {
             // TODO: Log ex
         }
     }
@@ -67,21 +68,8 @@ public class NestSessionServlet extends HttpServlet {
     @Override
     public void destroy() {
         try {
-            dbh.close();
+            Common.closeNestDS();
         } catch (SQLException ex) {
-            // TODO: Log ex
-        }
-    }
-    
-    /**
-     * Ping the DB and if the connection is timed-out, try to reconnect once.
-     */
-    private void reconnectIfStale() {
-        try {
-            if (!NestDBHandler.ping()) {
-                dbh = NestDBHandler.getDbConnection(propPath);
-            }
-        } catch (IOException | ClassNotFoundException | SQLException ex) {
             // TODO: Log ex
         }
     }
@@ -109,33 +97,35 @@ public class NestSessionServlet extends HttpServlet {
             out.println("<body>");
             out.println("<h1>Servlet NestSessionServlet at " + request.getContextPath() + "</h1>");
             
-            // Ping the DB and if the connection is timed-out, try to reconnect once.
-            reconnectIfStale();
             
-            try {
-                String sqlQuery = "SELECT * FROM public.session;";
-                out.println("<p>Querying: \"" + sqlQuery + "\"</p>");
-                Statement st = dbh.createStatement();
-                ResultSet rs = st.executeQuery(sqlQuery);
+            final String sqlQuery = "SELECT session_id, session_user_id, substring(session_token from 1 for 31)||'xxxxx' AS session_token, session_created FROM public.session;";
+            //out.println("<p>dbconfig.properties filepath: \"" + propPath + "\"</p>");
+            out.println("<p>Querying: \"" + sqlQuery + "\"</p>");
+            
+            try (
+                Connection conn = Common.getNestDS(propPath).getConnection();
+                PreparedStatement st = conn.prepareStatement(sqlQuery);
+                ResultSet rs = st.executeQuery();
+            ) {
                 ResultSetMetaData rsmd = rs.getMetaData();
                 int columnsNumber = rsmd.getColumnCount();
-                out.println("<p>" + columnsNumber + " columns found!</p>");
-
+                out.println("<p>" + columnsNumber + " columns found!</p><p>");
                 while (rs.next()) {
-                    out.println("<p>");
+                    
                     for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) out.println(",  ");
+                        if (i > 1) out.print(",  ");
                         out.println(rsmd.getColumnName(i) + ": " + rs.getString(i) );
                     }
-                    out.println("</p>");
+                    out.println("<br/>");
                 }
-                rs.close();
-                st.close();
-                
+            } catch (IOException ex) {
+                // TODO: Log ex
+                out.println("IO Error: " + ex.getMessage());
             } catch (SQLException ex) {
                 // TODO: Log ex
                 out.println("DB Error: " + ex.getMessage());
             }
+            out.println("</p>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -153,68 +143,64 @@ public class NestSessionServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Check for a basic auth header, if there is none:
+        // Check for a well-formed basic auth header.
         final String auth = request.getHeader("Authorization");
         if (auth == null || !auth.startsWith("Basic")) {
+            // No basic auth header found, or header is not well-formed
             response.addHeader("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
-        // Parse out the Basic Auth header ("Authorization: Basic base64credentials")
-        final String base64Credentials = auth.substring("Basic".length()).trim();
-        final String decodedCredentials = new String(Base64.getDecoder().decode(base64Credentials),
-                Charset.forName("UTF-8"));
         
-        // Check credentials are in the form: "username:password"
-        // TODO: Enforce in DB that usernames cannot contain colon character (:)
+        // Extract the base64credentials from the header ("Authorization: Basic base64credentials")
+        final String base64Credentials = auth.substring("Basic".length()).trim();
+        
+        // Decode the credentials from the base64-encoded "username:password" string
+        final String decodedCredentials = new String(Base64.getDecoder().decode(base64Credentials), Charset.forName("UTF-8"));
         final int delimiterIndex = decodedCredentials.indexOf(":");
         if (delimiterIndex < 1) {
+            // Header is not well-formed
             response.addHeader("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
         
+        // Split the decoded credentials into the actual username and password 
         final String inputUsername = decodedCredentials.substring(0, delimiterIndex);
         final String inputPassword = decodedCredentials.substring(delimiterIndex+1);
         
-        // Ping the DB and if the connection is timed-out, try to reconnect once.
-        reconnectIfStale();
-        
-        // Declare here so these don't go out of scope with try
-        String dbPassword = null;
-        long dbUserID = 0; 
-        
-        PreparedStatement st; ResultSet rs; int responseCode = 0;
-                
-        // Get the hashed password from the DB
-        try {
-            // Use prepared statement and bind username parameter to protect against SQL injection
-            String sql = "SELECT user_id, user_password FROM public.users WHERE user_name = ?;";
-            st = dbh.prepareStatement(sql);
-            st.setString(1, inputUsername);
-            rs = st.executeQuery();
-            // TODO: Make sure the DB has a unique constraint on users.user_name
-            if (!rs.isBeforeFirst()) {
-                // No such-named user is registered in the database.
-                responseCode = HttpServletResponse.SC_FORBIDDEN;  
-            } else {
-                rs.next();
-                dbPassword = rs.getString("user_password");
-                dbUserID = rs.getLong("user_id");
+        // Get the user's id and hashed password from the DB
+        long dbUserID; String dbPassword;
+        final String sqlQuery = "SELECT user_id, user_password FROM public.users WHERE user_name = ?;";
+        try (
+            Connection conn = Common.getNestDS(propPath).getConnection();
+            PreparedStatement sth = conn.prepareStatement(sqlQuery);
+        ) {
+            sth.setString(1, inputUsername);
+            try (ResultSet rsh = sth.executeQuery();) {
+                if (rsh.isBeforeFirst()) {
+                    // Pull the hashed password and user's id from the result set.
+                    rsh.next();
+                    dbPassword = rsh.getString("user_password");
+                    dbUserID = rsh.getLong("user_id");
+                } else {
+                    // No such-named user is registered in the database.
+                    // TODO: Log failed login attempt and reason
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
             }
-            rs.close();
-            st.close();
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             // TODO: Log ex
             //response.setHeader("Error", ex.getMessage());      // YOLO debug
-            responseCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-        }
-        if (responseCode != 0) {
-            response.setStatus(responseCode);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
+        
         // Compare the two passwords, returning a fail if they don't match
         if (!BCrypt.checkpw(inputPassword, dbPassword)) {
+            // User exists but password attempt is incorrect
+            // TODO: Log failed login attempt and reason
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -226,17 +212,19 @@ public class NestSessionServlet extends HttpServlet {
         String newSessionToken = java.util.UUID.randomUUID().toString();
 
         // Log it in the session table in the DB
-        try {
-            String newSessionSQL = "INSERT INTO public.session (session_user_id, session_token) VALUES (?, ?)";
-            PreparedStatement st1 = dbh.prepareStatement(newSessionSQL);
-            st1.setLong(1, dbUserID);
-            st1.setString(2, newSessionToken);
-            int newRows = st1.executeUpdate();
-            st1.close();
-            if (newRows != 1) {   
-                throw new SQLException("Failed to create new record in session table.");
+        String sql = "INSERT INTO public.session (session_user_id, session_token) VALUES (?, ?)";
+        try (
+            Connection conn = Common.getNestDS(propPath).getConnection();
+            PreparedStatement sth = conn.prepareStatement(sql);
+        ) {
+            sth.setLong(1, dbUserID);
+            sth.setString(2, newSessionToken);
+            final int rows = sth.executeUpdate();
+            sth.close();
+            if (rows != 1) {
+                throw new SQLException("Failed to create new session.");
             }
-        } catch (SQLException ex) {
+         } catch (SQLException | IOException ex) {
             // TODO: Log ex
             //response.setHeader("Error", ex.getMessage());      // YOLO debug
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -245,7 +233,7 @@ public class NestSessionServlet extends HttpServlet {
         
         // Return the new session id to the client
         response.addHeader("Session-Token", newSessionToken);
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(HttpServletResponse.SC_CREATED);
     }
 
 
@@ -269,19 +257,19 @@ public class NestSessionServlet extends HttpServlet {
             return;
         }
         
-        // Ping the DB and if the connection is timed-out, try to reconnect once.
-        reconnectIfStale();
-        
-        try {
-            // Attempt to delete any sessions matching the session token
-            String newSessionSQL = "DELETE FROM public.session WHERE session_token = ?;";
-            PreparedStatement st = dbh.prepareStatement(newSessionSQL);
-            st.setString(1, sessionToken);
-            int sessionsDeleted = st.executeUpdate();
-            st.close();
+        // Attempt to delete any sessions matching the session token        
+        final String sql = "DELETE FROM public.session WHERE session_token = ?;";
+        try (
+            Connection conn = Common.getNestDS(propPath).getConnection();
+            PreparedStatement sth = conn.prepareStatement(sql);
+        ) {
+            // Bind parameters and execute the delete query.
+            sth.setString(1, sessionToken);
+            int rows = sth.executeUpdate();
+            sth.close();
             
             // Return a response appropriate to whether we actually logged out or the session did not exist/was expired
-            response.setStatus((sessionsDeleted==0)? HttpServletResponse.SC_GONE : HttpServletResponse.SC_OK);
+            response.setStatus((rows>=1)? HttpServletResponse.SC_NO_CONTENT : HttpServletResponse.SC_NOT_FOUND);
         } catch (SQLException ex) {
             // TODO: Log ex
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

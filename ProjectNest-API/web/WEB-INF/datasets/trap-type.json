@@ -1,0 +1,6 @@
+{
+    "GET" : "SELECT * FROM public.trap_type",
+    "POST" : "",
+    "PUT" : "",
+    "DELETE" : ""
+}
