@@ -24,14 +24,15 @@ import org.nestnz.app.services.LoginService.LoginStatus;
 
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.ProgressIndicator;
-import com.gluonhq.charm.glisten.control.TextField;
 import com.gluonhq.charm.glisten.mvc.View;
 
 import javafx.application.Platform;
+import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
@@ -52,10 +53,13 @@ public class LoginView extends View {
 	private final ProgressIndicator spinner = new ProgressIndicator();
     
     private final LoginService loginService;
+    
+    private final PseudoClass errorClass = PseudoClass.getPseudoClass("error");
 	
 	public LoginView (LoginService loginService) {
 		super(NAME);
 		this.loginService = loginService;
+        getStylesheets().add(LoginView.class.getResource("login.css").toExternalForm());
 		
 		loginService.loginStatusProperty().addListener((obs, oldVal, newVal) -> {
 			Platform.runLater(() -> updateLogin(newVal));
@@ -71,7 +75,7 @@ public class LoginView extends View {
 		Image icon = new Image(LoginView.class.getResourceAsStream("/icon.png"));        
         ImageView iconView = new ImageView(icon);
         
-        emailField.setFloatText("Email Address");
+        emailField.setPromptText("Email Address");
         
         passwordField.setPromptText("Password");
 		Button loginButton = new Button("Login");
@@ -103,6 +107,13 @@ public class LoginView extends View {
 	}
 	
 	private void runLogin () {
+		if (emailField.getText().isEmpty()) {
+			emailField.pseudoClassStateChanged(errorClass, true);
+			emailField.requestFocus();
+			getApplication().showMessage("Please enter an email address");
+			return;
+		}
+		emailField.pseudoClassStateChanged(errorClass, false);
 		loginService.login(emailField.getText(), passwordField.getText());
 	}
 	
@@ -123,7 +134,7 @@ public class LoginView extends View {
 				getApplication().switchView(TraplineListView.NAME);
 				//For now, we'll go to the trapline view regardless
 				break;
-			case LOGGED_OUT:
+			default:
 				break;
 			}
 			statusPopup.setVisible(visible);

@@ -17,6 +17,7 @@
 package org.nestnz.app.services;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,19 +58,21 @@ public final class LoginService {
     	if (getLoginStatus() == LoginStatus.PENDING_LOGIN) {
     		return;//Already logging in
     	}
+    	if (username == null || username.trim().length() < 1) {
+    		throw new IllegalArgumentException("Invalid username: "+username);
+    	}
     	loginStatusProperty.set(LoginStatus.PENDING_LOGIN);
-    	LOG.log(Level.INFO, "Attempted to log in with credentials: "+username+", "+password);
     	
-    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode((username+":"+password).getBytes()));
-        
+    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode((username+":"+password).getBytes()), Charset.forName("UTF-8"));
+    	
     	RestClient loginClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/session/").queryParam("Authorization", encodedAuth);
+    			.path("/session/").header("Authorization", encodedAuth);
     	
     	final RestDataSource dataSource = loginClient.createRestDataSource();
     	
     	NestApplication.runInBackground(() -> {
     		try {
-				dataSource.getInputStream();
+    			dataSource.getInputStream();
 				switch (dataSource.getResponseCode()) {
 				case 200://Success
 					List<String> sessionHeaders = dataSource.getResponseHeaders().get("Session-Token");
@@ -81,7 +84,7 @@ public final class LoginService {
 						loginStatusProperty.set(LoginStatus.LOGGED_IN);
 					}					
 					break;
-				case 401://Invalid username/password
+				case 403://Invalid username/password
 					loginStatusProperty.set(LoginStatus.INVALID_CREDENTIALS);
 					break;
 				default://Some other error occured
