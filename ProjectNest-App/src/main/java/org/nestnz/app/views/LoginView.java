@@ -22,15 +22,20 @@ import java.util.logging.Logger;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.LoginService.LoginStatus;
 
+import com.gluonhq.charm.glisten.application.GlassPane;
 import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.mvc.View;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -39,19 +44,30 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class LoginView extends View {
+public class LoginView extends View implements ChangeListener<LoginStatus> {
 
     private static final Logger LOG = Logger.getLogger(LoginView.class.getName());
     
 	public static final String NAME = "home";
 	
+	/**
+	 * The field used to input the user's email address
+	 */
 	private final TextField emailField = new TextField();
 
+	/**
+	 * The field used to input the user's password
+	 */
     private final PasswordField passwordField = new PasswordField();
     
-	private final StackPane statusPopup = new StackPane();
+    /**
+     * The spinner displayed while the app is connecting to the API to verify the user's credentials
+     */
 	private final ProgressIndicator spinner = new ProgressIndicator();
     
+	/**
+	 * The app service which handles the login system
+	 */
     private final LoginService loginService;
     
     private final PseudoClass errorClass = PseudoClass.getPseudoClass("error");
@@ -61,12 +77,13 @@ public class LoginView extends View {
 		this.loginService = loginService;
         getStylesheets().add(LoginView.class.getResource("login.css").toExternalForm());
 		
-		loginService.loginStatusProperty().addListener((obs, oldVal, newVal) -> {
-			Platform.runLater(() -> updateLogin(newVal));
-			
-		});
-		
-		StackPane layout = new StackPane();
+        this.setOnShown(evt -> {
+    		loginService.loginStatusProperty().addListener(this);        	
+        });
+        
+        this.setOnHidden(evt -> {
+        	loginService.loginStatusProperty().removeListener(this);
+        });
 		
 		VBox controls = new VBox(30);
 		controls.setAlignment(Pos.CENTER);
@@ -82,18 +99,12 @@ public class LoginView extends View {
 		loginButton.setMaxWidth(1000);
 		loginButton.setMaxHeight(1000);
 		
-		setCenter(layout);
+		setCenter(controls);
 		controls.getChildren().addAll(spacer(), iconView, spacer(), emailField, passwordField, loginButton);
 		
 		//Set up the loading panel
 		spinner.setRadius(30);
-		StackPane.setAlignment(spinner, Pos.CENTER);
-	    statusPopup.getChildren().add(spinner);		
-		statusPopup.setVisible(false);		
-		statusPopup.setStyle("-fx-background-color: rgba(100, 100, 100, 0.5)");
-		
-		
-		layout.getChildren().addAll(controls, statusPopup);				
+		StackPane.setAlignment(spinner, Pos.CENTER);		
 		
 		loginButton.setOnAction(evt -> {
 			runLogin();
@@ -116,29 +127,59 @@ public class LoginView extends View {
 		emailField.pseudoClassStateChanged(errorClass, false);
 		loginService.login(emailField.getText(), passwordField.getText());
 	}
-	
-	private void updateLogin (LoginStatus status) {
-		if (status != null) {
-			LOG.log(Level.INFO, "New login status: "+status);
-			boolean visible = false;
-			switch (status) {
-			case INVALID_CREDENTIALS:
-				break;
-			case LOGGED_IN:
-				getApplication().switchView(TraplineListView.NAME);
-				break;
-			case PENDING_LOGIN:
-				visible = true;
-				break;
-			case SERVER_UNAVAILABLE:
-				getApplication().switchView(TraplineListView.NAME);
-				//For now, we'll go to the trapline view regardless
-				break;
-			default:
-				break;
+
+	/* (non-Javadoc)
+	 * @see javafx.beans.value.ChangeListener#changed(javafx.beans.value.ObservableValue, java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void changed(ObservableValue<? extends LoginStatus> observable, LoginStatus oldValue, LoginStatus newValue) {
+		Platform.runLater(() -> {
+			if (newValue != null) {
+				LOG.log(Level.INFO, "New login status: "+newValue);
+				boolean loading = false;
+				switch (newValue) {
+				case INVALID_CREDENTIALS:
+					showResponse("The email address and password you entered is incorrect.");
+					break;
+				case LOGGED_IN:
+					getApplication().switchView(TraplineListView.NAME);
+					break;
+				case PENDING_LOGIN:
+					loading = true;
+					break;
+				case SERVER_UNAVAILABLE:
+					showResponse("We can't reach the Nest NZ server at the moment. \n"
+							+ "Make sure your internet connection is available and try again later.");				
+					break;
+				default:
+					break;
+				}
+				
+				GlassPane glass = this.getApplication().getGlassPane();
+				if (loading) {
+					glass.setBackgroundFade(0.5);
+					glass.getChildren().add(spinner);
+				} else {
+					glass.setBackgroundFade(0);	
+					glass.getChildren().remove(spinner);				
+				}
 			}
-			statusPopup.setVisible(visible);
-		}
+		});
+	}
+	
+	/**
+	 * Displays the provided login response message as a dialog box
+	 * @param message The login response message to display
+	 */
+	private void showResponse (String message) {
+		Dialog<Button> dialog = new Dialog<>();
+		dialog.setContent(new Label(message));
+		Button okButton = new Button("OK");
+		okButton.setOnAction(e -> {
+			dialog.hide();
+		});
+		dialog.getButtons().add(okButton);
+		dialog.showAndWait();
 	}
 
     @Override
