@@ -489,9 +489,11 @@ CREATE INDEX t_ttid_idx
 CREATE TABLE public.catch
 (
   catch_id bigint NOT NULL DEFAULT nextval('catch_catch_id_seq'::regclass),
-  catch_user_id bigint NOT NULL,
   catch_trap_id bigint NOT NULL,
+  catch_trap_type_id bigint NOT NULL,
+  catch_user_id bigint NOT NULL,
   catch_type_id bigint NOT NULL,
+  catch_bait_id bigint NOT NULL,
   catch_note text,
   catch_logged timestamp without time zone NOT NULL DEFAULT now(),
   catch_image_filename text,
@@ -499,12 +501,18 @@ CREATE TABLE public.catch
   CONSTRAINT catch_catch_trap_id_fkey FOREIGN KEY (catch_trap_id)
       REFERENCES public.trap (trap_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT catch_catch_trap_type_id_fkey FOREIGN KEY (catch_trap_type_id)
+      REFERENCES public.trap_type (trap_type_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE RESTRICT,      
   CONSTRAINT catch_catch_type_id_fkey FOREIGN KEY (catch_type_id)
       REFERENCES public.catch_type (catch_type_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT catch_catch_user_id_fkey FOREIGN KEY (catch_user_id)
       REFERENCES public.users (user_id) MATCH SIMPLE  
-      ON UPDATE CASCADE ON DELETE RESTRICT
+      ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT catch_bait_id_fkey FOREIGN KEY (catch_bait_id)
+      REFERENCES public.bait (bait_id) MATCH SIMPLE  
+      ON UPDATE CASCADE ON DELETE RESTRICT      
 )
 WITH (
   OIDS=FALSE
@@ -520,6 +528,15 @@ CREATE INDEX c_ctrapid_idx
   ON public.catch
   USING btree
   (catch_trap_id);
+
+-- Index: public.c_cttypeid_idx
+
+-- DROP INDEX public.c_cttypeid_idx;
+
+CREATE INDEX c_cttypeid_idx
+  ON public.catch
+  USING btree
+  (catch_trap_type_id);  
 
 -- Index: public.c_ctypeid_idx
 
@@ -538,3 +555,12 @@ CREATE INDEX c_cuid_idx
   ON public.catch
   USING btree
   (catch_user_id);
+
+-- Index: public.c_cbid_idx
+
+-- DROP INDEX public.c_cbid_idx;
+
+CREATE INDEX c_cbid_idx
+  ON public.catch
+  USING btree
+  (catch_bait_id);
