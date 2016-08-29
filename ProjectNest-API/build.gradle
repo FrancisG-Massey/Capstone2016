@@ -11,6 +11,8 @@ sourceSets {
 
 dependencies {
     providedCompile "javax.servlet:servlet-api:2.5"
+    providedCompile "org.apache.tomcat:tomcat-jdbc:7.0.70"
+    compile "com.google.code.gson:gson:2.7"
     runtime "org.postgresql:postgresql:9.4.1209.jre7"
 }
 
@@ -18,6 +20,5 @@ repositories {
    mavenCentral()
 }
 
-war {
-    webAppDirName = 'web'
-}
+webAppDirName = 'web'
+
