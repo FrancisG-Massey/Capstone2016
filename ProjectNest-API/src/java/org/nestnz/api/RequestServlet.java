@@ -212,12 +212,12 @@ public class RequestServlet extends HttpServlet {
         }
         
         // Return null if no such dataset exists
-        final String datasetPath = this.getServletContext().getRealPath(prop.getProperty(dataset));
-        if (datasetPath == null) {
+        if (prop.getProperty(dataset) == null) {
             return null;
         }
-        
+
         // Get the dataset json string from file
+        final String datasetPath = this.getServletContext().getRealPath(prop.getProperty(dataset));
         byte[] encoded = Files.readAllBytes(Paths.get(datasetPath));
         final String datasetJSON = new String(encoded, StandardCharsets.UTF_8);
         
