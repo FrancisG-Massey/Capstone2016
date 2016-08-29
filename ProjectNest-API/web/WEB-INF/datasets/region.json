@@ -1,0 +1,6 @@
+{
+    "GET" : "SELECT * FROM public.region",
+    "POST" : "",
+    "PUT" : "",
+    "DELETE" : ""
+}
