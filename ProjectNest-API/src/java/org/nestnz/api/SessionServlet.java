@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -38,6 +40,10 @@ import javax.servlet.http.HttpServletResponse;
  * @version 1.0
  */
 public class SessionServlet extends HttpServlet {
+	
+	private static final long serialVersionUID = 1191162081764524199L;
+
+	private static final Logger LOG = Logger.getLogger(SessionServlet.class.getName());
 
     private static String propPath = null;
     
@@ -58,7 +64,7 @@ public class SessionServlet extends HttpServlet {
         try {
             Common.getNestDS(propPath);
         } catch (IOException ex) {
-            // TODO: Log ex
+        	LOG.log(Level.SEVERE, "Failed to initialise database connection", ex);
         }
     }
     
@@ -118,12 +124,9 @@ public class SessionServlet extends HttpServlet {
                     }
                     out.println("<br/>");
                 }
-            } catch (IOException ex) {
-                // TODO: Log ex
+            } catch (IOException | SQLException ex) {
+            	LOG.log(Level.SEVERE, "Problem executing query", ex);
                 out.println("IO Error: " + ex.getMessage());
-            } catch (SQLException ex) {
-                // TODO: Log ex
-                out.println("DB Error: " + ex.getMessage());
             }
             out.println("</p>");
             out.println("</body>");
@@ -191,7 +194,7 @@ public class SessionServlet extends HttpServlet {
                 }
             }
         } catch (SQLException | IOException ex) {
-            // TODO: Log ex
+        	LOG.log(Level.SEVERE, "Problem executing query", ex);
             //response.setHeader("Error", ex.getMessage());      // YOLO debug
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
@@ -225,7 +228,7 @@ public class SessionServlet extends HttpServlet {
                 throw new SQLException("Failed to create new session.");
             }
          } catch (SQLException | IOException ex) {
-            // TODO: Log ex
+         	LOG.log(Level.SEVERE, "Problem executing query", ex);
             //response.setHeader("Error", ex.getMessage());      // YOLO debug
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
@@ -271,7 +274,7 @@ public class SessionServlet extends HttpServlet {
             // Return a response appropriate to whether we actually logged out or the session did not exist/was expired
             response.setStatus((rows>=1)? HttpServletResponse.SC_NO_CONTENT : HttpServletResponse.SC_NOT_FOUND);
         } catch (SQLException ex) {
-            // TODO: Log ex
+        	LOG.log(Level.SEVERE, "Problem executing query", ex);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }    
