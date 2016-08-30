@@ -64,9 +64,9 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
     
     private final PseudoClass errorClass = PseudoClass.getPseudoClass("error");
 	
-	public LoginView (LoginService loginService) {
+	public LoginView () {
 		super(NAME);
-		this.loginService = loginService;
+		this.loginService = LoginService.getInstance();
         getStylesheets().add(LoginView.class.getResource("login.css").toExternalForm());
 		
         this.setOnShown(evt -> {

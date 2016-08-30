@@ -34,7 +34,6 @@ import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.ParserTrap;
-import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.views.AddTrapView;
 import org.nestnz.app.views.LoginView;
@@ -61,25 +60,15 @@ public class NestApplication extends MobileApplication {
     public static final String PRIMARY_VIEW = HOME_VIEW;
     public static final String MENU_LAYER = "Side Menu";
     
-    private static final AtomicInteger THREAD_NUMBER = new AtomicInteger(0);
-    private static ExecutorService executorService = Executors.newFixedThreadPool(5, runnable -> {
-        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-        thread.setName("BackgroundThread-" + THREAD_NUMBER.getAndIncrement());
-        thread.setDaemon(true);
-        return thread;
-    });
-    
     private TrapDataService trapDataService;
-    private LoginService loginService;
     private File appStoragePath;
 
     @Override
     public void init() throws IOException {
         appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
         trapDataService = new TrapDataService(new File(appStoragePath, "cache"));
-        loginService = new LoginService();
         
-        addViewFactory(LoginView.NAME, () -> new LoginView(loginService));
+        addViewFactory(LoginView.NAME, () -> new LoginView());
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService.getTraplines()));
         addViewFactory(NavigationView.NAME, () -> new NavigationView());
         addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView());
@@ -150,10 +139,6 @@ public class NestApplication extends MobileApplication {
     		LOG.log(Level.SEVERE, "Failed to write new trap data to file", ex);
 		}
     	LOG.log(Level.INFO, "Saved trap "+trap+" to file "+cacheData);
-    }
-    
-    public static void runInBackground (Runnable runnable) {
-    	executorService.execute(runnable);
     }
     
     /**

@@ -23,11 +23,9 @@ import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trapline;
 
-import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.CharmListView;
-import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.layout.layer.MenuSidePopupView;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
@@ -49,11 +47,6 @@ public class TraplineListView extends View {
 	private final CharmListView<Trapline, Region> traplineList;
 	
 	private final SidePopupView menu;
-    
-    /**
-     * The spinner displayed while the app is loading data from the API
-     */
-	private final ProgressIndicator spinner = new ProgressIndicator();
 
     public TraplineListView(ObservableList<Trapline> traplines) {
         super(NAME);
@@ -77,7 +70,7 @@ public class TraplineListView extends View {
         		button.setMaxWidth(1000.0);
         		this.setGraphic(button);
         		button.setOnAction(evt -> {
-        			LOG.log(Level.INFO, "Clicked trapline: "+trapline);
+        			LOG.log(Level.INFO, "Pressed trapline: "+trapline);
         			TraplineInfoView infoView = ((NestApplication) TraplineListView.this.getApplication()).lookupView(TraplineInfoView.NAME);
         			infoView.setTrapline(trapline);
         			TraplineListView.this.getApplication().switchView(TraplineInfoView.NAME);
@@ -115,7 +108,7 @@ public class TraplineListView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
+        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> this.menu.show()));
         appBar.setTitleText("Nest NZ");
         //appBar.getActionItems().add(MaterialDesignIcon.SEARCH.button(e -> System.out.println("Search")));
     }

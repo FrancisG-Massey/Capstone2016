@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.nestnz.app.NestApplication;
+import org.nestnz.app.util.BackgroundTasks;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
 import com.gluonhq.charm.down.common.SettingService;
@@ -48,13 +48,22 @@ public final class LoginService {
 
     private static final Logger LOG = Logger.getLogger(LoginService.class.getName());
     
+    private static LoginService instance;
+    
+    public static synchronized LoginService getInstance () {
+    	if (instance == null) {
+    		instance = new LoginService();
+    	}
+    	return instance;
+    }
+    
     private final ReadOnlyObjectWrapper<LoginStatus> loginStatusProperty = new ReadOnlyObjectWrapper<>(LoginStatus.LOGGED_OUT);
     
     private final ReadOnlyStringWrapper sessionTokenProperty = new ReadOnlyStringWrapper();
     
     private final SettingService settingService;
     
-    public LoginService () {
+    private LoginService () {
     	settingService = PlatformFactory.getPlatform().getSettingService();
     }
     
@@ -88,7 +97,7 @@ public final class LoginService {
     	
     	final RestDataSource dataSource = loginClient.createRestDataSource();
     	
-    	NestApplication.runInBackground(() -> {
+    	BackgroundTasks.runInBackground(() -> {
     		try {
     			dataSource.getInputStream();
 				switch (dataSource.getResponseCode()) {
@@ -141,7 +150,7 @@ public final class LoginService {
     	RestClient loginClient = RestClient.create().method("DELETE").host("https://api.nestnz.org")
     			.path("/session/").queryParam("Session-Token", getSessionToken());
     	final RestDataSource dataSource = loginClient.createRestDataSource();
-    	NestApplication.runInBackground(() -> {
+    	BackgroundTasks.runInBackground(() -> {
     		try {
 				dataSource.getInputStream();
 				switch (dataSource.getResponseCode()) {
