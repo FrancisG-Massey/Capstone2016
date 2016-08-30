@@ -22,10 +22,8 @@ import java.util.logging.Logger;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.LoginService.LoginStatus;
 
-import com.gluonhq.charm.glisten.application.GlassPane;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Dialog;
-import com.gluonhq.charm.glisten.control.ProgressIndicator;
 import com.gluonhq.charm.glisten.mvc.View;
 
 import javafx.application.Platform;
@@ -41,7 +39,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class LoginView extends View implements ChangeListener<LoginStatus> {
@@ -59,11 +56,6 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 	 * The field used to input the user's password
 	 */
     private final PasswordField passwordField = new PasswordField();
-    
-    /**
-     * The spinner displayed while the app is connecting to the API to verify the user's credentials
-     */
-	private final ProgressIndicator spinner = new ProgressIndicator();
     
 	/**
 	 * The app service which handles the login system
@@ -102,10 +94,6 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 		setCenter(controls);
 		controls.getChildren().addAll(spacer(), iconView, spacer(), emailField, passwordField, loginButton);
 		
-		//Set up the loading panel
-		spinner.setRadius(30);
-		StackPane.setAlignment(spinner, Pos.CENTER);		
-		
 		loginButton.setOnAction(evt -> {
 			runLogin();
 		});
@@ -136,32 +124,25 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 		Platform.runLater(() -> {
 			if (newValue != null) {
 				LOG.log(Level.INFO, "New login status: "+newValue);
-				boolean loading = false;
 				switch (newValue) {
 				case INVALID_CREDENTIALS:
+					this.getApplication().hideLayer("loading");
 					showResponse("The email address and password you entered is incorrect.");
 					break;
 				case LOGGED_IN:
+					this.getApplication().hideLayer("loading");
 					getApplication().switchView(TraplineListView.NAME);
 					break;
 				case PENDING_LOGIN:
-					loading = true;
+					this.getApplication().showLayer("loading");
 					break;
 				case SERVER_UNAVAILABLE:
+					this.getApplication().hideLayer("loading");
 					showResponse("We can't reach the Nest NZ server at the moment. \n"
 							+ "Make sure your internet connection is available and try again later.");				
 					break;
 				default:
 					break;
-				}
-				
-				GlassPane glass = this.getApplication().getGlassPane();
-				if (loading) {
-					glass.setBackgroundFade(0.5);
-					glass.getChildren().add(spinner);
-				} else {
-					glass.setBackgroundFade(0);	
-					glass.getChildren().remove(spinner);				
 				}
 			}
 		});
