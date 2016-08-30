@@ -177,8 +177,9 @@ public class TestTrapDataService {
 			}
     	});
         
-        if (!latch.await(5, TimeUnit.SECONDS)) {
-        	LOG.log(Level.SEVERE, "Failed to save trapline. Status="+results.stateProperty().get(), results.exceptionProperty());
+		//Check that the data wasn't saved before we even got here, and if not, wait for it to save
+        if (results.get() == null && !latch.await(5, TimeUnit.SECONDS)) {
+        	LOG.log(Level.SEVERE, "Failed to save trapline. status="+results.stateProperty().get()+", results="+results.get(), results.exceptionProperty());
             throw new TimeoutException();
         }
 	}

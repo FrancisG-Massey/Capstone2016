@@ -69,9 +69,7 @@ public class NavigationView extends View {
     }
     
     protected NavigationView(boolean test) {
-    	super(NAME);
-        getStylesheets().add(NavigationView.class.getResource("secondary.css").toExternalForm());
-        
+    	super(NAME);        
         //setShowTransitionFactory(BounceInRightTransition::new);
         
         //getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
