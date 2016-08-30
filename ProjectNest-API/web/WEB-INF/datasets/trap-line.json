@@ -1,0 +1,48 @@
+{
+    "GET" : "SELECT * FROM public.trap_line",
+
+    "Finish this later":"
+        WITH nest_user AS (  
+                SELECT *
+                FROM public.users u 
+                JOIN public.session s ON u.user_id = s.session_user_id
+                WHERE (%session_token% IS NOT NULL) AND (s.session_token = %session_token%)
+                LIMIT 1
+            ), visible_traplines AS (
+                SELECT tl.* 
+                FROM public.trap_line tl 
+                JOIN public.trap_line_user tlu ON tl.trap_line_id = tlu.trap_line_user_trap_line_id
+                JOIN nest_user nu ON tlu.trap_line_user_user_id = nu.user_id
+            )
+        CASE WHEN nest_user.user_is_admin = TRUE THEN
+            SELECT 
+                tl.trap_line_id AS id,
+                tl.trap_line_name AS name,
+                tl.trap_line_region_id AS region_id,
+                tl.trap_line_start_tag AS start_tag,
+                tl.trap_line_end_tag AS end_tag,
+                tl.trap_line_image_filename AS img_filename
+            FROM 
+                public.trap_line tl
+                JOIN public.region r ON tl.trap_line_region_id = r.region_id
+            WHERE 
+                ((%id% IS NULL) OR (tl.trap_line_id = %id%))
+
+        ELSE 
+            SELECT 
+                vtl.trap_line_id AS id,
+                vtl.trap_line_name AS name,
+                vtl.trap_line_region_id AS region_id,
+                vtl.trap_line_start_tag AS start_tag,
+                vtl.trap_line_end_tag AS end_tag,
+                vtl.trap_line_image_filename AS img_filename
+            FROM 
+                visible_traplines vtl
+            WHERE 
+                tl.trap_line_id = %id% AND TRUE --Incomplete, finish this later",
+
+
+    "POST" : "", 
+    "PUT" : "",
+    "DELETE" : ""
+}

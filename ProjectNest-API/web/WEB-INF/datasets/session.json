@@ -1,0 +1,21 @@
+{
+    "GET" : "
+        SELECT 
+            s.session_id AS id, 
+            s.session_user_id AS user_id, 
+            substring(s.session_token from 1 for 31)||'xxxxx' AS token, 
+            s.session_created AS created
+        FROM 
+            public.session s /*,
+            (  
+                SELECT u.user_is_admin AS is_admin
+                FROM public.users u JOIN public.session s ON u.user_id = s.session_user_id
+                WHERE s.session_token = %session_token%
+                LIMIT 1
+            ) su
+        WHERE 
+            su.is_admin = TRUE; */",
+    "POST" : "", 
+    "PUT" : "",
+    "DELETE" : ""
+}

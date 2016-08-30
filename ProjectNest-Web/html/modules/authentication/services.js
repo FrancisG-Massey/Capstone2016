@@ -21,11 +21,29 @@ angular.module('Authentication')
 
 
             /* Use this for real authentication
-             ----------------------------------------------*/
-            //$http.post('/api/authenticate', { username: username, password: password })
-            //    .success(function (response) {
-            //        callback(response);
-            //    });
+             
+        	   var req = {
+                       method:'POST',
+                       url: 'https://api.nestnz.org',
+                       data: {username: username, password: password
+                       },
+                       withCredentials:true
+
+                   };
+
+                   $http(req).then(function (response) {
+                	   console.log(response);
+                       if( response.data.success ){                           
+                       }
+                       if( response.data.error){                           
+                       }
+                   });*/
+             
+           /* $http.post('https://api.nestnz.org', { username: username, password: password })
+                .success(function (response) {
+                    //callback(response);
+                	console.log(response);
+                });*/
 
         };
  
