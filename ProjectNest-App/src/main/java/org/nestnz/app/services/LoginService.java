@@ -71,7 +71,7 @@ public final class LoginService {
      * Tries to log in using the username & password saved in the device settings
      * @return true if credentials were found & used, false if no credentials were found
      */
-    public boolean login () {
+    public boolean checkSavedCredentials () {
     	String email = settingService.retrieve("api.email");
     	String password = settingService.retrieve("api.password");
     	if (email == null || password == null) {
