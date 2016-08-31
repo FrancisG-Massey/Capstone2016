@@ -101,7 +101,7 @@ public final class LoginService {
     		try {
     			dataSource.getInputStream();
 				switch (dataSource.getResponseCode()) {
-				case 200://Success
+				case 201://Created
 					List<String> sessionHeaders = dataSource.getResponseHeaders().get("Session-Token");
 					if (sessionHeaders == null || sessionHeaders.size() == 0) {
 						LOG.log(Level.SEVERE, "Session token missing from server response");

@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.services.TrapDataService;
 
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListCell;
@@ -31,7 +32,6 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
-import javafx.collections.ObservableList;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
@@ -48,9 +48,10 @@ public class TraplineListView extends View {
 	
 	private final SidePopupView menu;
 
-    public TraplineListView(ObservableList<Trapline> traplines) {
+    public TraplineListView(TrapDataService trapDataService) {
         super(NAME);
-        traplineList = new CharmListView<>(traplines);
+        
+        traplineList = new CharmListView<>(trapDataService.getTraplines());
         traplineList.setHeadersFunction(Trapline::getRegion);
         traplineList.setConverter(new StringConverter <Region>() {
             @Override public String toString(Region r) {

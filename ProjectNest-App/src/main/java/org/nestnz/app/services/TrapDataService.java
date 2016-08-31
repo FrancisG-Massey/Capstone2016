@@ -18,10 +18,15 @@ package org.nestnz.app.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.nestnz.app.model.Region;
+import org.nestnz.app.model.Trap;
+import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.ParserTrapline;
 
@@ -49,6 +54,7 @@ public final class TrapDataService {
     	trapCachePath.mkdirs();
     	
     	this.trapCachePath = trapCachePath;
+    	addSampleTraplines();
     	loadTraplines();
     }
     
@@ -57,8 +63,8 @@ public final class TrapDataService {
     	int count = 0;
     	for (File traplineFile : trapCachePath.listFiles()) {
         	LOG.log(Level.INFO, String.format("File: %s", traplineFile));
-        	//TODO: Use the proper method in Java 7, rather than just converting to string & checking ends with
-    		if (traplineFile.toString().endsWith(".json")) {
+        	
+        	if (traplineFile.toString().endsWith(".json")) {
     			FileClient fileClient = FileClient.create(traplineFile);
     			
     			InputStreamInputConverter<ParserTrapline> converter = new JsonInputConverter<>(ParserTrapline.class);
@@ -67,7 +73,7 @@ public final class TrapDataService {
     			pTrapline.initializedProperty().addListener((obs, oldValue, newValue) -> {
     				if (newValue) {
     					try {
-    						traplines.add(new Trapline(pTrapline.get()));
+    						addTrapline(new Trapline(pTrapline.get()));
     					} catch (RuntimeException ex) {
     						LOG.log(Level.WARNING, "Failed to load data from trapline file "+traplineFile, ex);
     					}
@@ -78,10 +84,49 @@ public final class TrapDataService {
     	}
     	LOG.log(Level.INFO, String.format("Found data for %d traplines in file cache", count));
     }
+    
+    private void addTrapline (Trapline trapline) {
+    	Iterator<Trapline> it = traplines.iterator();
+    	while (it.hasNext()) {
+    		if (it.next().getId() == trapline.getId()) {
+    			it.remove();
+    		}
+    	}
+    	traplines.add(trapline);
+    }
+    
+    /**
+     * Fetches a trapline based on its ID. 
+     * This method only checks the memory cache for traplines - it doesn't check whether a trapline has been cached on the disk or exists on the server.
+     * @param id The ID of the trapline to lookup
+     * @return The trapline with the matching ID, or null if no trapline could be found
+     */
+    public final Trapline getTrapline (int id) {
+    	for (Trapline t : traplines) {
+    		if (t.getId() == id) {
+    			return t;
+    		}
+    	}
+    	return null;
+    }
 
-	public ObservableList<Trapline> getTraplines() {
+	public final ObservableList<Trapline> getTraplines() {
 		return traplines;
 	}
+    
+    private void addSampleTraplines () {
+    	if (getTrapline(20) == null) {
+	    	Trapline t1 = new Trapline(20, "Test trapline", new Region(20, "Test Region"), "Test Start");
+	    	t1.getTraps().add(new Trap(1, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now()));
+	    	t1.getTraps().add(new Trap(2, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now()));
+	    	addTrapline(t1);
+    	}
+    	
+    	if (getTrapline(21) == null) {
+    		Trapline gorge = new Trapline(21, "Manawatu Gorge", new Region(21, "Manawatu"), "Ashhurst", "Woodville");
+    		addTrapline(gorge);
+    	}
+    }
 	
 	/**
 	 * Updates the cached version of the trapline and flags the trapline as dirty
