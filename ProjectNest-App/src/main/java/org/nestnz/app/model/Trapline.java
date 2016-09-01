@@ -23,13 +23,13 @@ import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -43,7 +43,7 @@ public final class Trapline {
 	/**
 	 * The visible name of the trapline
 	 */
-	private final ReadOnlyStringWrapper nameProperty = new ReadOnlyStringWrapper();
+	private final StringProperty nameProperty = new SimpleStringProperty();
 	
 	/**
 	 * The traps located within the trapline
@@ -53,17 +53,17 @@ public final class Trapline {
 	/**
 	 * The region in which this trapline is located (e.g. Auckland, Waikato, Manawatu, etc)
 	 */
-	private final ReadOnlyObjectWrapper<Region> regionProperty = new ReadOnlyObjectWrapper<>();
+	private final ObjectProperty<Region> regionProperty = new SimpleObjectProperty<>();
 	
 	/**
 	 * The name of the starting point of the trapline
 	 */
-	private final ReadOnlyStringWrapper startProperty = new ReadOnlyStringWrapper();
+	private final StringProperty startProperty = new SimpleStringProperty();
 	
 	/**
 	 * Optionally, the name of the end point of the trapline. For loop traplines, this will be {@link Optional#empty()}
 	 */
-	private final ReadOnlyStringWrapper endProperty = new ReadOnlyStringWrapper();
+	private final StringProperty endProperty = new SimpleStringProperty();
 	
 	/**
 	 * Signals some of the data has changed since it was last synchronized with the server
@@ -81,6 +81,10 @@ public final class Trapline {
 		for (ParserTrap pTrap : pTrapline.getTraps()) {
 			traps.add(new Trap(pTrap));
 		}
+	}
+	
+	public Trapline(int id) {
+		this.idProperty.set(id);
 	}
 	
 	public Trapline(int id, String name, Region region, String start) {
@@ -107,8 +111,12 @@ public final class Trapline {
 		return nameProperty.get();
 	}
 	
-	public ReadOnlyStringProperty nameProperty () {
-		return nameProperty.getReadOnlyProperty();
+	public void setName (String name) {
+		nameProperty.set(name);
+	}
+	
+	public StringProperty nameProperty () {
+		return nameProperty;
 	}
 
 	public ObservableList<Trap> getTraps() {
@@ -119,24 +127,32 @@ public final class Trapline {
 		return regionProperty.get();
 	}	
 	
-	public ReadOnlyObjectProperty<Region> regionProperty () {
-		return regionProperty.getReadOnlyProperty();
+	public ObjectProperty<Region> regionProperty () {
+		return regionProperty;
 	}
 
 	public String getStart() {
 		return startProperty.get();
 	}
 	
-	public ReadOnlyStringProperty startProperty () {
-		return startProperty.getReadOnlyProperty();
+	public void setStart (String start) {
+		startProperty.set(start);
+	}
+	
+	public StringProperty startProperty () {
+		return startProperty;
 	}
 
 	public String getEnd() {
 		return endProperty.get();
 	}
 	
-	public ReadOnlyStringProperty endProperty () {
-		return endProperty.getReadOnlyProperty();
+	public void setEnd (String end) {
+		endProperty.set(end);
+	}
+	
+	public StringProperty endProperty () {
+		return endProperty;
 	}
 	
 	public boolean isDirty () {

@@ -24,11 +24,17 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.ParserTrapline;
+import org.nestnz.app.util.BackgroundTasks;
 
 import com.gluonhq.connect.GluonObservableObject;
 import com.gluonhq.connect.converter.InputStreamInputConverter;
@@ -37,7 +43,12 @@ import com.gluonhq.connect.converter.JsonOutputConverter;
 import com.gluonhq.connect.converter.OutputStreamOutputConverter;
 import com.gluonhq.connect.provider.DataProvider;
 import com.gluonhq.connect.provider.FileClient;
+import com.gluonhq.connect.provider.RestClient;
+import com.gluonhq.connect.source.RestDataSource;
+import com.gluonhq.impl.connect.converter.JsonUtil;
 
+import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -45,9 +56,13 @@ public final class TrapDataService {
 
     private static final Logger LOG = Logger.getLogger(TrapDataService.class.getName());
     
-    private final ObservableList<Trapline> traplines = FXCollections.observableArrayList();
+    private final ObservableList<Trapline> traplines = FXCollections.observableArrayList(trapline -> {
+    	return new Observable[] { trapline.nameProperty(), trapline.regionProperty() };
+    });
     
     private final File trapCachePath;
+    
+    private final LoginService loginService = LoginService.getInstance();
     
     public TrapDataService (File trapCachePath) throws IOException {
     	Objects.requireNonNull(trapCachePath);
@@ -108,6 +123,41 @@ public final class TrapDataService {
     		}
     	}
     	return null;
+    }
+    
+    /**
+     * Requests an update for trapline metadata for all traplines this user can access.
+     * Note: This only updates the trapline metadata (name, ID, region, etc) - NOT the catch data or the traps themselves.
+     * This method is generally used to add traplines the user can now access, or remove those they can no longer access
+     */
+    public void refreshTraplines () {
+    	RestClient traplineClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/trap-line").header("Session-Token", loginService.getSessionToken());
+    	
+    	RestDataSource dataSource = traplineClient.createRestDataSource();
+    	
+    	BackgroundTasks.runInBackground(() -> {
+    		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
+    			JsonArray array = reader.readArray();
+    			Platform.runLater(() -> {
+    				for (JsonValue value : array) {
+        				JsonObject traplineJson = (JsonObject) value;
+        				int id = traplineJson.getInt("trap_line_id");
+        				Trapline trapline = getTrapline(id);
+        				if (trapline == null) {
+        					trapline = new Trapline(id);
+        					traplines.add(trapline);
+        				}
+        				trapline.setName(traplineJson.getString("trap_line_name"));
+        				trapline.setStart(traplineJson.getString("trap_line_start_tag"));
+        				trapline.setEnd(traplineJson.getString("trap_line_end_tag"));
+        				//TODO: Find & add region here
+        			}
+    			});
+    		} catch (IOException | RuntimeException ex) {
+    			LOG.log(Level.SEVERE, "Problem requesting traplines. Response: "+dataSource.getResponseMessage(), ex);
+			}
+    	});
     }
 
 	public final ObservableList<Trapline> getTraplines() {

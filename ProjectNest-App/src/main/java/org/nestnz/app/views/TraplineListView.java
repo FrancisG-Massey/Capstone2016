@@ -47,11 +47,14 @@ public class TraplineListView extends View {
 	private final CharmListView<Trapline, Region> traplineList;
 	
 	private final SidePopupView menu;
+	
+	private final TrapDataService dataService;
 
-    public TraplineListView(TrapDataService trapDataService) {
+    public TraplineListView(TrapDataService dataService) {
         super(NAME);
+        this.dataService = dataService;
         
-        traplineList = new CharmListView<>(trapDataService.getTraplines());
+        traplineList = new CharmListView<>(dataService.getTraplines());
         traplineList.setHeadersFunction(Trapline::getRegion);
         traplineList.setConverter(new StringConverter <Region>() {
             @Override public String toString(Region r) {
@@ -111,7 +114,7 @@ public class TraplineListView extends View {
     protected void updateAppBar(AppBar appBar) {
         appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> this.menu.show()));
         appBar.setTitleText("Nest NZ");
-        //appBar.getActionItems().add(MaterialDesignIcon.SEARCH.button(e -> System.out.println("Search")));
+        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.refreshTraplines()));
     }
     
 }
