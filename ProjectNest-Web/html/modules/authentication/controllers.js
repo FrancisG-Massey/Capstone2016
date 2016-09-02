@@ -15,6 +15,7 @@ angular.module('Authentication')
 //        	AuthenticationService.SetCredentials($scope.username, $scope.password);
         	$scope.dataLoading = true;
             AuthenticationService.Login($scope.username, $scope.password, function(response) {
+            	
             	if(response.success) {
                     AuthenticationService.SetCredentials($scope.username, $scope.password, response.sessionToken);
             		//$rootScope.globals.loggedIn=true;
@@ -24,6 +25,8 @@ angular.module('Authentication')
                     $location.path('/');
                 } else {
                 	//$rootScope.globals.loggedIn=false;
+                	$scope.dataLoading = false;
+
                     $scope.error = response.message;
                     //$rootScope.globals.currentUser.loggedIn = false;          
                 }

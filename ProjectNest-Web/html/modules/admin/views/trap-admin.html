@@ -4,7 +4,7 @@
 </div>
  <div class="row"> 
     <div class="col-sm-7"> 
-    <a id="addButton" ><span class="glyphicon glyphicon-plus"></span> Add Trap</a>  
+    <a ng-click="addNew()" id="addButton" ><span class="glyphicon glyphicon-plus"></span> Add Trap</a>  
       <table class="table table-condensed table-hover admin">
         <thead>
           <tr>
@@ -47,19 +47,19 @@
 
     <div class="col-sm-5"> 
       <div class="well">
-        <h3 style="margin-top: 0">Trap ID: {{selected.id}}</h3>
+        <h3 style="margin-top: 0">{{selected.id ? 'Trap ID: ' + selected.id : 'New Trap'}}</h3>
         <div class="row">
           <div class="col-md-6 form-group">
             <label>Latitude</label>
             <div class="input-group">
-              <input type="text" class="form-control" value ="{{selected.coord_lat}}">
+              <input type="number" class="form-control" value ="{{selected.coord_lat}}">
               <span class="input-group-addon">S</span>
             </div>
           </div>
           <div class="col-md-6 form-group">  
             <label>Longitude</label>
             <div class="input-group">
-              <input type="text" class="form-control" value ="{{selected.coord_long}}">
+              <input type="number" class="form-control" value ="{{selected.coord_long}}">
               <span class="input-group-addon">E</span>
             </div>
           </div>

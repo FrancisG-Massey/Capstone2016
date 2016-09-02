@@ -8,22 +8,19 @@ angular.module('Authentication')
         var service = {};
 
         service.Login = function (username, password, callback) {
-
-            /* Dummy authentication for testing, uses $timeout to simulate api call
-             ----------------------------------------------*/
-            /*$timeout(function(){
-                var response = { success: username === 'test' && password === 'test' };
-                if(!response.success) {
-                    response.message = 'Username or password is incorrect';
-                }
-                callback(response);
-                console.log(response);
-            }, 1000);*/
-
-
             // Use this for real authentication
+            var authdata = Base64.encode(username + ':' + password);
+
+            var req = {
+			 method: 'POST',
+			 url: 'https://www.nestnz.org/api/session/',
+			 headers: {
+			   'Authorization': 'Basic ' + authdata
+			 },
+			 data: { username: username, password: password }
+    		}
            
-            $http.post('https://www.nestnz.org/api/session/', { username: username, password: password })
+            $http(req)
             .success(function(data, status, headers, config){         	   
          	   callback({success:true, sessionToken: headers('session-token')});
            	})
@@ -33,17 +30,14 @@ angular.module('Authentication')
         };
  
         service.SetCredentials = function (username, password, sessionToken) {
-            var authdata = Base64.encode(username + ':' + password);
  
             $rootScope.globals = {
                 currentUser: {
                     username: username,
-                    authdata: authdata,
                     sessionToken: sessionToken
                 },
             };
             $http.defaults.headers.common['Session-Token'] = sessionToken;
-            $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata; // jshint ignore:line
             $cookieStore.put('globals', $rootScope.globals);
         };
  
@@ -57,8 +51,7 @@ angular.module('Authentication')
             });
             
             //$http.defaults.headers.common.Authorization = 'Basic ';
-            delete $http.defaults.headers.common.Authorization;
-            delete $http.defaults.headers.common['Session-Token'] ;
+            delete $http.defaults.headers.common['Session-Token'];
         };
  
         return service;
