@@ -38,7 +38,7 @@ public final class ParserTrapline {
 			this.traps.add(new ParserTrap(trap));
 		}
 		this.start = trapline.getStart();
-		trapline.getEnd().ifPresent(end -> this.end = end);
+		this.end = trapline.getEnd();
 	}
 	
 	public ParserTrapline () {

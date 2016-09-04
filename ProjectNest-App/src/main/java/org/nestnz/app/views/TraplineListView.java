@@ -22,16 +22,20 @@ import java.util.logging.Logger;
 import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.services.TrapDataService;
 
-import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.CharmListCell;
 import com.gluonhq.charm.glisten.control.CharmListView;
+import com.gluonhq.charm.glisten.layout.layer.MenuSidePopupView;
+import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
-import javafx.collections.ObservableList;
+import javafx.geometry.Side;
 import javafx.scene.control.Button;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 import javafx.util.StringConverter;
 
 public class TraplineListView extends View {
@@ -41,10 +45,16 @@ public class TraplineListView extends View {
     private static final Logger LOG = Logger.getLogger(TraplineListView.class.getName());
 	
 	private final CharmListView<Trapline, Region> traplineList;
+	
+	private final SidePopupView menu;
+	
+	private final TrapDataService dataService;
 
-    public TraplineListView(ObservableList<Trapline> traplines) {
+    public TraplineListView(TrapDataService dataService) {
         super(NAME);
-        traplineList = new CharmListView<>(traplines);
+        this.dataService = dataService;
+        
+        traplineList = new CharmListView<>(dataService.getTraplines());
         traplineList.setHeadersFunction(Trapline::getRegion);
         traplineList.setConverter(new StringConverter <Region>() {
             @Override public String toString(Region r) {
@@ -64,7 +74,7 @@ public class TraplineListView extends View {
         		button.setMaxWidth(1000.0);
         		this.setGraphic(button);
         		button.setOnAction(evt -> {
-        			LOG.log(Level.INFO, "Clicked trapline: "+trapline);
+        			LOG.log(Level.INFO, "Pressed trapline: "+trapline);
         			TraplineInfoView infoView = ((NestApplication) TraplineListView.this.getApplication()).lookupView(TraplineInfoView.NAME);
         			infoView.setTrapline(trapline);
         			TraplineListView.this.getApplication().switchView(TraplineInfoView.NAME);
@@ -83,14 +93,28 @@ public class TraplineListView extends View {
         });
         
         setCenter(traplineList);
+		menu = buildMenu();
         getStylesheets().add(TraplineListView.class.getResource("traplineView.css").toExternalForm());
     }
+	
+	private SidePopupView buildMenu () {
+		Menu menu = new Menu();
+		final MenuItem logout = new MenuItem("Logout", MaterialDesignIcon.REMOVE.graphic());
+		
+		logout.setOnAction(evt -> {
+			this.menu.hide();
+			
+		});
+		
+		menu.getItems().add(logout);
+		return new MenuSidePopupView(menu, Side.LEFT);
+	}
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
+        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> this.menu.show()));
         appBar.setTitleText("Nest NZ");
-        //appBar.getActionItems().add(MaterialDesignIcon.SEARCH.button(e -> System.out.println("Search")));
+        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.refreshTraplines()));
     }
     
 }

@@ -23,46 +23,69 @@ import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.LoginService.LoginStatus;
 
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.control.ProgressIndicator;
-import com.gluonhq.charm.glisten.control.TextField;
+import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.mvc.View;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class LoginView extends View {
+public class LoginView extends View implements ChangeListener<LoginStatus> {
 
     private static final Logger LOG = Logger.getLogger(LoginView.class.getName());
     
 	public static final String NAME = "home";
 	
+	/**
+	 * The field used to input the user's email address
+	 */
 	private final TextField emailField = new TextField();
 
+	/**
+	 * The field used to input the user's password
+	 */
     private final PasswordField passwordField = new PasswordField();
     
-	private final StackPane statusPopup = new StackPane();
-	private final ProgressIndicator spinner = new ProgressIndicator();
-    
+	/**
+	 * The app service which handles the login system
+	 */
     private final LoginService loginService;
+    
+    private boolean checkSavedCredentials;
 	
 	public LoginView (LoginService loginService) {
 		super(NAME);
 		this.loginService = loginService;
 		
-		loginService.loginStatusProperty().addListener((obs, oldVal, newVal) -> {
-			Platform.runLater(() -> updateLogin(newVal));
-			
-		});
+		checkSavedCredentials = loginService.checkSavedCredentials();
 		
-		StackPane layout = new StackPane();
+		if (checkSavedCredentials) {
+			this.getApplication().showLayer("loading");
+		}
+				
+        this.setOnShown(evt -> {
+    		loginService.loginStatusProperty().addListener(this);        	
+        });
+        
+        this.setOnHidden(evt -> {
+        	loginService.loginStatusProperty().removeListener(this);
+        });
+        
+		setupControls();
+	}
+	
+	private void setupControls () {
+		getStylesheets().add(LoginView.class.getResource("login.css").toExternalForm());
 		
 		VBox controls = new VBox(30);
 		controls.setAlignment(Pos.CENTER);
@@ -71,25 +94,25 @@ public class LoginView extends View {
 		Image icon = new Image(LoginView.class.getResourceAsStream("/icon.png"));        
         ImageView iconView = new ImageView(icon);
         
-        emailField.setFloatText("Email Address");
+        emailField.setPromptText("Email Address");        
+        emailField.setFocusTraversable(true);
+        emailField.setOnAction(evt -> {
+        	passwordField.requestFocus();
+        });
         
         passwordField.setPromptText("Password");
+        passwordField.setFocusTraversable(true);
+        passwordField.setOnAction(evt -> {
+        	runLogin();
+        });
+        
 		Button loginButton = new Button("Login");
 		loginButton.setMaxWidth(1000);
 		loginButton.setMaxHeight(1000);
+		loginButton.setFocusTraversable(true);
 		
-		setCenter(layout);
+		setCenter(controls);
 		controls.getChildren().addAll(spacer(), iconView, spacer(), emailField, passwordField, loginButton);
-		
-		//Set up the loading panel
-		spinner.setRadius(30);
-		StackPane.setAlignment(spinner, Pos.CENTER);
-	    statusPopup.getChildren().add(spinner);		
-		statusPopup.setVisible(false);		
-		statusPopup.setStyle("-fx-background-color: rgba(100, 100, 100, 0.5)");
-		
-		
-		layout.getChildren().addAll(controls, statusPopup);				
 		
 		loginButton.setOnAction(evt -> {
 			runLogin();
@@ -103,31 +126,89 @@ public class LoginView extends View {
 	}
 	
 	private void runLogin () {
-		loginService.login(emailField.getText(), passwordField.getText());
+		if (emailField.getText().isEmpty()) {
+			emailField.requestFocus();
+			getApplication().showMessage("Please enter an email address");
+		} else {
+			loginService.login(emailField.getText(), passwordField.getText());
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see javafx.beans.value.ChangeListener#changed(javafx.beans.value.ObservableValue, java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void changed(ObservableValue<? extends LoginStatus> observable, LoginStatus oldValue, LoginStatus newValue) {
+		Platform.runLater(() -> {
+			if (newValue != null) {
+				LOG.log(Level.INFO, "New login status: "+newValue);
+				if (checkSavedCredentials) {
+					switch (newValue) {
+					case INVALID_CREDENTIALS:
+						checkSavedCredentials = false;
+						this.getApplication().hideLayer("loading");
+						passwordField.clear();
+						showResponse("Please enter your email address & password again to continue.");
+						break;
+					case LOGGED_IN:
+						checkSavedCredentials = false;
+						this.getApplication().hideLayer("loading");
+						getApplication().switchView(TraplineListView.NAME);
+						break;
+					case PENDING_LOGIN:
+						this.getApplication().showLayer("loading");
+						break;
+					case SERVER_UNAVAILABLE:
+						checkSavedCredentials = false;
+						this.getApplication().hideLayer("loading");
+						getApplication().switchView(TraplineListView.NAME);
+						showResponse("The server is currently unavailable, so the traplines listed may be out of date.\n"
+								+ "To update the traplines listed, please turn on your internet and refresh this page using the buttom above.");
+						break;
+					default:
+						break;
+					}
+				} else {
+					switch (newValue) {
+					case INVALID_CREDENTIALS:
+						this.getApplication().hideLayer("loading");
+						passwordField.clear();
+						showResponse("The email address and password you entered is incorrect.");
+						break;
+					case LOGGED_IN:
+						this.getApplication().hideLayer("loading");
+						getApplication().switchView(TraplineListView.NAME);
+						break;
+					case PENDING_LOGIN:
+						this.getApplication().showLayer("loading");
+						break;
+					case SERVER_UNAVAILABLE:
+						this.getApplication().hideLayer("loading");
+						passwordField.clear();
+						showResponse("We can't reach the Nest NZ server at the moment. \n"
+								+ "Make sure your internet connection is available and try again later.");				
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		});
 	}
 	
-	private void updateLogin (LoginStatus status) {
-		if (status != null) {
-			LOG.log(Level.INFO, "New login status: "+status);
-			boolean visible = false;
-			switch (status) {
-			case INVALID_CREDENTIALS:
-				break;
-			case LOGGED_IN:
-				getApplication().switchView(TraplineListView.NAME);
-				break;
-			case PENDING_LOGIN:
-				visible = true;
-				break;
-			case SERVER_UNAVAILABLE:
-				getApplication().switchView(TraplineListView.NAME);
-				//For now, we'll go to the trapline view regardless
-				break;
-			case LOGGED_OUT:
-				break;
-			}
-			statusPopup.setVisible(visible);
-		}
+	/**
+	 * Displays the provided login response message as a dialog box
+	 * @param message The login response message to display
+	 */
+	private void showResponse (String message) {
+		Dialog<Button> dialog = new Dialog<>();
+		dialog.setContent(new Label(message));
+		Button okButton = new Button("OK");
+		okButton.setOnAction(e -> {
+			dialog.hide();
+		});
+		dialog.getButtons().add(okButton);
+		dialog.showAndWait();
 	}
 
     @Override
