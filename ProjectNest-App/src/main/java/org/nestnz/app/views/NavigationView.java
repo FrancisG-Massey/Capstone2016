@@ -134,7 +134,7 @@ public class NavigationView extends View {
             		compass.setBearing(newHeading.doubleValue());
             	}
             });
-        	setCenter(compass);
+        	//setCenter(compass);
         }
     }
     
