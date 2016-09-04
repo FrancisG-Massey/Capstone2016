@@ -94,12 +94,22 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 		Image icon = new Image(LoginView.class.getResourceAsStream("/icon.png"));        
         ImageView iconView = new ImageView(icon);
         
-        emailField.setPromptText("Email Address");
+        emailField.setPromptText("Email Address");        
+        emailField.setFocusTraversable(true);
+        emailField.setOnAction(evt -> {
+        	passwordField.requestFocus();
+        });
         
         passwordField.setPromptText("Password");
+        passwordField.setFocusTraversable(true);
+        passwordField.setOnAction(evt -> {
+        	runLogin();
+        });
+        
 		Button loginButton = new Button("Login");
 		loginButton.setMaxWidth(1000);
 		loginButton.setMaxHeight(1000);
+		loginButton.setFocusTraversable(true);
 		
 		setCenter(controls);
 		controls.getChildren().addAll(spacer(), iconView, spacer(), emailField, passwordField, loginButton);
@@ -137,6 +147,7 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 					case INVALID_CREDENTIALS:
 						checkSavedCredentials = false;
 						this.getApplication().hideLayer("loading");
+						passwordField.clear();
 						showResponse("Please enter your email address & password again to continue.");
 						break;
 					case LOGGED_IN:
@@ -161,6 +172,7 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 					switch (newValue) {
 					case INVALID_CREDENTIALS:
 						this.getApplication().hideLayer("loading");
+						passwordField.clear();
 						showResponse("The email address and password you entered is incorrect.");
 						break;
 					case LOGGED_IN:
@@ -172,6 +184,7 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 						break;
 					case SERVER_UNAVAILABLE:
 						this.getApplication().hideLayer("loading");
+						passwordField.clear();
 						showResponse("We can't reach the Nest NZ server at the moment. \n"
 								+ "Make sure your internet connection is available and try again later.");				
 						break;
