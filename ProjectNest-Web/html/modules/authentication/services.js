@@ -8,63 +8,50 @@ angular.module('Authentication')
         var service = {};
 
         service.Login = function (username, password, callback) {
+            // Use this for real authentication
+            var authdata = Base64.encode(username + ':' + password);
 
-            /* Dummy authentication for testing, uses $timeout to simulate api call
-             ----------------------------------------------*/
-            $timeout(function(){
-                var response = { success: username === 'test' && password === 'test' };
-                if(!response.success) {
-                    response.message = 'Username or password is incorrect';
-                }
-                callback(response);
-            }, 1000);
-
-
-            /* Use this for real authentication
-             
-        	   var req = {
-                       method:'POST',
-                       url: 'https://api.nestnz.org',
-                       data: {username: username, password: password
-                       },
-                       withCredentials:true
-
-                   };
-
-                   $http(req).then(function (response) {
-                	   console.log(response);
-                       if( response.data.success ){                           
-                       }
-                       if( response.data.error){                           
-                       }
-                   });*/
-             
-           /* $http.post('https://api.nestnz.org', { username: username, password: password })
-                .success(function (response) {
-                    //callback(response);
-                	console.log(response);
-                });*/
-
+            var req = {
+			 method: 'POST',
+			 url: 'https://www.nestnz.org/api/session/',
+			 headers: {
+			   'Authorization': 'Basic ' + authdata
+			 },
+			 data: { username: username, password: password }
+    		}
+           
+            $http(req)
+            .success(function(data, status, headers, config){         	   
+         	   callback({success:true, sessionToken: headers('session-token')});
+           	})
+           	.error(function(error){
+           		callback({success:false, message:"Username or passwrod is incorrect"});
+           	});
         };
  
-        service.SetCredentials = function (username, password) {
-            var authdata = Base64.encode(username + ':' + password);
+        service.SetCredentials = function (username, password, sessionToken) {
  
             $rootScope.globals = {
                 currentUser: {
                     username: username,
-                    authdata: authdata
-                }
+                    sessionToken: sessionToken
+                },
             };
- 
-            $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata; // jshint ignore:line
+            $http.defaults.headers.common['Session-Token'] = sessionToken;
             $cookieStore.put('globals', $rootScope.globals);
         };
  
         service.ClearCredentials = function () {
             $rootScope.globals = {};
             $cookieStore.remove('globals');
-            $http.defaults.headers.common.Authorization = 'Basic ';
+            
+            $http.delete('https://www.nestnz.org/api/session/')
+            .then(function(response) {
+                console.log(response);
+            });
+            
+            //$http.defaults.headers.common.Authorization = 'Basic ';
+            delete $http.defaults.headers.common['Session-Token'];
         };
  
         return service;
