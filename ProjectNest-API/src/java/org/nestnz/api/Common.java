@@ -73,10 +73,43 @@ public class Common {
     public static String resultSetAsJSON(ResultSet rsh) throws SQLException {
         JsonArray jsonArray = new JsonArray();
         ResultSetMetaData rsmd = rsh.getMetaData();
+        int numColumns = rsmd.getColumnCount();
         while (rsh.next()) {
             JsonObject jsonObj = new JsonObject();
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                jsonObj.addProperty(rsmd.getColumnName(i), rsh.getString(i));
+            for (int i = 1; i <= numColumns; i++) {
+                String column_name = rsmd.getColumnName(i);
+                switch (rsmd.getColumnType(i)) {
+                    case java.sql.Types.BIGINT:
+                        jsonObj.addProperty(column_name, rsh.getInt(i));
+                        break;
+                    case java.sql.Types.BOOLEAN:
+                        jsonObj.addProperty(column_name, rsh.getBoolean(i));
+                        break;
+                    case java.sql.Types.DOUBLE:
+                        jsonObj.addProperty(column_name, rsh.getDouble(i));
+                        break;
+                    case java.sql.Types.FLOAT:
+                        jsonObj.addProperty(column_name, rsh.getFloat(i));
+                        break;
+                    case java.sql.Types.INTEGER:
+                        jsonObj.addProperty(column_name, rsh.getInt(i));
+                        break;
+                    case java.sql.Types.NVARCHAR:
+                        jsonObj.addProperty(column_name, rsh.getNString(i));
+                        break;
+                    case java.sql.Types.TINYINT:
+                        jsonObj.addProperty(column_name, rsh.getInt(i));
+                        break;
+                    case java.sql.Types.SMALLINT:
+                        jsonObj.addProperty(column_name, rsh.getInt(i));
+                        break;
+                    //case java.sql.Types.VARCHAR:
+                    //case java.sql.Types.DATE:
+                    //case java.sql.Types.TIMESTAMP:
+                    default:
+                        jsonObj.addProperty(column_name, rsh.getString(i));
+                        break;
+                }
             }
             jsonArray.add(jsonObj);
         }
