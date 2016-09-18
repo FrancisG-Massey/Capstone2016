@@ -51,11 +51,11 @@
 				{{selected.id ? 'Trap ID: ' + selected.id : 'New Trap'}}
 				<div class="btn-group pull-right" data-toggle="buttons">
 					<label
-						ng-class="{ 'btn btn-primary': true, 'active': selected.status == 'active' }">
+						ng-class="{ 'btn btn-default': true, 'active': selected.status == 'active' }">
 						<input type="radio" id="option2" autocomplete="off"
 						ng-checked="selected.status == 'active'">Active
 					</label> <label
-						ng-class="{ 'btn btn-primary': true, 'active': selected.status == 'inactive' }">
+						ng-class="{ 'btn btn-default': true, 'active': selected.status == 'inactive' }">
 						<input type="radio" id="option3" autocomplete="off"
 						ng-checked="selected.status == 'inactive'">Inactive
 					</label>
@@ -98,13 +98,55 @@
 					</select>
 				</div>
 			</div>
+			
+	<div style="margin-top:8px; margin-bottom: 10px">
+	  <div>
+	  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#damage-history" >View History Of Damage</button>
+	  <button type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#catch-history" >View History Of Catch</button>
+	  <div class="modal fade" id="damage-history" tabindex="-1" role="dialog">
+	    <div class="modal-dialog" role="document">
+	      <div class="modal-content">
+	        <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	            <span aria-hidden="true">&times;</span>
+	          </button>
+	          <h4 class="modal-title">Histroy Of Damage</h4>
+	        </div>
+	        <div class="modal-body">
+	        </div>
+	        <div class="modal-footer">
+	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	          <button type="button" class="btn btn-primary">Save</button>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+	  </div>
+	  <div class="modal fade" id="catch-history" tabindex="-1" role="dialog">
+	    <div class="modal-dialog" role="document">
+	      <div class="modal-content">
+	        <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	            <span aria-hidden="true">&times;</span>
+	          </button>
+	          <h4 class="modal-title">Histroy Of Catch Type</h4>
+	        </div>
+	        <div class="modal-body">
+	        </div>
+	        <div class="modal-footer">
+	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	          <button type="button" class="btn btn-primary">Save</button>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
 
-			<div id="mapid"></div>
+	<div id="mapid"></div>
 
-			<div class = "pull-right" style="margin-top: 10px;">
-				<button class="btn btn-success" type="button">Save</button>
-				<button class="btn btn-danger" type="button">Delete</button>
-
-			</div>
-		</div>
+	<div class = "pull-right" style="margin-top: 10px;">
+		<button class="btn btn-success" type="button">Save</button>
+		<button class="btn btn-danger" type="button">Delete</button>
+	</div>
+	</div>
 	</div>
