@@ -23,7 +23,7 @@ angular.module('Admin')
 			      "coord_lat" : -40.311086,
 			      "coord_long" : 175.775306,
 			      "type_id" : 1234567891011,
-			      "status" : "active",
+			      "status" : "inactive",
 			      "created" : "2016-04-16T10:30:07",
 			      "last_reset" : "2016-08-16T10:30:07",
 			      "bait_id" : 123456789101112,
@@ -47,7 +47,7 @@ angular.module('Admin')
 			      "coord_lat" : -40.311821,
 			      "coord_long" : 175.775993,
 			      "type_id" : 1234567891011,
-			      "status" : "active",
+			      "status" : "inactive",
 			      "created" : "2016-04-16T10:36:07",
 			      "last_reset" : "2016-08-16T10:36:07",
 			      "bait_id" : 123456789101112,
@@ -71,7 +71,7 @@ angular.module('Admin')
 			      "coord_lat" : -40.312119,
 			      "coord_long" : 175.777347,
 			      "type_id" : 1234567891011,
-			      "status" : "active",
+			      "status" : "inactive",
 			      "created" : "2016-04-16T10:40:07",
 			      "last_reset" : "2016-08-16T10:40:07",
 			      "bait_id" : 123456789101112,
@@ -95,7 +95,7 @@ angular.module('Admin')
 			      "coord_lat" : -40.309705,
 			      "coord_long" : 175.772583,
 			      "type_id" : 1234567891011,
-			      "status" : "active",
+			      "status" : "inactive",
 			      "created" : "2016-04-16T10:47:07",
 			      "last_reset" : "2016-08-16T10:47:07",
 			      "bait_id" : 123456789101112,
@@ -406,6 +406,5 @@ angular.module('Admin')
     	console.log(this.n);
         $scope.currentPage = this.n;
     };
-    
-    	
+
 }]);
