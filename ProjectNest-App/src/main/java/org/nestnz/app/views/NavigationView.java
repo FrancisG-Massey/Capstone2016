@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.NestApplication;
+import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.CompassService;
@@ -35,6 +36,7 @@ import com.gluonhq.charm.down.common.PlatformFactory;
 import com.gluonhq.charm.down.common.Position;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
@@ -46,6 +48,7 @@ import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 
 public class NavigationView extends View {
 	
@@ -66,6 +69,8 @@ public class NavigationView extends View {
     final ObjectProperty<Position> targetCoordsProperty = new SimpleObjectProperty<>();
     
     final StringProperty distanceToTrap = new SimpleStringProperty();
+    
+    final Dialog<CatchType> catchSelectDialog;
 
     public NavigationView() {
         this(false);
@@ -82,6 +87,7 @@ public class NavigationView extends View {
         if (!test) {
         	initMonitors();
         }
+        catchSelectDialog = makeCatchDialog();
     }
     
     private void initControls () {        
@@ -102,6 +108,14 @@ public class NavigationView extends View {
         
         setLeft(prev);
         setRight(next);
+        
+        Button logCatch = new Button();
+        logCatch.setMaxWidth(1000);
+        logCatch.setText("Log Catch");
+        logCatch.setOnAction(evt -> {
+        	catchSelectDialog.showAndWait();
+        });
+        setBottom(logCatch);
     	
     	
     	trapProperty.addListener((obs, oldV, newV) -> {
@@ -136,6 +150,33 @@ public class NavigationView extends View {
             });
         	//setCenter(compass);
         }
+    }
+    
+    private final Dialog<CatchType> makeCatchDialog () {
+    	Dialog<CatchType> dialog = new Dialog<>(true);
+    	BorderPane controls = new BorderPane();
+    	dialog.setContent(controls);
+    	
+    	Button empty = new Button("Empty");
+    	empty.setMaxWidth(1000);
+    	empty.setMaxHeight(1000);
+    	empty.setOnAction(evt -> {
+    		LOG.log(Level.INFO, "Empty.");
+    	});
+    	
+    	Button option2 = new Button();
+    	option2.setMaxWidth(1000);
+
+    	Button option3 = new Button();
+    	Button option4 = new Button();
+    	Button other = new Button();
+    	BorderPane.setAlignment(empty, Pos.TOP_LEFT);
+    	BorderPane.setAlignment(option2, Pos.TOP_RIGHT);
+    	BorderPane.setAlignment(option3, Pos.BOTTOM_LEFT);
+    	BorderPane.setAlignment(option4, Pos.BOTTOM_RIGHT);
+    	BorderPane.setAlignment(other, Pos.CENTER);
+    	controls.getChildren().addAll(empty, option2, option3, option4, other);
+    	return dialog;
     }
     
     /**
@@ -194,7 +235,7 @@ public class NavigationView extends View {
     		return t1.getNumber() - t2.getNumber();
     	});
     	
-    	setTrap(orderedTraps.get(0));    	
+    	setTrap(orderedTraps.get(0));
     }
 
     @Override

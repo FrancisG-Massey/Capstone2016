@@ -67,7 +67,7 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 		super(NAME);
 		this.loginService = loginService;
 		
-		//checkSavedCredentials = loginService.checkSavedCredentials();
+		checkSavedCredentials = loginService.checkSavedCredentials();
 		
 		this.setOnMousePressed(evt -> {
 			this.requestFocus();
