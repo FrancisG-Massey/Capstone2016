@@ -86,12 +86,16 @@ public class RequestServlet extends HttpServlet {
             throws ServletException, IOException {
         String dirtySQL;
         
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
+        
         // Parse out the request path from the URL
         try {
             dirtySQL = getSQLQuery(request.getPathInfo().substring(1), "GET");
         } catch (IOException ex) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setHeader("Error", ex.getMessage());
             return;
         }
@@ -99,7 +103,7 @@ public class RequestServlet extends HttpServlet {
         // Check that the request target is mapped and valid
         if (dirtySQL == null) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
        
@@ -107,10 +111,10 @@ public class RequestServlet extends HttpServlet {
         final String sessionToken = request.getHeader("Session-Token");
         final String uuidRegex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
         if (sessionToken == null) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         } else if (!sessionToken.matches(uuidRegex)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
         
@@ -143,7 +147,7 @@ public class RequestServlet extends HttpServlet {
             }
         } catch (IOException | SQLException ex) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setHeader("Error", ex.getMessage());
         }
                 
@@ -165,6 +169,11 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
 
@@ -179,6 +188,11 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
     
@@ -193,6 +207,11 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
     
