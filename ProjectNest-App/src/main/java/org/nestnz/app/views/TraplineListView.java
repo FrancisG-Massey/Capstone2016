@@ -64,14 +64,14 @@ public class TraplineListView extends View {
 				throw new UnsupportedOperationException("Not supported!");
 			}
         });
-        
+        traplineList.setId("trapline-list");
         traplineList.setCellFactory(list -> new CharmListCell<Trapline>() {
         	Button button = new Button();
         	Trapline trapline;
         	
         	{
-        		button.setMaxHeight(1000.0);
-        		button.setMaxWidth(1000.0);
+        		//button.setMaxHeight(1000.0);
+        		//button.setMaxWidth(1000.0);
         		this.setGraphic(button);
         		button.setOnAction(evt -> {
         			LOG.log(Level.INFO, "Pressed trapline: "+trapline);
@@ -94,7 +94,7 @@ public class TraplineListView extends View {
         
         setCenter(traplineList);
 		menu = buildMenu();
-        getStylesheets().add(TraplineListView.class.getResource("traplineView.css").toExternalForm());
+        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
     }
 	
 	private SidePopupView buildMenu () {
