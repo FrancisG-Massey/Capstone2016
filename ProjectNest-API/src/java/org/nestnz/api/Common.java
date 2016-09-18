@@ -83,6 +83,7 @@ public class Common {
                         jsonObj.addProperty(column_name, rsh.getInt(i));
                         break;
                     case java.sql.Types.BOOLEAN:
+                    case java.sql.Types.BIT:
                         jsonObj.addProperty(column_name, rsh.getBoolean(i));
                         break;
                     case java.sql.Types.DOUBLE:
