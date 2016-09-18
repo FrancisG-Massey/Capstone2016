@@ -90,6 +90,9 @@ public class SessionServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // TODO: Remove this before production
+        
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/html;charset=UTF-8");
         
@@ -145,6 +148,10 @@ public class SessionServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
         
         // Check for a well-formed basic auth header.
         final String auth = request.getHeader("Authorization");
@@ -251,6 +258,10 @@ public class SessionServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
         
         // Check for a "Session-Token" header with regex validation
         final String sessionToken = request.getHeader("Session-Token");

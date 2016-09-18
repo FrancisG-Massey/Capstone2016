@@ -86,6 +86,10 @@ public class RequestServlet extends HttpServlet {
             throws ServletException, IOException {
         String dirtySQL;
         
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
+        
         // Parse out the request path from the URL
         try {
             dirtySQL = getSQLQuery(request.getPathInfo().substring(1), "GET");
@@ -165,6 +169,11 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
 
@@ -179,6 +188,11 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
     
@@ -193,6 +207,11 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Add the CORS header for XHR requests
+        // TODO: Abstract this to a config file
+        response.setHeader("Access-Control-Allow-Origin", "www.nestnz.org");
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
     
