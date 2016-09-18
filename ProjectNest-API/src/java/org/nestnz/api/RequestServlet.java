@@ -95,7 +95,7 @@ public class RequestServlet extends HttpServlet {
             dirtySQL = getSQLQuery(request.getPathInfo().substring(1), "GET");
         } catch (IOException ex) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setHeader("Error", ex.getMessage());
             return;
         }
@@ -103,7 +103,7 @@ public class RequestServlet extends HttpServlet {
         // Check that the request target is mapped and valid
         if (dirtySQL == null) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
        
@@ -111,10 +111,10 @@ public class RequestServlet extends HttpServlet {
         final String sessionToken = request.getHeader("Session-Token");
         final String uuidRegex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
         if (sessionToken == null) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         } else if (!sessionToken.matches(uuidRegex)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
         
@@ -147,7 +147,7 @@ public class RequestServlet extends HttpServlet {
             }
         } catch (IOException | SQLException ex) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setHeader("Error", ex.getMessage());
         }
                 

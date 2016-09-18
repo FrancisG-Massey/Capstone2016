@@ -202,7 +202,6 @@ public class SessionServlet extends HttpServlet {
             }
         } catch (SQLException | IOException ex) {
         	LOG.log(Level.SEVERE, "Problem executing query", ex);
-            //response.setHeader("Error", ex.getMessage());      // YOLO debug
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
@@ -236,7 +235,6 @@ public class SessionServlet extends HttpServlet {
             }
          } catch (SQLException | IOException ex) {
          	LOG.log(Level.SEVERE, "Problem executing query", ex);
-            //response.setHeader("Error", ex.getMessage());      // YOLO debug
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
