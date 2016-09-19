@@ -72,8 +72,6 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
         	Trapline trapline;
         	
         	{
-        		//button.setMaxHeight(1000.0);
-        		//button.setMaxWidth(1000.0);
         		this.setGraphic(button);
         		button.setOnAction(evt -> {
         			LOG.log(Level.INFO, "Pressed trapline: "+trapline);

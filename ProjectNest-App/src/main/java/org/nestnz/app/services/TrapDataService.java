@@ -104,7 +104,14 @@ public final class TrapDataService {
     			pTrapline.initializedProperty().addListener((obs, oldValue, newValue) -> {
     				if (newValue) {
     					try {
-    						addTrapline(new Trapline(pTrapline.get()));
+    						Trapline t = new Trapline(pTrapline.get());
+    						Region r = t.getRegion();
+    						if (regions.containsKey(r.getId())) {
+    							r = regions.get(r.getId());
+    						} else {
+    							regions.put(r.getId(), r);
+    						}
+    						addTrapline(t);
     					} catch (RuntimeException ex) {
     						LOG.log(Level.WARNING, "Failed to load data from trapline file "+traplineFile, ex);
     					}
