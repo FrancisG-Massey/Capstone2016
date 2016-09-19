@@ -181,7 +181,6 @@ CREATE TABLE public.region
 (
   region_id bigint NOT NULL DEFAULT nextval('region_region_id_seq'::regclass),
   region_name text NOT NULL,
-  region_doc_id text NOT NULL,
   CONSTRAINT region_pkey PRIMARY KEY (region_id)
 )
 WITH (
@@ -303,7 +302,6 @@ CREATE TABLE public.trapline
 (
   trapline_id bigint NOT NULL DEFAULT nextval('trapline_trapline_id_seq'::regclass),
   trapline_name text NOT NULL,
-  trapline_doc_id text NOT NULL,
   trapline_region_id bigint NOT NULL,
   trapline_start_tag text,
   trapline_end_tag text,
@@ -429,7 +427,7 @@ CREATE TABLE public.trap
 (
   trap_id bigint NOT NULL DEFAULT nextval('trap_trap_id_seq'::regclass),
   trap_trapline_id bigint NOT NULL,
-  trap_doc_id text NOT NULL,
+  trap_number bigint NOT NULL,
   trap_coord_x numeric NOT NULL,
   trap_coord_y numeric NOT NULL,
   trap_type_id bigint NOT NULL,
