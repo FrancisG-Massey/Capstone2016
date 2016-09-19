@@ -18,7 +18,6 @@ package org.nestnz.app.services;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,8 +32,8 @@ import javax.json.JsonValue;
 
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
-import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
 import org.nestnz.app.util.BackgroundTasks;
 
@@ -68,16 +67,16 @@ public final class TrapDataService {
     
     private final File trapCachePath;
     
-    private final LoginService loginService = LoginService.getInstance();
+    private final LoginService loginService;
     
     private final ReadOnlyBooleanWrapper loadingProperty = new ReadOnlyBooleanWrapper(false);
     
-    public TrapDataService (File trapCachePath) throws IOException {
+    public TrapDataService (File trapCachePath, LoginService loginService) throws IOException {
     	Objects.requireNonNull(trapCachePath);
     	trapCachePath.mkdirs();
     	
     	this.trapCachePath = trapCachePath;
-    	addSampleTraplines();
+    	this.loginService = loginService;
     	loadTraplines();
     }
     
@@ -90,7 +89,6 @@ public final class TrapDataService {
     }
     
     protected void loadTraplines () {
-    	//TODO: Fetch trapline list from server
     	int count = 0;
     	for (File traplineFile : trapCachePath.listFiles()) {
         	LOG.log(Level.INFO, String.format("File: %s", traplineFile));
@@ -104,12 +102,18 @@ public final class TrapDataService {
     			pTrapline.initializedProperty().addListener((obs, oldValue, newValue) -> {
     				if (newValue) {
     					try {
-    						Trapline t = new Trapline(pTrapline.get());
-    						Region r = t.getRegion();
-    						if (regions.containsKey(r.getId())) {
-    							r = regions.get(r.getId());
+    						ParserTrapline pLine = pTrapline.get();
+    						int rId = pLine.getRegion().getId();
+    						Region r;
+    						if (regions.containsKey(rId)) {
+    							r = regions.get(rId);
     						} else {
+    							r = new Region(rId, pLine.getRegion().getName());
     							regions.put(r.getId(), r);
+    						}
+    						Trapline t = new Trapline(pLine.getId(), pLine.getName(), r, pLine.getStart(), pLine.getEnd());
+    						for (ParserTrap pTrap : pLine.getTraps()) {
+    							t.getTraps().add(new Trap(pTrap));
     						}
     						addTrapline(t);
     					} catch (RuntimeException ex) {
@@ -234,15 +238,6 @@ public final class TrapDataService {
 	public final ObservableList<Trapline> getTraplines() {
 		return traplines;
 	}
-    
-    private void addSampleTraplines () {
-    	if (getTrapline(20) == null) {
-	    	Trapline t1 = new Trapline(20, "Test trapline", new Region(20, "Test Region"), "Test Start");
-	    	t1.getTraps().add(new Trap(1, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now()));
-	    	t1.getTraps().add(new Trap(2, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now()));
-	    	addTrapline(t1);
-    	}
-    }
 	
 	/**
 	 * Updates the cached version of the trapline and flags the trapline as dirty

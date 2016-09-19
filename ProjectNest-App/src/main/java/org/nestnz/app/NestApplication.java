@@ -49,7 +49,7 @@ public class NestApplication extends MobileApplication {
     @Override
     public void init() throws IOException {
         appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
-        trapDataService = new TrapDataService(new File(appStoragePath, "cache"));
+        trapDataService = new TrapDataService(new File(appStoragePath, "cache"), LoginService.getInstance());
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));

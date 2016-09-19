@@ -86,8 +86,10 @@ public class NavigationView extends View {
         initControls();
         if (!test) {
         	initMonitors();
+            catchSelectDialog = makeCatchDialog();
+        } else {
+        	catchSelectDialog = null;
         }
-        catchSelectDialog = makeCatchDialog();
     }
     
     private void initControls () {        

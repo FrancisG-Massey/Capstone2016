@@ -74,7 +74,7 @@ public final class Region implements Comparable<Region> {
 		if (getClass() != obj.getClass())
 			return false;
 		Region other = (Region) obj;
-		if (idProperty.get() == other.idProperty.get())
+		if (idProperty.get() != other.idProperty.get())
 			return false;
 			
 		if (nameProperty.get() == null) {
