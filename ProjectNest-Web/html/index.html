@@ -44,21 +44,27 @@
 					</a>
 				</div>
 				<div class="collapse navbar-collapse" id="navbar" bs-active-link>
-					<ul ng-if="globals.currentUser" class="nav navbar-nav navbar-right"
-						ng-cloak>
-						<li><a href="#/trap-admin">Trap Admin</a></li>
-						<li><a href="#/volunteer-admin">Volunteer Admin</a></li>
-						<li data-ng-controller="LoginController"><a href="#"
-							" ng-click="logout()"">Logout
-								({{globals.currentUser.username}})</a></li>
-					</ul>
-					<ul ng-if="!globals.currentUser"
-						class="nav navbar-nav navbar-right" ng-cloak>
+					<ul class="nav navbar-nav navbar-right" ng-cloak>
 						<li><a href="#/about">About</a></li>
 						<li><a href="#/statistics">Statistics</a></li>
 						<li><a href="#/volunteer">Volunteer</a></li>
 						<li><a href="#/contact">Contact</a></li>
-						<li><a href="#/login">Log In</a></li>
+
+						<li class="dropdown" ng-if="globals.currentUser">
+							<a href="javascript:void(0)" class="dropdown-toggle" id="admin-dropdown" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+								Admin <span class="caret"></span>
+							</a>
+							<ul class="dropdown-menu" aria-labelledby="admin-dropdown">
+								<li><a href="#/trap-admin">Trap</a></li>
+								<li><a href="#/volunteer-admin">Volunteer</a></li>
+							</ul>
+						</li>
+						<li data-ng-controller="LoginController" ng-if="globals.currentUser">
+							<a href="#" ng-click="logout()"">Logout
+								({{globals.currentUser.username}})
+							</a>
+						</li>
+						<li ng-if="!globals.currentUser"><a href="#/login">Log In</a></li>
 					</ul>
 				</div>
 			</div>
