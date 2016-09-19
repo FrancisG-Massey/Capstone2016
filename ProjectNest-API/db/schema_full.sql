@@ -21,6 +21,7 @@
 
 --DROP SCHEMA IF EXISTS public CASCADE;
 --CREATE SCHEMA public;
+--ALTER SCHEMA public OWNER TO nestnz;
 
 
 -- First create the sequences for the auto-incrememting primary keys
@@ -285,7 +286,7 @@ CREATE TABLE public.trap_type
   trap_type_model text,
   trap_type_note text,
   CONSTRAINT trap_type_pkey PRIMARY KEY (trap_type_id),
-  CONSTRAINT trap_type_valid_text_identifier CHECK NOT ((trap_type_model IS NULL) AND (trap_type_name IS NULL))
+  CONSTRAINT trap_type_valid_text_identifier CHECK (NOT ((trap_type_model IS NULL) AND (trap_type_name IS NULL)))
 )
 WITH (
   OIDS=FALSE
@@ -441,7 +442,7 @@ CREATE TABLE public.trap
       REFERENCES public.bait (bait_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT trap_trapline_id_fkey FOREIGN KEY (trap_trapline_id)
-      REFERENCES public.trapline (trap_trapline_id) MATCH SIMPLE
+      REFERENCES public.trapline (trapline_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT trap_trap_type_id_fkey FOREIGN KEY (trap_type_id)
       REFERENCES public.trap_type (trap_type_id) MATCH SIMPLE
