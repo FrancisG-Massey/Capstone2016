@@ -1,5 +1,5 @@
 {
-    "GET" : "SELECT * FROM public.trap_line_user",
+    "GET" : "SELECT * FROM public.trapline_user",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""
