@@ -285,7 +285,7 @@ CREATE TABLE public.trap_type
   trap_type_model text,
   trap_type_note text,
   CONSTRAINT trap_type_pkey PRIMARY KEY (trap_type_id),
-  CONSTRAINT trap_type_valid_text_identifier CHECK (NOT trap_type_model IS NULL AND trap_type_name IS NULL)
+  CONSTRAINT trap_type_valid_text_identifier CHECK NOT ((trap_type_model IS NULL) AND (trap_type_name IS NULL))
 )
 WITH (
   OIDS=FALSE
@@ -304,8 +304,8 @@ CREATE TABLE public.trap_line
   trap_line_name text NOT NULL,
   trap_line_doc_id text NOT NULL,
   trap_line_region_id bigint NOT NULL,
-  trap_line_start_tag bigint,
-  trap_line_end_tag bigint,
+  trap_line_start_tag text,
+  trap_line_end_tag text,
   trap_line_image_filename text,
   CONSTRAINT trap_line_pkey PRIMARY KEY (trap_line_id),
   CONSTRAINT trap_line_trap_line_region_id_fkey FOREIGN KEY (trap_line_region_id)
