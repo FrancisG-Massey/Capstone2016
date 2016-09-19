@@ -125,7 +125,11 @@ public final class Trapline {
 
 	public Region getRegion() {
 		return regionProperty.get();
-	}	
+	}
+	
+	public void setRegion (Region region) {
+		regionProperty.set(region);
+	}
 	
 	public ObjectProperty<Region> regionProperty () {
 		return regionProperty;

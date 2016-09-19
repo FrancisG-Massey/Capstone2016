@@ -19,7 +19,9 @@ package org.nestnz.app.services;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +51,8 @@ import com.gluonhq.impl.connect.converter.JsonUtil;
 
 import javafx.application.Platform;
 import javafx.beans.Observable;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -60,9 +64,13 @@ public final class TrapDataService {
     	return new Observable[] { trapline.nameProperty(), trapline.regionProperty() };
     });
     
+    private final Map<Integer, Region> regions = new HashMap<>();
+    
     private final File trapCachePath;
     
     private final LoginService loginService = LoginService.getInstance();
+    
+    private final ReadOnlyBooleanWrapper loadingProperty = new ReadOnlyBooleanWrapper(false);
     
     public TrapDataService (File trapCachePath) throws IOException {
     	Objects.requireNonNull(trapCachePath);
@@ -71,6 +79,14 @@ public final class TrapDataService {
     	this.trapCachePath = trapCachePath;
     	addSampleTraplines();
     	loadTraplines();
+    }
+    
+    public boolean isLoading () {
+    	return loadingProperty.get();
+    }
+    
+    public ReadOnlyBooleanProperty loadingProperty () {
+    	return loadingProperty.getReadOnlyProperty();
     }
     
     protected void loadTraplines () {
@@ -131,6 +147,13 @@ public final class TrapDataService {
      * This method is generally used to add traplines the user can now access, or remove those they can no longer access
      */
     public void refreshTraplines () {
+    	if (loadingProperty.get()) {
+    		return;
+    	}
+    	loadingProperty.set(true);
+    	
+    	refreshRegions();//Reload the regions first
+    	
     	RestClient traplineClient = RestClient.create().method("GET").host("https://api.nestnz.org")
     			.path("/trap-line").header("Session-Token", loginService.getSessionToken());
     	
@@ -139,6 +162,7 @@ public final class TrapDataService {
     	BackgroundTasks.runInBackground(() -> {
     		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
     			JsonArray array = reader.readArray();
+    			LOG.log(Level.INFO, "Response: "+array.toString());
     			Platform.runLater(() -> {
     				for (JsonValue value : array) {
         				JsonObject traplineJson = (JsonObject) value;
@@ -149,13 +173,53 @@ public final class TrapDataService {
         					traplines.add(trapline);
         				}
         				trapline.setName(traplineJson.getString("trap_line_name"));
-        				trapline.setStart(traplineJson.getString("trap_line_start_tag"));
-        				trapline.setEnd(traplineJson.getString("trap_line_end_tag"));
-        				//TODO: Find & add region here
+        				//trapline.setStart(traplineJson.getString("trap_line_start_tag"));
+        				//trapline.setEnd(traplineJson.getString("trap_line_end_tag"));
+        				int regionId = traplineJson.getInt("trap_line_region_id");
+        				Region region = regions.get(regionId);
+        				if (region == null) {
+        					region = new Region(regionId);
+        					regions.put(regionId, region);
+        				}
+        				trapline.setRegion(region);
         			}
+    				loadingProperty.set(false);
     			});
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting traplines. Response: "+dataSource.getResponseMessage(), ex);
+			}
+    	});
+    }
+    
+    protected void refreshRegions () {
+    	RestClient regionClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/region").header("Session-Token", loginService.getSessionToken());
+    	
+    	RestDataSource dataSource = regionClient.createRestDataSource();
+    	
+    	BackgroundTasks.runInBackground(() -> {
+    		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
+    			JsonArray array = reader.readArray();
+    			LOG.log(Level.INFO, "Response: "+array.toString());
+    			Platform.runLater(() -> {
+    				for (JsonValue value : array) {
+        				JsonObject regionJson = (JsonObject) value;
+        				int id = regionJson.getInt("region_id");
+        				Region region = regions.get(id);
+        				if (region == null) {
+        					region = new Region(id);
+        					regions.put(id, region);
+        				}
+        				region.setName(regionJson.getString("region_name"));
+        			}
+    				for (Trapline t : traplines) {
+    					Region r = t.getRegion();
+    					t.setRegion(null);
+    					t.setRegion(r);//Forcefully update all the regions
+    				}
+    			});
+    		} catch (IOException | RuntimeException ex) {
+    			LOG.log(Level.SEVERE, "Problem requesting regions. Response: "+dataSource.getResponseMessage(), ex);
 			}
     	});
     }
@@ -170,11 +234,6 @@ public final class TrapDataService {
 	    	t1.getTraps().add(new Trap(1, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now()));
 	    	t1.getTraps().add(new Trap(2, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now()));
 	    	addTrapline(t1);
-    	}
-    	
-    	if (getTrapline(21) == null) {
-    		Trapline gorge = new Trapline(21, "Manawatu Gorge", new Region(21, "Manawatu"), "Ashhurst", "Woodville");
-    		addTrapline(gorge);
     	}
     }
 	

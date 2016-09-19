@@ -32,13 +32,15 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.util.StringConverter;
 
-public class TraplineListView extends View {
+public class TraplineListView extends View implements ChangeListener<Boolean> {
 	
 	public static final String NAME = "trapline_list";
 
@@ -91,6 +93,14 @@ public class TraplineListView extends View {
                 }
         	}
         });
+				
+        this.setOnShown(evt -> {
+    		dataService.loadingProperty().addListener(this);        	
+        });
+        
+        this.setOnHidden(evt -> {
+        	dataService.loadingProperty().removeListener(this);
+        });
         
         setCenter(traplineList);
 		menu = buildMenu();
@@ -116,5 +126,17 @@ public class TraplineListView extends View {
         appBar.setTitleText("Nest NZ");
         appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.refreshTraplines()));
     }
+
+	/* (non-Javadoc)
+	 * @see javafx.beans.value.ChangeListener#changed(javafx.beans.value.ObservableValue, java.lang.Object, java.lang.Object)
+	 */
+	@Override
+	public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+		if (newValue) {
+			this.getApplication().showLayer("loading");
+		} else {
+			this.getApplication().hideLayer("loading");			
+		}
+	}
     
 }
