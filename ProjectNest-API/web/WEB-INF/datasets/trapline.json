@@ -1,0 +1,58 @@
+{
+    "GET" : "
+        SELECT
+            tl.trapline_id AS id,
+            tl.trapline_name AS name,
+            tl.trapline_region_id AS region_id,
+            tl.trapline_start_tag AS start_tag,
+            tl.trapline_end_tag AS end_tag,
+            tl.trapline_image_filename AS img_filename
+        FROM 
+            public.trapline tl
+    ",
+
+    "Finish this later":"
+        WITH nest_user AS (  
+                SELECT *
+                FROM public.users u 
+                JOIN public.session s ON u.user_id = s.session_user_id
+                WHERE (%session_token% IS NOT NULL) AND (s.session_token = %session_token%)
+                LIMIT 1
+            ), visible_traplines AS (
+                SELECT tl.* 
+                FROM public.trapline tl 
+                JOIN public.trapline_user tlu ON tl.trapline_id = tlu.trapline_user_trapline_id
+                JOIN nest_user nu ON tlu.trapline_user_user_id = nu.user_id
+            )
+        CASE WHEN nest_user.user_is_admin = TRUE THEN
+            SELECT 
+                tl.trapline_id AS id,
+                tl.trapline_name AS name,
+                tl.trapline_region_id AS region_id,
+                tl.trapline_start_tag AS start_tag,
+                tl.trapline_end_tag AS end_tag,
+                tl.trapline_image_filename AS img_filename
+            FROM 
+                public.trapline tl
+                JOIN public.region r ON tl.trapline_region_id = r.region_id
+            WHERE 
+                ((%id% IS NULL) OR (tl.trapline_id = %id%))
+
+        ELSE 
+            SELECT 
+                vtl.trapline_id AS id,
+                vtl.trapline_name AS name,
+                vtl.trapline_region_id AS region_id,
+                vtl.trapline_start_tag AS start_tag,
+                vtl.trapline_end_tag AS end_tag,
+                vtl.trapline_image_filename AS img_filename
+            FROM 
+                visible_traplines vtl
+            WHERE 
+                tl.trapline_id = %id% AND TRUE --Incomplete, finish this later",
+
+
+    "POST" : "", 
+    "PUT" : "",
+    "DELETE" : ""
+}

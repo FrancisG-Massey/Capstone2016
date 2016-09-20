@@ -1,5 +1,12 @@
 {
-    "GET" : "SELECT * FROM public.catch_type",
+    "GET" : "
+        SELECT 
+            ct.catch_type_id as id,
+            ct.catch_type_name as name,
+            ct.catch_type_image_filename as img_filename
+        FROM 
+            public.catch_type ct
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""
