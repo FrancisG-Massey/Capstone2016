@@ -95,8 +95,8 @@ public class RequestServlet extends HttpServlet {
             dirtySQL = getSQLQuery(request.getPathInfo().substring(1), "GET");
         } catch (IOException ex) {
             // TODO: Log ex
+            response.setHeader("Error", ex.getMessage());            
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setHeader("Error", ex.getMessage());
             return;
         }
         
@@ -147,8 +147,8 @@ public class RequestServlet extends HttpServlet {
             }
         } catch (IOException | SQLException ex) {
             // TODO: Log ex
+            response.setHeader("Error", ex.getMessage());            
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setHeader("Error", ex.getMessage());
         }
                 
         // Return the JSON array to the user
