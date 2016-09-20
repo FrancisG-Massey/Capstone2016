@@ -10,6 +10,13 @@ buildscript {
 apply plugin: 'org.javafxports.jfxmobile'
 apply plugin: 'eclipse'
 
+eclipse {
+	classpath {
+		downloadSources = true
+     	downloadJavadoc = true
+   	}
+}
+
 def useDailyJfx = false
 
 repositories {
@@ -20,7 +27,7 @@ repositories {
     maven {
        url 'https://oss.sonatype.org/content/repositories/snapshots'
     }
-    if (gluonNexusUsername && gluonNexusPassword) {
+    if (project.hasProperty('gluonNexusUsername') && project.hasProperty('gluonNexusPassword')) {
     	useDailyJfx = true
 	    maven {
 	    	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-oss-daily/' 

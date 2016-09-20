@@ -1,3 +1,86 @@
-<h1>Home</h1>
-<p>You're logged in!!{{globals.currentUser.username}}</p>
-<p><a href="#/login">Logout</a></a></p>
+
+<div class="page-header">
+<h1 class="text-center" style="margin-top: -50px; ">Volunteer Admin</h1>
+</div>
+<a ng-click="addNew()" id="addButton" ><span class="glyphicon glyphicon-plus"></span> Add Volunteer</a>  
+ <div class="row"> 
+    <div class="col-sm-7">  
+      <table class="table table-condensed table-hover admin">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Start Date</th>
+          </tr>
+        </thead>
+        <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
+          <tr data-ng-click="setSelected();" class="{{volunteer == selected ? 'success' : ''}}">
+            <td scope="row">{{volunteer.id}}</td>
+            <td>{{volunteer.firstNames + ' ' + volunteer.lastName}}</td>
+            <td>{{volunteer.email}}</td>
+            <td>{{volunteer.startDate |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
+          </tr>    
+        </tbody>
+      </table>
+      
+      <nav aria-label="Page navigation">
+		  <ul class="pagination">
+	          <li ng-class="{disabled: currentPage == 0}">
+	              <a href ng-click="prevPage()">« Prev</a>
+	          </li>
+	      
+               <li ng-repeat="n in range(volunteers.length, currentPage, currentPage + gap) "
+                   ng-class="{active: n == currentPage}"
+               ng-click="setPage()">
+                   <a href ng-bind="n + 1">1</a>
+               </li>
+	       
+	          <li ng-class="{disabled: (currentPage) == volunteers.length - 1}">
+	              <a href ng-click="nextPage()">Next »</a>
+	          </li>
+		  </ul>
+		</nav>
+    </div>
+
+    <div class="col-sm-5"> 
+      <div class="well">
+        <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'New Volunteer'}}</h3>
+        <p>First Volunteered: <strong>{{selected.startDate  |  date:"dd/MM/yyyy"}}</strong></p>
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label>First Name</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.firstNames}}">
+            </div>
+          </div>
+          <div class="col-md-6 form-group">  
+            <label>Last Name</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.lastName}}">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label>Phone</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.phone}}">
+            </div>
+          </div>
+          <div class="col-md-6 form-group">  
+            <label>Email</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.email}}">
+            </div>
+          </div>
+        </div>
+        
+    
+		<div style="margin-top: 10px;">
+        <button class="btn btn-success" type="button">Save</button>
+        <button class="btn btn-danger" type="button">Delete</button>
+        
+      </div>
+	</div>
+</div>

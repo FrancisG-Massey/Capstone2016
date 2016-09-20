@@ -17,13 +17,16 @@
 package org.nestnz.app.services;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.nestnz.app.NestApplication;
+import org.nestnz.app.util.BackgroundTasks;
 
+import com.gluonhq.charm.down.common.PlatformFactory;
+import com.gluonhq.charm.down.common.SettingService;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
 
@@ -45,43 +48,74 @@ public final class LoginService {
 
     private static final Logger LOG = Logger.getLogger(LoginService.class.getName());
     
+    private static LoginService instance;
+    
+    public static synchronized LoginService getInstance () {
+    	if (instance == null) {
+    		instance = new LoginService();
+    	}
+    	return instance;
+    }
+    
     private final ReadOnlyObjectWrapper<LoginStatus> loginStatusProperty = new ReadOnlyObjectWrapper<>(LoginStatus.LOGGED_OUT);
     
     private final ReadOnlyStringWrapper sessionTokenProperty = new ReadOnlyStringWrapper();
     
-    public LoginService () {
-    	
+    private final SettingService settingService;
+    
+    private LoginService () {
+    	settingService = PlatformFactory.getPlatform().getSettingService();
+    }
+    
+    /**
+     * Tries to log in using the username & password saved in the device settings
+     * @return true if credentials were found & used, false if no credentials were found
+     */
+    public boolean checkSavedCredentials () {
+    	String email = settingService.retrieve("api.email");
+    	String password = settingService.retrieve("api.password");
+    	if (email == null || password == null) {
+    		return false;
+    	}
+    	login(email, password);
+    	return true;
     }
     
     public void login (String username, String password) {
     	if (getLoginStatus() == LoginStatus.PENDING_LOGIN) {
     		return;//Already logging in
     	}
+    	if (username == null || username.trim().length() < 1) {
+    		throw new IllegalArgumentException("Invalid username: "+username);
+    	}
     	loginStatusProperty.set(LoginStatus.PENDING_LOGIN);
-    	LOG.log(Level.INFO, "Attempted to log in with credentials: "+username+", "+password);
     	
-    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode((username+":"+password).getBytes()));
-        
+    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode((username+":"+password).getBytes()), Charset.forName("UTF-8"));
+    	
     	RestClient loginClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/session/").queryParam("Authorization", encodedAuth);
+    			.path("/session/").header("Authorization", encodedAuth);
     	
     	final RestDataSource dataSource = loginClient.createRestDataSource();
     	
-    	NestApplication.runInBackground(() -> {
+    	BackgroundTasks.runInBackground(() -> {
     		try {
-				dataSource.getInputStream();
+    			dataSource.getInputStream();
 				switch (dataSource.getResponseCode()) {
-				case 200://Success
+				case 201://Created
 					List<String> sessionHeaders = dataSource.getResponseHeaders().get("Session-Token");
 					if (sessionHeaders == null || sessionHeaders.size() == 0) {
 						LOG.log(Level.SEVERE, "Session token missing from server response");
 						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
 					} else {
 						sessionTokenProperty.set(sessionHeaders.get(0));
+						
+						//Save the email & password for future use
+						settingService.store("api.email", username);
+						settingService.store("api.password", password);
 						loginStatusProperty.set(LoginStatus.LOGGED_IN);
 					}					
 					break;
-				case 401://Invalid username/password
+				case 403://Invalid username/password
 					loginStatusProperty.set(LoginStatus.INVALID_CREDENTIALS);
 					break;
 				default://Some other error occured
@@ -104,14 +138,19 @@ public final class LoginService {
     		return;//Already logging out
     	}
     	if (getSessionToken() == null) {
-    		throw new IllegalStateException("Not logged in!");    		
+        	loginStatusProperty.set(LoginStatus.LOGGED_OUT);
+    		return;//Not logged in		
     	}
     	loginStatusProperty.set(LoginStatus.PENDING_LOGOUT);
+    	
+    	//Clear the saved email & password
+    	settingService.remove("api.email");
+    	settingService.remove("api.password");
     	
     	RestClient loginClient = RestClient.create().method("DELETE").host("https://api.nestnz.org")
     			.path("/session/").queryParam("Session-Token", getSessionToken());
     	final RestDataSource dataSource = loginClient.createRestDataSource();
-    	NestApplication.runInBackground(() -> {
+    	BackgroundTasks.runInBackground(() -> {
     		try {
 				dataSource.getInputStream();
 				switch (dataSource.getResponseCode()) {
