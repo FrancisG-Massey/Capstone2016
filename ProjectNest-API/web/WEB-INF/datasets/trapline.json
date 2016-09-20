@@ -1,5 +1,15 @@
 {
-    "GET" : "SELECT * FROM public.trapline",
+    "GET" : "
+        SELECT
+            tl.trapline_id AS id,
+            tl.trapline_name AS name,
+            tl.trapline_region_id AS region_id,
+            tl.trapline_start_tag AS start_tag,
+            tl.trapline_end_tag AS end_tag,
+            tl.trapline_image_filename AS img_filename
+        FROM 
+            public.trapline tl
+    ",
 
     "Finish this later":"
         WITH nest_user AS (  

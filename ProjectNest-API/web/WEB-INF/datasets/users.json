@@ -1,5 +1,15 @@
 {
-    "GET" : "SELECT user_id, user_name, user_created_timestamp, user_created_user_id, user_is_admin, user_is_inactive FROM public.users",
+    "GET" : "
+        SELECT 
+            u.user_id as id, 
+            u.user_name as name, 
+            u.user_created_timestamp as created_timestamp, 
+            u.user_created_user_id as created_user_id, 
+            u.user_is_admin as admin, 
+            u.user_is_inactive as inactive
+        FROM 
+            public.users u
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""

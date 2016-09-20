@@ -1,5 +1,11 @@
 {
-    "GET" : "",
+    "GET" : "
+        SELECT 
+            t.column_1 as c1,
+            t.column_2 as c2
+        FROM
+            table t
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""

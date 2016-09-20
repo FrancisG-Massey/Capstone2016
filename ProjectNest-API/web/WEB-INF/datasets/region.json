@@ -1,5 +1,11 @@
 {
-    "GET" : "SELECT * FROM public.region",
+    "GET" : "
+        SELECT 
+            r.region_id as id,
+            r.region_name as name
+        FROM 
+            public.region r
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""

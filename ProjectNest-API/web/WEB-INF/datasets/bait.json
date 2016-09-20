@@ -1,5 +1,13 @@
 {
-    "GET" : "SELECT * FROM public.bait",
+    "GET" : "
+        SELECT 
+            b.bait_id as id,
+            b.bait_name as name,
+            b.bait_image_filename as img_filename,
+            b.bait_note as note
+        FROM 
+            public.bait b
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""

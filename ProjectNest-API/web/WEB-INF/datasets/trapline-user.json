@@ -1,5 +1,13 @@
 {
-    "GET" : "SELECT * FROM public.trapline_user",
+    "GET" : "
+        SELECT 
+            tlu.trapline_user_id as id,
+            tlu.trapline_user_user_id as user_id,
+            tlu.trapline_user_trapline_id as trapline_id,
+            tlu.trapline_user_role_id as role_id
+        FROM 
+            public.trapline_user tlu
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""
