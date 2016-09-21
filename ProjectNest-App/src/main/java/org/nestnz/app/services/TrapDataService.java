@@ -198,6 +198,7 @@ public final class TrapDataService {
     			});
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting traplines. Response: "+dataSource.getResponseMessage(), ex);
+				loadingProperty.set(false);
 			}
     	});
     }
@@ -215,13 +216,13 @@ public final class TrapDataService {
     			Platform.runLater(() -> {
     				for (JsonValue value : array) {
         				JsonObject regionJson = (JsonObject) value;
-        				int id = regionJson.getInt("region_id");
+        				int id = regionJson.getInt("id");
         				Region region = regions.get(id);
         				if (region == null) {
         					region = new Region(id);
         					regions.put(id, region);
         				}
-        				region.setName(regionJson.getString("region_name"));
+        				region.setName(regionJson.getString("name"));
         			}
     				for (Trapline t : traplines) {
     					Region r = t.getRegion();
