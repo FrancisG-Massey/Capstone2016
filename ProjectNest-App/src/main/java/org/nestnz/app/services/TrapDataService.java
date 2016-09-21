@@ -174,7 +174,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	refreshRegions();//Reload the regions first
     	
     	RestClient traplineClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/trap-line").header("Session-Token", loginService.getSessionToken());
+    			.path("/trapline").header("Session-Token", loginService.getSessionToken());
     	
     	RestDataSource dataSource = traplineClient.createRestDataSource();
     	
@@ -185,16 +185,16 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     			Platform.runLater(() -> {
     				for (JsonValue value : array) {
         				JsonObject traplineJson = (JsonObject) value;
-        				int id = traplineJson.getInt("trap_line_id");
+        				int id = traplineJson.getInt("id");
         				Trapline trapline = getTrapline(id);
         				if (trapline == null) {
         					trapline = new Trapline(id);
         					addTrapline(trapline);
         				}
-        				trapline.setName(traplineJson.getString("trap_line_name"));
-        				//trapline.setStart(traplineJson.getString("trap_line_start_tag"));
-        				//trapline.setEnd(traplineJson.getString("trap_line_end_tag"));
-        				int regionId = traplineJson.getInt("trap_line_region_id");
+        				trapline.setName(traplineJson.getString("name"));
+        				trapline.setStart(traplineJson.getString("start_tag"));
+        				trapline.setEnd(traplineJson.getString("end_tag"));
+        				int regionId = traplineJson.getInt("region_id");
         				Region region = regions.get(regionId);
         				if (region == null) {
         					region = new Region(regionId);
