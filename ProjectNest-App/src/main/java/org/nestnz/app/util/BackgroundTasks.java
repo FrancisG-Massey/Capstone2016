@@ -36,7 +36,13 @@ public final class BackgroundTasks {
     	executorService.execute(runnable);
     }
     
-    public static void schedule (Runnable runnable, long delay, TimeUnit unit) {
-    	executorService.schedule(runnable, delay, unit);
+    /**
+     * Schedule a task to run repeatedly, based on the provided {@code delay}
+     * @param runnable The task to execute
+     * @param delay The delay, in {@code unit}, between runs of the task
+     * @param unit The {@link TimeUnit} of the {@code delay} parameter
+     */
+    public static void scheduleRepeating (Runnable runnable, long delay, TimeUnit unit) {
+    	executorService.scheduleAtFixedRate(runnable, delay, delay, unit);
     }
 }

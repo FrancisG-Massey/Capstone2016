@@ -123,7 +123,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     						}
     						addTrapline(t);
     					} catch (RuntimeException ex) {
-    						LOG.log(Level.WARNING, "Failed to load data from trapline file "+traplineFile, ex);
+    						LOG.log(Level.WARNING, "Failed to load data from trapline cache file "+traplineFile, ex);
+    						traplineFile.delete();//This error means the cache file must be corrupted, so delete it (we can always get the data back from the server when needed)
     					}
     				}
     			});
@@ -255,7 +256,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	traplines.addListener(this);//Listen for changes to the traplines
     	
     	//Every 5 seconds, check if there are any traplines awaiting update. If there are, save them to the cache 
-    	BackgroundTasks.schedule(() -> {
+    	BackgroundTasks.scheduleRepeating(() -> {
     		if (!updatedTraplines.isEmpty()) {
 	    		Set<Trapline> updatesCopy = new HashSet<>(updatedTraplines);
 	    		updatedTraplines.clear();
@@ -292,7 +293,6 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	 * @return a {@link GluonObservableObject} which is set when the object is fully written
 	 */
 	public GluonObservableObject<ParserTrapline> updateTrapline (Trapline trapline) {
-		//TODO: Save the changes to the server
 		File savedFile = new File(trapCachePath, Integer.toString(trapline.getId())+".json");
 		
 		
