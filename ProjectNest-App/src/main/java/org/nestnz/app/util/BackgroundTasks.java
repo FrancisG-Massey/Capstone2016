@@ -16,15 +16,16 @@
  *******************************************************************************/
 package org.nestnz.app.util;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class BackgroundTasks {
     
     private static final AtomicInteger THREAD_NUMBER = new AtomicInteger(0);
     
-    private static ExecutorService executorService = Executors.newFixedThreadPool(5, runnable -> {
+    private static ScheduledExecutorService executorService = Executors.newScheduledThreadPool(5, runnable -> {
         Thread thread = Executors.defaultThreadFactory().newThread(runnable);
         thread.setName("BackgroundThread-" + THREAD_NUMBER.getAndIncrement());
         thread.setDaemon(true);
@@ -33,5 +34,9 @@ public final class BackgroundTasks {
     
     public static void runInBackground (Runnable runnable) {
     	executorService.execute(runnable);
+    }
+    
+    public static void schedule (Runnable runnable, long delay, TimeUnit unit) {
+    	executorService.schedule(runnable, delay, unit);
     }
 }

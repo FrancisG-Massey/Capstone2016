@@ -19,9 +19,12 @@ package org.nestnz.app.services;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,14 +56,16 @@ import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
-public final class TrapDataService {
+public final class TrapDataService implements ListChangeListener<Trapline> {
 
     private static final Logger LOG = Logger.getLogger(TrapDataService.class.getName());
     
     private final ObservableList<Trapline> traplines = FXCollections.observableArrayList(trapline -> {
-    	return new Observable[] { trapline.nameProperty(), trapline.regionProperty() };
+    	return new Observable[] { trapline.nameProperty(), trapline.regionProperty(), trapline.getTraps(),
+    			trapline.endProperty(), trapline.startProperty() };
     });
     
     private final Map<Integer, Region> regions = new HashMap<>();
@@ -78,6 +83,7 @@ public final class TrapDataService {
     	this.trapCachePath = trapCachePath;
     	this.loginService = loginService;
     	loadTraplines();
+    	watchForChanges();
     }
     
     public boolean isLoading () {
@@ -135,6 +141,8 @@ public final class TrapDataService {
     		}
     	}
     	traplines.add(trapline);
+    	
+    	
     }
     
     /**
@@ -181,7 +189,7 @@ public final class TrapDataService {
         				Trapline trapline = getTrapline(id);
         				if (trapline == null) {
         					trapline = new Trapline(id);
-        					traplines.add(trapline);
+        					addTrapline(trapline);
         				}
         				trapline.setName(traplineJson.getString("trap_line_name"));
         				//trapline.setStart(traplineJson.getString("trap_line_start_tag"));
@@ -238,6 +246,44 @@ public final class TrapDataService {
 
 	public final ObservableList<Trapline> getTraplines() {
 		return traplines;
+	}
+	
+	
+	private final Set<Trapline> updatedTraplines = new HashSet<>();
+    
+    private void watchForChanges () {
+    	traplines.addListener(this);//Listen for changes to the traplines
+    	
+    	//Every 5 seconds, check if there are any traplines awaiting update. If there are, save them to the cache 
+    	BackgroundTasks.schedule(() -> {
+    		if (!updatedTraplines.isEmpty()) {
+	    		Set<Trapline> updatesCopy = new HashSet<>(updatedTraplines);
+	    		updatedTraplines.clear();
+	    		
+	    		for (Trapline t : updatesCopy) {
+	    			updateTrapline(t);
+	    		}
+	    		LOG.log(Level.INFO, "Saved "+updatesCopy.size()+" traplines to file cache.");
+    		}
+    	}, 5, TimeUnit.SECONDS);
+    }
+
+	/* (non-Javadoc)
+	 * @see javafx.collections.ListChangeListener#onChanged(javafx.collections.ListChangeListener.Change)
+	 */
+	@Override
+	public void onChanged(javafx.collections.ListChangeListener.Change<? extends Trapline> c) {
+		while (c.next()) {
+			if (c.wasAdded()) {
+				for (Trapline t : c.getAddedSubList()) {
+					updatedTraplines.add(t);
+				}
+			} else if (c.wasUpdated()) {
+				for (Trapline t : c.getAddedSubList()) {
+					updatedTraplines.add(t);
+				}
+			}
+		}
 	}
 	
 	/**
