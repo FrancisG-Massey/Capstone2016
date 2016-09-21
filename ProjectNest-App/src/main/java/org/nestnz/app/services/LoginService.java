@@ -90,7 +90,8 @@ public final class LoginService {
     	}
     	loginStatusProperty.set(LoginStatus.PENDING_LOGIN);
     	
-    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode((username+":"+password).getBytes()), Charset.forName("UTF-8"));
+    	String credentials = username+":"+password;
+    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode(credentials.getBytes()), Charset.forName("UTF-8"));
     	
     	RestClient loginClient = RestClient.create().method("POST").host("https://api.nestnz.org")
     			.path("/session/").header("Authorization", encodedAuth);
@@ -174,19 +175,19 @@ public final class LoginService {
      * Gets the current login status of the service. 
      * @return
      */
-    public final LoginStatus getLoginStatus () {
+    public LoginStatus getLoginStatus () {
     	return loginStatusProperty.get();
     }
 
-    public final ReadOnlyObjectProperty<LoginStatus> loginStatusProperty () {
+    public ReadOnlyObjectProperty<LoginStatus> loginStatusProperty () {
     	return loginStatusProperty.getReadOnlyProperty();
     }
     
-    public final String getSessionToken () {
+    public String getSessionToken () {
     	return sessionTokenProperty.get();
     }
 
-    public final ReadOnlyStringProperty sessionTokenProperty () {
+    public ReadOnlyStringProperty sessionTokenProperty () {
     	return sessionTokenProperty.getReadOnlyProperty();
     }
 }

@@ -9,6 +9,8 @@ buildscript {
 
 apply plugin: 'org.javafxports.jfxmobile'
 apply plugin: 'eclipse'
+apply plugin: 'pmd'
+apply plugin: 'jdepend'
 
 eclipse {
 	classpath {

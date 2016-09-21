@@ -86,8 +86,8 @@ public class NestApplication extends MobileApplication {
                     return;
                 }
 		        spinner.resizeRelocate(
-		        		(getGlassPane().getWidth() - (radius*2))/2, 
-		        		(getGlassPane().getHeight()- (radius*2))/2, 
+		        		(getGlassPane().getWidth() - radius*2)/2, 
+		        		(getGlassPane().getHeight()- radius*2)/2, 
 		        		radius*2, radius*2);
 		    }
 		});
