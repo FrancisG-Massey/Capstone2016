@@ -48,7 +48,9 @@ import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 
 public class NavigationView extends View {
 	
@@ -156,29 +158,52 @@ public class NavigationView extends View {
     
     private final Dialog<CatchType> makeCatchDialog () {
     	Dialog<CatchType> dialog = new Dialog<>(true);
-    	BorderPane controls = new BorderPane();
+    	GridPane controls = new GridPane();
     	dialog.setContent(controls);
+    	dialog.setTitleText("Select Catch");
+    	
+    	ColumnConstraints column1 = new ColumnConstraints();
+        column1.setPercentWidth(50);
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setPercentWidth(50);
+        controls.getColumnConstraints().addAll(column1, column2);
     	
     	Button empty = new Button("Empty");
-    	empty.setMaxWidth(1000);
-    	empty.setMaxHeight(1000);
+    	empty.setMaxSize(1000, 1000);
+    	GridPane.setConstraints(empty, 0, 0);//Set as top-left cell
+    	GridPane.setHgrow(empty, Priority.ALWAYS);
+    	GridPane.setVgrow(empty, Priority.ALWAYS);
     	empty.setOnAction(evt -> {
     		LOG.log(Level.INFO, "Empty.");
     	});
     	
-    	Button option2 = new Button();
-    	option2.setMaxWidth(1000);
+    	CatchType op2 = new CatchType(2, "Option 2", null);
+    	Button option2 = makeOptionButton(op2, 1);
+    	
+    	Button other = new Button("Other");
+    	other.setMaxSize(1000, 1000);
+    	GridPane.setConstraints(other, 0, 1, 2, 1);//Set as center cell (spans both rows)
 
-    	Button option3 = new Button();
-    	Button option4 = new Button();
-    	Button other = new Button();
-    	BorderPane.setAlignment(empty, Pos.TOP_LEFT);
-    	BorderPane.setAlignment(option2, Pos.TOP_RIGHT);
-    	BorderPane.setAlignment(option3, Pos.BOTTOM_LEFT);
-    	BorderPane.setAlignment(option4, Pos.BOTTOM_RIGHT);
-    	BorderPane.setAlignment(other, Pos.CENTER);
+    	CatchType op3 = new CatchType(3, "Option 3", null);
+    	Button option3 = makeOptionButton(op3, 2);
+
+    	CatchType op4 = new CatchType(4, "Option 4", null);
+    	Button option4 = makeOptionButton(op4, 3);
+    	
     	controls.getChildren().addAll(empty, option2, option3, option4, other);
     	return dialog;
+    }
+    
+    private Button makeOptionButton (CatchType catchType, int place) {
+    	Button button = new Button(catchType.getName());
+    	button.setMaxSize(1000, 1000);
+    	GridPane.setConstraints(button, place % 2, place > 1 ? 2 : 0);
+    	GridPane.setHgrow(button, Priority.ALWAYS);
+    	GridPane.setVgrow(button, Priority.ALWAYS);
+    	button.setOnAction(evt -> {
+    		LOG.log(Level.INFO, "Selected catch: "+catchType);
+    	});
+    	return button;
     }
     
     /**
