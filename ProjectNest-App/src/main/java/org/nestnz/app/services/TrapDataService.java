@@ -230,18 +230,25 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     			Platform.runLater(() -> {
     				for (JsonValue value : array) {
         				JsonObject trapJson = (JsonObject) value;
+        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
+        					continue;//
+        				}
         				int id = trapJson.getInt("id");
         				int number = trapJson.getInt("number");
-        				double latitude = trapJson.getJsonNumber("latitude").doubleValue();
-        				double longitude = trapJson.getJsonNumber("longitude").doubleValue();
+        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
+        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
         				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created"));
         				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset"));
         				Trap trap = trapline.getTrap(id);
         				if (trap == null) {
         					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
         					trapline.getTraps().add(trap);
+        				} else {
+        					trap.setNumber(number);
+        					trap.setLatitude(latitude);
+        					trap.setLongitude(longitude);
+        					trap.setLastReset(lastReset);
         				}
-        				//TODO: Update trap if exists
         			}
     			});
     		} catch (IOException | RuntimeException ex) {
