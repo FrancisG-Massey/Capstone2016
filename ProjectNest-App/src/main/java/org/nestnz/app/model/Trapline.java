@@ -18,6 +18,7 @@ package org.nestnz.app.model;
 
 import java.util.Optional;
 
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -44,7 +45,10 @@ public final class Trapline {
 	/**
 	 * The traps located within the trapline
 	 */
-	private final ObservableList<Trap> traps = FXCollections.observableArrayList();
+	private final ObservableList<Trap> traps = FXCollections.observableArrayList(trap -> {
+		return new Observable[] { trap.numberProperty(), trap.latitudeProperty(), trap.longitudeProperty(),
+				trap.lastResetProperty(), trap.getCatches(), trap.statusProperty() };
+	});
 	
 	/**
 	 * The region in which this trapline is located (e.g. Auckland, Waikato, Manawatu, etc)
@@ -108,7 +112,7 @@ public final class Trapline {
 	
 	public Trap getTrap (int id) {
 		for (Trap t : traps) {
-			if (t.getId().get() == id) {
+			if (t.getId() == id) {
 				return t;
 			}
 		}

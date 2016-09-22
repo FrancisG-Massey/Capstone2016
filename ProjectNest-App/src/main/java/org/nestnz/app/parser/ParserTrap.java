@@ -24,11 +24,15 @@ import org.nestnz.app.model.Trap;
 
 public final class ParserTrap {
 	
+	private int id;
+	
 	private int number;
 	
 	private double coordLat;
 	
 	private double coordLong;
+	
+	private String status;
 	
 	private String created;
 	
@@ -39,11 +43,21 @@ public final class ParserTrap {
 	}
 	
 	public ParserTrap(Trap trap) {
+		this.id = trap.getId();
 		this.number = trap.getNumber();
 		this.coordLat = trap.getLatitude();
 		this.coordLong = trap.getLongitude();
+		this.status = trap.getStatus().name();
 		this.created = trap.getCreated() == null ? null : trap.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		this.lastReset = trap.getLastReset() == null ? null : trap.getLastReset().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public int getNumber() {
@@ -72,6 +86,14 @@ public final class ParserTrap {
 		this.coordLong = coordLong;
 	}
 
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	public String getCreated() {
 		return created;
 	}
@@ -91,7 +113,7 @@ public final class ParserTrap {
 
 	@Override
 	public String toString() {
-		return "ParserTrap [number=" + number + ", coordLat=" + coordLat + ", coordLong=" + coordLong + ", created="
+		return "ParserTrap [id=" + id + ", number=" + number + ", coordLat=" + coordLat + ", coordLong=" + coordLong + ", created="
 				+ created + "]";
 	}
 }

@@ -121,7 +121,13 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     						}
     						Trapline t = new Trapline(pLine.getId(), pLine.getName(), r, pLine.getStart(), pLine.getEnd());
     						for (ParserTrap pTrap : pLine.getTraps()) {
-    							t.getTraps().add(new Trap(pTrap));
+    							LocalDateTime created = pTrap.getCreated() == null ? null : LocalDateTime.parse(pTrap.getCreated());
+    							LocalDateTime reset = pTrap.getLastReset() == null ? null : LocalDateTime.parse(pTrap.getLastReset());
+    							TrapStatus status = pTrap.getStatus() == null ? null : TrapStatus.valueOf(pTrap.getStatus());
+    							Trap trap = new Trap(pTrap.getId(), pTrap.getNumber(), 
+    									pTrap.getCoordLat(), pTrap.getCoordLong(), 
+    									status, created, reset);
+    							t.getTraps().add(trap);
     						}
     						addTrapline(t);
     					} catch (RuntimeException ex) {
@@ -144,8 +150,6 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     		}
     	}
     	traplines.add(trapline);
-    	
-    	
     }
     
     /**
@@ -154,7 +158,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
      * @param id The ID of the trapline to lookup
      * @return The trapline with the matching ID, or null if no trapline could be found
      */
-    public final Trapline getTrapline (int id) {
+    public Trapline getTrapline (int id) {
     	for (Trapline t : traplines) {
     		if (t.getId() == id) {
     			return t;
