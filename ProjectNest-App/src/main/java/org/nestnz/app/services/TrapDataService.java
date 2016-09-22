@@ -326,13 +326,14 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	 */
 	@Override
 	public void onChanged(javafx.collections.ListChangeListener.Change<? extends Trapline> c) {
+		LOG.log(Level.FINE, "Received change: "+c);
 		while (c.next()) {
 			if (c.wasAdded()) {
 				for (Trapline t : c.getAddedSubList()) {
 					updatedTraplines.add(t);
 				}
 			} else if (c.wasUpdated()) {
-				for (Trapline t : c.getAddedSubList()) {
+				for (Trapline t : c.getList().subList(c.getFrom(), c.getTo())) {
 					updatedTraplines.add(t);
 				}
 			}
