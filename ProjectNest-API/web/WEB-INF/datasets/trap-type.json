@@ -1,5 +1,13 @@
 {
-    "GET" : "SELECT * FROM public.trap_type",
+    "GET" : "
+        SELECT 
+            tt.trap_type_id as id,
+            tt.trap_type_name as name,
+            tt.trap_type_model as model,
+            tt.trap_type_note as note
+        FROM 
+            public.trap_type tt
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""

@@ -46,7 +46,7 @@ var myApp = angular.module('myApp', [
             templateUrl: 'templates/volunteer.html'
         })
         .when('/volunteer-admin', {
-            controller: 'AdminController',
+            controller: 'AdminControllertwo',
             templateUrl: 'modules/admin/views/volunteer-admin.html'
         })
         .when('/trap-admin', {
@@ -60,19 +60,18 @@ var myApp = angular.module('myApp', [
     // keep user logged in after page refresh
     $('#navbar').collapse('hide');
 	
-
-    
     $rootScope.globals = $cookieStore.get('globals') || {};
+    console.log($rootScope.globals.currentUser);
     if ($rootScope.globals.currentUser) {
-        $http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata; // jshint ignore:line
+        $http.defaults.headers.common['Session-Token'] = $rootScope.globals.currentUser.sessionToken; // jshint ignore:line
+
     }
 
-    // console.log($rootScope.globals.currentUser);
 
     $rootScope.$on('$locationChangeStart', function (event, next, current) {
         // redirect to login page if not logged in
         if ($location.path() !== '/login' && !$rootScope.globals.currentUser) {
-            // $location.path('/login');
+             //$location.path('/login');
         }
     });
 }])

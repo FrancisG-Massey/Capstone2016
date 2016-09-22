@@ -1,6 +1,0 @@
-{
-    "GET" : "SELECT * FROM public.trap_line_user",
-    "POST" : "",
-    "PUT" : "",
-    "DELETE" : ""
-}

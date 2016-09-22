@@ -114,3 +114,14 @@ footer>.container {
 .admin th {
 	cursor: pointer;
 }
+
+#addButton{
+	cursor: pointer;
+	padding-left: 5px;
+	color:brown;
+	
+}
+
+th, td{
+	text-align:center;
+}

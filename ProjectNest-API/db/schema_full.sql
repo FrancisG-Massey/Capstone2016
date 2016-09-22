@@ -21,6 +21,7 @@
 
 --DROP SCHEMA IF EXISTS public CASCADE;
 --CREATE SCHEMA public;
+--ALTER SCHEMA public OWNER TO nestnz;
 
 
 -- First create the sequences for the auto-incrememting primary keys
@@ -103,30 +104,30 @@ CREATE SEQUENCE public.role_role_id_seq
 ALTER TABLE public.role_role_id_seq
   OWNER TO nestnz;
 
--- Sequence: public.trap_line_trap_line_id_seq
+-- Sequence: public.trapline_trapline_id_seq
 
--- DROP SEQUENCE public.trap_line_trap_line_id_seq;
+-- DROP SEQUENCE public.trapline_trapline_id_seq;
 
-CREATE SEQUENCE public.trap_line_trap_line_id_seq
+CREATE SEQUENCE public.trapline_trapline_id_seq
   INCREMENT 1
   MINVALUE 1
   MAXVALUE 9223372036854775807
   START 1
   CACHE 1;
-ALTER TABLE public.trap_line_trap_line_id_seq
+ALTER TABLE public.trapline_trapline_id_seq
   OWNER TO nestnz;
 
--- Sequence: public.trap_line_user_trap_line_user_id_seq
+-- Sequence: public.trapline_user_trapline_user_id_seq
 
--- DROP SEQUENCE public.trap_line_user_trap_line_user_id_seq;
+-- DROP SEQUENCE public.trapline_user_trapline_user_id_seq;
 
-CREATE SEQUENCE public.trap_line_user_trap_line_user_id_seq
+CREATE SEQUENCE public.trapline_user_trapline_user_id_seq
   INCREMENT 1
   MINVALUE 1
   MAXVALUE 9223372036854775807
   START 1
   CACHE 1;
-ALTER TABLE public.trap_line_user_trap_line_user_id_seq
+ALTER TABLE public.trapline_user_trapline_user_id_seq
   OWNER TO nestnz;
 
 -- Sequence: public.trap_trap_id_seq
@@ -180,7 +181,6 @@ CREATE TABLE public.region
 (
   region_id bigint NOT NULL DEFAULT nextval('region_region_id_seq'::regclass),
   region_name text NOT NULL,
-  region_doc_id text NOT NULL,
   CONSTRAINT region_pkey PRIMARY KEY (region_id)
 )
 WITH (
@@ -285,7 +285,7 @@ CREATE TABLE public.trap_type
   trap_type_model text,
   trap_type_note text,
   CONSTRAINT trap_type_pkey PRIMARY KEY (trap_type_id),
-  CONSTRAINT trap_type_valid_text_identifier CHECK (NOT trap_type_model IS NULL AND trap_type_name IS NULL)
+  CONSTRAINT trap_type_valid_text_identifier CHECK (NOT ((trap_type_model IS NULL) AND (trap_type_name IS NULL)))
 )
 WITH (
   OIDS=FALSE
@@ -294,28 +294,27 @@ ALTER TABLE public.trap_type
   OWNER TO nestnz;
 
 
--- Table: public.trap_line
+-- Table: public.trapline
 
--- DROP TABLE public.trap_line;
+-- DROP TABLE public.trapline;
 
-CREATE TABLE public.trap_line
+CREATE TABLE public.trapline
 (
-  trap_line_id bigint NOT NULL DEFAULT nextval('trap_line_trap_line_id_seq'::regclass),
-  trap_line_name text NOT NULL,
-  trap_line_doc_id text NOT NULL,
-  trap_line_region_id bigint NOT NULL,
-  trap_line_start_tag bigint,
-  trap_line_end_tag bigint,
-  trap_line_image_filename text,
-  CONSTRAINT trap_line_pkey PRIMARY KEY (trap_line_id),
-  CONSTRAINT trap_line_trap_line_region_id_fkey FOREIGN KEY (trap_line_region_id)
+  trapline_id bigint NOT NULL DEFAULT nextval('trapline_trapline_id_seq'::regclass),
+  trapline_name text NOT NULL,
+  trapline_region_id bigint NOT NULL,
+  trapline_start_tag text,
+  trapline_end_tag text,
+  trapline_image_filename text,
+  CONSTRAINT trapline_pkey PRIMARY KEY (trapline_id),
+  CONSTRAINT trapline_trapline_region_id_fkey FOREIGN KEY (trapline_region_id)
       REFERENCES public.region (region_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT
 )
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE public.trap_line
+ALTER TABLE public.trapline
   OWNER TO nestnz;
 
 -- Index: public.tl_rid_idx
@@ -323,9 +322,9 @@ ALTER TABLE public.trap_line
 -- DROP INDEX public.tl_rid_idx;
 
 CREATE INDEX tl_rid_idx
-  ON public.trap_line
+  ON public.trapline
   USING btree
-  (trap_line_region_id);
+  (trapline_region_id);
 
 
 
@@ -364,31 +363,31 @@ ALTER TABLE public.catch_type
   OWNER TO nestnz;
 
 
--- Table: public.trap_line_user
+-- Table: public.trapline_user
 
--- DROP TABLE public.trap_line_user;
+-- DROP TABLE public.trapline_user;
 
-CREATE TABLE public.trap_line_user
+CREATE TABLE public.trapline_user
 (
-  trap_line_user_id bigint NOT NULL DEFAULT nextval('trap_line_user_trap_line_user_id_seq'::regclass),
-  trap_line_user_user_id bigint NOT NULL,
-  trap_line_user_trap_line_id bigint NOT NULL,
-  trap_line_user_role_id bigint NOT NULL,
-  CONSTRAINT trap_line_user_pkey PRIMARY KEY (trap_line_user_id),
-  CONSTRAINT trap_line_user_trap_line_user_role_id_fkey FOREIGN KEY (trap_line_user_role_id)
+  trapline_user_id bigint NOT NULL DEFAULT nextval('trapline_user_trapline_user_id_seq'::regclass),
+  trapline_user_user_id bigint NOT NULL,
+  trapline_user_trapline_id bigint NOT NULL,
+  trapline_user_role_id bigint NOT NULL,
+  CONSTRAINT trapline_user_pkey PRIMARY KEY (trapline_user_id),
+  CONSTRAINT trapline_user_trapline_user_role_id_fkey FOREIGN KEY (trapline_user_role_id)
       REFERENCES public.role (role_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT trap_line_user_trap_line_user_trap_line_id_fkey FOREIGN KEY (trap_line_user_trap_line_id)
-      REFERENCES public.trap_line (trap_line_id) MATCH SIMPLE
+  CONSTRAINT trapline_user_trapline_user_trapline_id_fkey FOREIGN KEY (trapline_user_trapline_id)
+      REFERENCES public.trapline (trapline_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT trap_line_user_trap_line_user_user_id_fkey FOREIGN KEY (trap_line_user_user_id)
+  CONSTRAINT trapline_user_trapline_user_user_id_fkey FOREIGN KEY (trapline_user_user_id)
       REFERENCES public.users (user_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT
 )
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE public.trap_line_user
+ALTER TABLE public.trapline_user
   OWNER TO nestnz;
 
 -- Index: public.tlu_rid_idx
@@ -396,27 +395,27 @@ ALTER TABLE public.trap_line_user
 -- DROP INDEX public.tlu_rid_idx;
 
 CREATE INDEX tlu_rid_idx
-  ON public.trap_line_user
+  ON public.trapline_user
   USING btree
-  (trap_line_user_role_id);
+  (trapline_user_role_id);
 
 -- Index: public.tlu_tlid_idx
 
 -- DROP INDEX public.tlu_tlid_idx;
 
 CREATE INDEX tlu_tlid_idx
-  ON public.trap_line_user
+  ON public.trapline_user
   USING btree
-  (trap_line_user_trap_line_id);
+  (trapline_user_trapline_id);
 
 -- Index: public.tlu_uid_idx
 
 -- DROP INDEX public.tlu_uid_idx;
 
 CREATE INDEX tlu_uid_idx
-  ON public.trap_line_user
+  ON public.trapline_user
   USING btree
-  (trap_line_user_user_id);
+  (trapline_user_user_id);
 
 
 
@@ -427,8 +426,8 @@ CREATE INDEX tlu_uid_idx
 CREATE TABLE public.trap
 (
   trap_id bigint NOT NULL DEFAULT nextval('trap_trap_id_seq'::regclass),
-  trap_line_id bigint NOT NULL,
-  trap_doc_id text NOT NULL,
+  trap_trapline_id bigint NOT NULL,
+  trap_number bigint NOT NULL,
   trap_coord_x numeric NOT NULL,
   trap_coord_y numeric NOT NULL,
   trap_type_id bigint NOT NULL,
@@ -440,8 +439,8 @@ CREATE TABLE public.trap
   CONSTRAINT trap_trap_bait_id_fkey FOREIGN KEY (trap_bait_id)
       REFERENCES public.bait (bait_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
-  CONSTRAINT trap_trap_line_id_fkey FOREIGN KEY (trap_line_id)
-      REFERENCES public.trap_line (trap_line_id) MATCH SIMPLE
+  CONSTRAINT trap_trapline_id_fkey FOREIGN KEY (trap_trapline_id)
+      REFERENCES public.trapline (trapline_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT trap_trap_type_id_fkey FOREIGN KEY (trap_type_id)
       REFERENCES public.trap_type (trap_type_id) MATCH SIMPLE
@@ -469,7 +468,7 @@ CREATE INDEX t_btid_idx
 CREATE INDEX t_tlid_idx
   ON public.trap
   USING btree
-  (trap_line_id);
+  (trap_trapline_id);
 
 -- Index: public.t_ttid_idx
 
@@ -489,9 +488,11 @@ CREATE INDEX t_ttid_idx
 CREATE TABLE public.catch
 (
   catch_id bigint NOT NULL DEFAULT nextval('catch_catch_id_seq'::regclass),
-  catch_user_id bigint NOT NULL,
   catch_trap_id bigint NOT NULL,
+  catch_trap_type_id bigint NOT NULL,
+  catch_user_id bigint NOT NULL,
   catch_type_id bigint NOT NULL,
+  catch_bait_id bigint NOT NULL,
   catch_note text,
   catch_logged timestamp without time zone NOT NULL DEFAULT now(),
   catch_image_filename text,
@@ -499,12 +500,18 @@ CREATE TABLE public.catch
   CONSTRAINT catch_catch_trap_id_fkey FOREIGN KEY (catch_trap_id)
       REFERENCES public.trap (trap_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT catch_catch_trap_type_id_fkey FOREIGN KEY (catch_trap_type_id)
+      REFERENCES public.trap_type (trap_type_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE RESTRICT,      
   CONSTRAINT catch_catch_type_id_fkey FOREIGN KEY (catch_type_id)
       REFERENCES public.catch_type (catch_type_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT catch_catch_user_id_fkey FOREIGN KEY (catch_user_id)
       REFERENCES public.users (user_id) MATCH SIMPLE  
-      ON UPDATE CASCADE ON DELETE RESTRICT
+      ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT catch_bait_id_fkey FOREIGN KEY (catch_bait_id)
+      REFERENCES public.bait (bait_id) MATCH SIMPLE  
+      ON UPDATE CASCADE ON DELETE RESTRICT      
 )
 WITH (
   OIDS=FALSE
@@ -520,6 +527,15 @@ CREATE INDEX c_ctrapid_idx
   ON public.catch
   USING btree
   (catch_trap_id);
+
+-- Index: public.c_cttypeid_idx
+
+-- DROP INDEX public.c_cttypeid_idx;
+
+CREATE INDEX c_cttypeid_idx
+  ON public.catch
+  USING btree
+  (catch_trap_type_id);  
 
 -- Index: public.c_ctypeid_idx
 
@@ -538,3 +554,12 @@ CREATE INDEX c_cuid_idx
   ON public.catch
   USING btree
   (catch_user_id);
+
+-- Index: public.c_cbid_idx
+
+-- DROP INDEX public.c_cbid_idx;
+
+CREATE INDEX c_cbid_idx
+  ON public.catch
+  USING btree
+  (catch_bait_id);

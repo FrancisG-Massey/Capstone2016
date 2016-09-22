@@ -1,5 +1,11 @@
 {
-    "GET" : "SELECT * FROM public.role",
+    "GET" : "
+        SELECT 
+            rl.role_id as id,
+            rl.role_name as name
+        FROM 
+            public.role rl
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""

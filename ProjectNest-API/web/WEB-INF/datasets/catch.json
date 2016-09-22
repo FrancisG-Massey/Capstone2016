@@ -1,5 +1,18 @@
 {
-    "GET" : "SELECT * FROM public.catch",
+    "GET" : "
+        SELECT 
+            c.catch_id as id,
+            c.catch_trap_id as trap_id,
+            c.catch_trap_type_id as trap_type_id,
+            c.catch_user_id as user_id,
+            c.catch_type_id as type_id,
+            c.catch_bait_id as bait_id,
+            c.catch_note as note,
+            c.catch_logged as logged,
+            c.catch_image_filename as img_filename
+        FROM 
+            public.catch c
+    ",
     "POST" : "",
     "PUT" : "",
     "DELETE" : ""

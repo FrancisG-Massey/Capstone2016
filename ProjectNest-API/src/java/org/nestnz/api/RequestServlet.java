@@ -91,15 +91,15 @@ public class RequestServlet extends HttpServlet {
             dirtySQL = getSQLQuery(request.getPathInfo().substring(1), "GET");
         } catch (IOException ex) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setHeader("Error", ex.getMessage());
+            response.setHeader("Error", ex.getMessage());            
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
         
         // Check that the request target is mapped and valid
         if (dirtySQL == null) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
        
@@ -107,10 +107,10 @@ public class RequestServlet extends HttpServlet {
         final String sessionToken = request.getHeader("Session-Token");
         final String uuidRegex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
         if (sessionToken == null) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         } else if (!sessionToken.matches(uuidRegex)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
         
@@ -143,8 +143,8 @@ public class RequestServlet extends HttpServlet {
             }
         } catch (IOException | SQLException ex) {
             // TODO: Log ex
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setHeader("Error", ex.getMessage());
+            response.setHeader("Error", ex.getMessage());            
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
                 
         // Return the JSON array to the user
@@ -165,6 +165,7 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
 
@@ -179,6 +180,7 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
     
@@ -193,6 +195,7 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
     
@@ -212,12 +215,12 @@ public class RequestServlet extends HttpServlet {
         }
         
         // Return null if no such dataset exists
-        final String datasetPath = this.getServletContext().getRealPath(prop.getProperty(dataset));
-        if (datasetPath == null) {
+        if (prop.getProperty(dataset) == null) {
             return null;
         }
-        
+
         // Get the dataset json string from file
+        final String datasetPath = this.getServletContext().getRealPath(prop.getProperty(dataset));
         byte[] encoded = Files.readAllBytes(Paths.get(datasetPath));
         final String datasetJSON = new String(encoded, StandardCharsets.UTF_8);
         
