@@ -105,6 +105,15 @@ public final class Trapline {
 	public ObservableList<Trap> getTraps() {
 		return traps;
 	}
+	
+	public Trap getTrap (int id) {
+		for (Trap t : traps) {
+			if (t.getId().get() == id) {
+				return t;
+			}
+		}
+		return null;
+	}
 
 	public Region getRegion() {
 		return regionProperty.get();

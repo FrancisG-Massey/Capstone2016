@@ -18,6 +18,7 @@ package org.nestnz.app.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +36,7 @@ import javax.json.JsonValue;
 
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
+import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
@@ -208,6 +210,38 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting traplines. Response: "+dataSource.getResponseMessage(), ex);
 				loadingProperty.set(false);
+			}
+    	});
+    }
+    
+    public void loadTrapline (Trapline trapline) {
+    	RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/trap").header("Session-Token", loginService.getSessionToken());
+    	
+    	RestDataSource dataSource = trapsClient.createRestDataSource();
+    	BackgroundTasks.runInBackground(() -> {
+    		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
+    			JsonArray array = reader.readArray();
+    			LOG.log(Level.INFO, "Response: "+array.toString());
+    			Platform.runLater(() -> {
+    				for (JsonValue value : array) {
+        				JsonObject trapJson = (JsonObject) value;
+        				int id = trapJson.getInt("id");
+        				int number = trapJson.getInt("number");
+        				double latitude = trapJson.getJsonNumber("latitude").doubleValue();
+        				double longitude = trapJson.getJsonNumber("longitude").doubleValue();
+        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created"));
+        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset"));
+        				Trap trap = trapline.getTrap(id);
+        				if (trap == null) {
+        					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
+        					trapline.getTraps().add(trap);
+        				}
+        				//TODO: Update trap if exists
+        			}
+    			});
+    		} catch (IOException | RuntimeException ex) {
+    			LOG.log(Level.SEVERE, "Problem requesting traps for trapline "+trapline+". Response: "+dataSource.getResponseMessage(), ex);
 			}
     	});
     }
