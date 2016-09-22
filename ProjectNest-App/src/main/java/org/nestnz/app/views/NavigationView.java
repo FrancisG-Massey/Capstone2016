@@ -92,6 +92,7 @@ public class NavigationView extends View {
         } else {
         	catchSelectDialog = null;
         }
+        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
     }
     
     private void initControls () {        
@@ -114,7 +115,7 @@ public class NavigationView extends View {
         setRight(next);
         
         Button logCatch = new Button();
-        logCatch.setMaxWidth(1000);
+        logCatch.getStyleClass().add("large-button");
         logCatch.setText("Log Catch");
         logCatch.setOnAction(evt -> {
         	catchSelectDialog.showAndWait();
@@ -143,7 +144,7 @@ public class NavigationView extends View {
         	}
         });
         
-        CompassService headingService = NestPlatformFactory.getPlatform().getCompassService();
+        /*CompassService headingService = NestPlatformFactory.getPlatform().getCompassService();
         
         if (headingService.isHeadingAvailable()) {
         	AirCompass compass = new AirCompass();
@@ -153,7 +154,7 @@ public class NavigationView extends View {
             	}
             });
         	//setCenter(compass);
-        }
+        }*/
     }
     
     private final Dialog<CatchType> makeCatchDialog () {

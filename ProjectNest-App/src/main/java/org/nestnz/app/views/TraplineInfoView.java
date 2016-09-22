@@ -68,8 +68,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         controls.getChildren().add(traplineSize);
         setCenter(controls);
         
-		start.setMaxHeight(1000.0);
-		start.setMaxWidth(1000.0);
+        start.getStyleClass().add("large-button");
 		start.setOnAction(evt -> {
 			NavigationView navView = ((NestApplication) getApplication()).lookupView(NavigationView.NAME);
 			navView.setTrapline(traplineProperty.get());
@@ -77,6 +76,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		});
 		this.setBottom(start);
 		menu = buildMenu();
+        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
 	
 	public void setTrapline (Trapline trapline) {
