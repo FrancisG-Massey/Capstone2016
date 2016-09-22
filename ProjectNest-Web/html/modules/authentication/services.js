@@ -13,7 +13,7 @@ angular.module('Authentication')
 
             var req = {
 			 method: 'POST',
-			 url: 'https://api.nestnz.org/session/',
+			 url: 'https://www.nestnz.org/api/session/',
 			 headers: {
 			   'Authorization': 'Basic ' + authdata
 			 },
@@ -45,7 +45,7 @@ angular.module('Authentication')
             $rootScope.globals = {};
             $cookieStore.remove('globals');
             
-            $http.delete('https://api.nestnz.org/session/')
+            $http.delete('https://www.nestnz.org/api/session/')
             .then(function(response) {
                 console.log(response);
             });

@@ -192,7 +192,7 @@ angular.module('Admin')
     		$scope.selected.popup && $scope.selected.popup.closePopup();
     	}
     	
-    	$scope.selected = {};
+    	$scope.selected = false;
     	mapDefault();
     };
     
@@ -243,7 +243,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},	
 		{
@@ -252,7 +252,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -261,7 +261,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -270,7 +270,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -279,7 +279,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -288,7 +288,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -297,7 +297,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -306,7 +306,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -315,7 +315,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -324,7 +324,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		},
 		{
@@ -333,7 +333,7 @@ angular.module('Admin')
 			lastName: 'Smith',
 			email: 'johnsmith@yahoo.com',
 			startDate: '2016-04-16T10:26:07',
-			permissions: 'none'
+			permission: 'none'
 			
 		}
 		
@@ -342,7 +342,7 @@ angular.module('Admin')
 
 	  
     $scope.addNew = function() {
-    	$scope.selected = {};
+    	$scope.selected = false;
     };
 	
 	

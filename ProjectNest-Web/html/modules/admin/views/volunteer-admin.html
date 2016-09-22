@@ -12,6 +12,7 @@
             <th>Full Name</th>
             <th>Email</th>
             <th>Start Date</th>
+            <th>Permission</th>
           </tr>
         </thead>
         <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
@@ -20,6 +21,7 @@
             <td>{{volunteer.firstNames + ' ' + volunteer.lastName}}</td>
             <td>{{volunteer.email}}</td>
             <td>{{volunteer.startDate |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
+            <td>{{volunteer.permission}}</td>
           </tr>    
         </tbody>
       </table>
@@ -45,7 +47,7 @@
 
     <div class="col-sm-5"> 
       <div class="well">
-        <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'New Volunteer'}}</h3>
+        <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'Add New Volunteer'}}</h3>
         <p>First Volunteered: <strong>{{selected.startDate  |  date:"dd/MM/yyyy"}}</strong></p>
         <div class="row">
           <div class="col-md-6 form-group">
@@ -77,10 +79,12 @@
         </div>
         
     
-		<div style="margin-top: 10px;">
-        <button class="btn btn-success" type="button">Save</button>
+		<div class="pull-right" style="margin-top: 10px;">
+        <button class="btn btn-success" type="button" ng-if="!selected">Save</button>
+        <div ng-if="selected">
+        <button class="btn btn-success" type="button">Edit</button>
         <button class="btn btn-danger" type="button">Delete</button>
-        
+        </div>
       </div>
 	</div>
 </div>
