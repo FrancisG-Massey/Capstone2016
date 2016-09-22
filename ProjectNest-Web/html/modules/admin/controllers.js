@@ -2,8 +2,13 @@
  
 angular.module('Admin')
  
-.controller('AdminController',['$scope', '$rootScope',function ($scope,$rootScope) {
+.controller('AdminController',['$scope', '$rootScope','$http',function ($scope,$rootScope,$http) {
 		$rootScope.wrapClass = undefined;
+		//$http.get('https://www.nestnz.org/api/trap')
+        //.then(function(response) {
+        //    $scope.trapData = response.data;
+        //    console.log($scope.trapData);
+        //});
     	var traps = [
 			{
 			      "id" : 123,
