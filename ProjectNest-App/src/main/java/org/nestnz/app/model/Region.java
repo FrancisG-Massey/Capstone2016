@@ -16,31 +16,52 @@
  *******************************************************************************/
 package org.nestnz.app.model;
 
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 public final class Region implements Comparable<Region> {
 
-	private final int id;
+	private final ReadOnlyIntegerWrapper idProperty = new ReadOnlyIntegerWrapper();
 	
-	private final String name;
+	private final StringProperty nameProperty = new SimpleStringProperty();
+	
+	public Region (int id) {
+		this.idProperty.set(id);
+	}
 	
 	public Region (int id, String name) {
-		this.id = id;
-		this.name = name;
+		idProperty.set(id);
+		nameProperty.set(name);
 	}
 
 	public int getId() {
-		return id;
+		return idProperty.get();
+	}
+	
+	public ReadOnlyIntegerProperty idProperty () {
+		return idProperty.getReadOnlyProperty();
 	}
 
 	public String getName() {
-		return name;
+		return nameProperty.get();
+	}
+	
+	public void setName (String name) {
+		nameProperty.set(name);
+	}
+	
+	public StringProperty nameProperty () {
+		return nameProperty;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + id;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * idProperty.get();
+		result = prime * result + ((nameProperty.get() == null) ? 0 : nameProperty.get().hashCode());
 		return result;
 	}
 
@@ -53,24 +74,33 @@ public final class Region implements Comparable<Region> {
 		if (getClass() != obj.getClass())
 			return false;
 		Region other = (Region) obj;
-		if (id != other.id)
+		if (idProperty.get() != other.idProperty.get())
 			return false;
-		if (name == null) {
-			if (other.name != null)
+			
+		if (nameProperty.get() == null) {
+			if (other.nameProperty.get() != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!nameProperty.get().equals(other.nameProperty.get()))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Region [id=" + id + ", name=" + name + "]";
-	}
+		return "Region [id=" + getId() + ", name=" + getName() + "]";
+	}	
 
 	@Override
 	public int compareTo(Region r) {
-		
-		return 0;
+		if (nameProperty.get() == null) {
+			if (r.nameProperty.get() == null) {
+				return 0;
+			} else {
+				return -1;
+			}
+		} else if (r.nameProperty.get() == null) {
+			return 1;
+		}		
+		return nameProperty.get().compareTo(r.nameProperty.get());
 	}
 }

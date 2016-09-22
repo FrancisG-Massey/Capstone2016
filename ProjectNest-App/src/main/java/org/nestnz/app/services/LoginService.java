@@ -30,6 +30,7 @@ import com.gluonhq.charm.down.common.SettingService;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -90,7 +91,8 @@ public final class LoginService {
     	}
     	loginStatusProperty.set(LoginStatus.PENDING_LOGIN);
     	
-    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode((username+":"+password).getBytes()), Charset.forName("UTF-8"));
+    	String credentials = username+":"+password;
+    	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode(credentials.getBytes()), Charset.forName("UTF-8"));
     	
     	RestClient loginClient = RestClient.create().method("POST").host("https://api.nestnz.org")
     			.path("/session/").header("Authorization", encodedAuth);
@@ -100,31 +102,34 @@ public final class LoginService {
     	BackgroundTasks.runInBackground(() -> {
     		try {
     			dataSource.getInputStream();
-				switch (dataSource.getResponseCode()) {
-				case 201://Created
-					List<String> sessionHeaders = dataSource.getResponseHeaders().get("Session-Token");
-					if (sessionHeaders == null || sessionHeaders.size() == 0) {
-						LOG.log(Level.SEVERE, "Session token missing from server response");
-						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
-					} else {
-						sessionTokenProperty.set(sessionHeaders.get(0));
-						
-						//Save the email & password for future use
-						settingService.store("api.email", username);
-						settingService.store("api.password", password);
-						loginStatusProperty.set(LoginStatus.LOGGED_IN);
-					}					
-					break;
-				case 403://Invalid username/password
-					loginStatusProperty.set(LoginStatus.INVALID_CREDENTIALS);
-					break;
-				default://Some other error occured
-					LOG.log(Level.SEVERE, "Problem sending login request. Response="+dataSource.getResponseMessage());
-					loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
-				}
+			    Platform.runLater(() -> {
+					switch (dataSource.getResponseCode()) {
+					case 201://Created
+						List<String> sessionHeaders = dataSource.getResponseHeaders().get("Session-Token");
+						if (sessionHeaders == null || sessionHeaders.size() == 0) {
+							LOG.log(Level.SEVERE, "Session token missing from server response");
+							loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
+						} else {
+							sessionTokenProperty.set(sessionHeaders.get(0));
+							
+							//Save the email & password for future use
+							settingService.store("api.email", username);
+							settingService.store("api.password", password);
+							loginStatusProperty.set(LoginStatus.LOGGED_IN);
+						}					
+						break;
+					case 403://Invalid username/password
+						loginStatusProperty.set(LoginStatus.INVALID_CREDENTIALS);
+						break;
+					default://Some other error occured
+						LOG.log(Level.SEVERE, "Problem sending login request. Response="+dataSource.getResponseMessage());
+						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
+					}
+			    });
 			} catch (IOException ex) {
 				LOG.log(Level.SEVERE, "Problem sending login request", ex);
-				loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
+				Platform.runLater(() -> {
+					loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);});
 			}
     	}); 
     }
@@ -153,19 +158,21 @@ public final class LoginService {
     	BackgroundTasks.runInBackground(() -> {
     		try {
 				dataSource.getInputStream();
-				switch (dataSource.getResponseCode()) {
-				case 200://Success
-				case 410://Session already expired
-					sessionTokenProperty.set(null);
-					loginStatusProperty.set(LoginStatus.LOGGED_OUT);					
-					break;
-				default://Some other error occured
-					LOG.log(Level.SEVERE, "Problem sending logout request. Response="+dataSource.getResponseMessage());
-					loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
-				}
+			    Platform.runLater(() -> {
+					switch (dataSource.getResponseCode()) {
+					case 200://Success
+					case 410://Session already expired
+						sessionTokenProperty.set(null);
+						loginStatusProperty.set(LoginStatus.LOGGED_OUT);					
+						break;
+					default://Some other error occured
+						LOG.log(Level.SEVERE, "Problem sending logout request. Response="+dataSource.getResponseMessage());
+						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
+					}
+		    	});
 			} catch (IOException ex) {
 				LOG.log(Level.SEVERE, "Problem sending logout request", ex);
-				loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
+		    	Platform.runLater(() -> loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE));
 			}
     	}); 
     }
@@ -174,19 +181,19 @@ public final class LoginService {
      * Gets the current login status of the service. 
      * @return
      */
-    public final LoginStatus getLoginStatus () {
+    public LoginStatus getLoginStatus () {
     	return loginStatusProperty.get();
     }
 
-    public final ReadOnlyObjectProperty<LoginStatus> loginStatusProperty () {
+    public ReadOnlyObjectProperty<LoginStatus> loginStatusProperty () {
     	return loginStatusProperty.getReadOnlyProperty();
     }
     
-    public final String getSessionToken () {
+    public String getSessionToken () {
     	return sessionTokenProperty.get();
     }
 
-    public final ReadOnlyStringProperty sessionTokenProperty () {
+    public ReadOnlyStringProperty sessionTokenProperty () {
     	return sessionTokenProperty.getReadOnlyProperty();
     }
 }

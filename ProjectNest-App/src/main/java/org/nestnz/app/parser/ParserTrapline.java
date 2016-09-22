@@ -19,6 +19,8 @@ package org.nestnz.app.parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
+
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 
@@ -28,7 +30,8 @@ public final class ParserTrapline {
 	private int id;
 	private List<ParserTrap> traps;
 	private String start;
-	private String end;
+	private String end;	
+	private ParserRegion region;
 	
 	public ParserTrapline (Trapline trapline) {
 		this.name = trapline.getName();
@@ -39,6 +42,11 @@ public final class ParserTrapline {
 		}
 		this.start = trapline.getStart();
 		this.end = trapline.getEnd();
+		if (trapline.getRegion() != null) {
+			this.region = new ParserRegion();
+			this.region.setId(trapline.getRegion().getId());
+			this.region.setName(trapline.getRegion().getName());
+		}
 	}
 	
 	public ParserTrapline () {
@@ -48,36 +56,55 @@ public final class ParserTrapline {
 	public String getName() {
 		return name;
 	}
+	
 	public void setName(String name) {
 		this.name = name;
 	}
+	
 	public int getId() {
 		return id;
 	}
+	
 	public void setId(int id) {
 		this.id = id;
 	}
+	
 	public List<ParserTrap> getTraps() {
 		return traps;
 	}
+	
 	public void setTraps(List<ParserTrap> traps) {
 		this.traps = traps;
 	}
+	
 	public String getStart() {
 		return start;
 	}
+	
 	public void setStart(String start) {
 		this.start = start;
 	}
+	
 	public String getEnd() {
 		return end;
 	}
+	
 	public void setEnd(String end) {
 		this.end = end;
 	}
+	
+	@XmlElement(name="region")
+	public ParserRegion getRegion() {
+		return region;
+	}
+
+	public void setRegion(ParserRegion region) {
+		this.region = region;
+	}
+	
 	@Override
 	public String toString() {
-		return "Parser_Trapline [name=" + name + ", id=" + id + ", traps=" + traps + ", start=" + start + ", end=" + end
-				+ "]";
+		return "ParserTrapline [name=" + name + ", id=" + id + ", traps=" + traps + ", start=" + start + ", end=" + end
+				+ ", region=" + region + "]";
 	}
 }
