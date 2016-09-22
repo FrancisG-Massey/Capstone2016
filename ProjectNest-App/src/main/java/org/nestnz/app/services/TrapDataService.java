@@ -219,6 +219,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     }
     
     public void loadTrapline (Trapline trapline) {
+    	if (loadingProperty.get()) {
+    		return;
+    	}
+    	loadingProperty.set(true);
+    	
     	RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
     			.path("/trap").header("Session-Token", loginService.getSessionToken());
     	
@@ -231,14 +236,14 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     				for (JsonValue value : array) {
         				JsonObject trapJson = (JsonObject) value;
         				if (trapJson.getInt("trapline_id") != trapline.getId()) {
-        					continue;//
+        					continue;//If the trap doesn't belong to the specified trapline, ignore it
         				}
         				int id = trapJson.getInt("id");
         				int number = trapJson.getInt("number");
-        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
-        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
-        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created"));
-        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset"));
+        				double latitude = Double.parseDouble(trapJson.getString("coord_lat"));
+        				double longitude = Double.parseDouble(trapJson.getString("coord_long"));
+        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
+        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
         				Trap trap = trapline.getTrap(id);
         				if (trap == null) {
         					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
@@ -250,9 +255,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         					trap.setLastReset(lastReset);
         				}
         			}
+    				loadingProperty.set(false);
     			});
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting traps for trapline "+trapline+". Response: "+dataSource.getResponseMessage(), ex);
+				loadingProperty.set(false);
 			}
     	});
     }
