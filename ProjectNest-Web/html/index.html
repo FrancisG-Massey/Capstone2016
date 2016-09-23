@@ -51,13 +51,13 @@
 						<li><a href="#/contact">Contact</a></li>
 
 						<li class="dropdown" ng-if="globals.currentUser">
-							<a href="javascript:void(0)" class="dropdown-toggle" id="admin-dropdown" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
-								Admin <span class="caret"></span>
+							<a href="javascript:void(0)">
+								Admin
 							</a>
-							<ul class="dropdown-menu" aria-labelledby="admin-dropdown">
+							<!--<ul class="dropdown-menu" aria-labelledby="admin-dropdown">
 								<li><a href="#/trap-admin">Trap</a></li>
 								<li><a href="#/volunteer-admin">Volunteer</a></li>
-							</ul>
+							</ul>-->
 						</li>
 						<li data-ng-controller="LoginController" ng-if="globals.currentUser">
 							<a href="#" ng-click="logout()"">Logout
