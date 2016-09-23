@@ -6,7 +6,10 @@
             tl.trapline_region_id AS region_id,
             tl.trapline_start_tag AS start_tag,
             tl.trapline_end_tag AS end_tag,
-            tl.trapline_image_filename AS img_filename
+            tl.trapline_image_filename AS img_filename,
+            1 AS common_ct_id_1,
+            2 AS common_ct_id_2,
+            3 AS common_ct_id_3
         FROM 
             public.trapline tl
     ",
