@@ -45,12 +45,16 @@ var myApp = angular.module('myApp', [
             controller: 'HomeController',
             templateUrl: 'templates/volunteer.html'
         })
+        .when('/trapline-admin',{
+            controller: 'AdminTraplineController',
+            templateUrl: 'modules/admin/views/trapline-admin.html'        	
+        })
         .when('/volunteer-admin', {
-            controller: 'AdminControllertwo',
+            controller: 'AdminVolunteerController',
             templateUrl: 'modules/admin/views/volunteer-admin.html'
         })
         .when('/trap-admin', {
-            controller: 'AdminController',
+            controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html'
         })
         .otherwise({ redirectTo: '/' });

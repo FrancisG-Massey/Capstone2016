@@ -1,153 +1,319 @@
 'use strict';
  
 angular.module('Admin')
- 
-.controller('AdminController',['$scope', '$rootScope','$http',function ($scope,$rootScope,$http) {
+.controller('AdminTraplineController',['$scope', '$rootScope','$http',function ($scope,$rootScope,$http) {
+	$rootScope.wrapClass = undefined;
+	
+	/*$http.get('https://www.nestnz.org/api/region')
+    .then(function(response) {
+        $scope.regions = response.data;
+        console.log($scope.regions);
+    });
+	$http.get('https://www.nestnz.org/api/trapline')
+    .then(function(response) {
+        $scope.trapline = response.data;
+        console.log($scope.trapline);
+    });*/
+	
+    $rootScope.regions = [
+		              {
+		            	  "id" : 1,
+		            	  "name" : "Manawatu"
+		              },
+		              {
+		            	  "id":2,
+		            	  "name" : "Wellington"
+		              }
+		              ];
+		
+		//console.log($scope.regions);
+	$rootScope.traplines = [
+	                    {
+	                    	"end_tag":"Woodville",
+	                    	"id": 1,
+	                    	"img_filename":"manawatu_gorge.png",
+	                    	"name":"Manawatu Gorge Tawa",
+	                    	"start_tag":"Ashhurst",
+	                    	"region_id":1	
+	                    },
+	                    {
+	                    	"end_tag":"Back",
+	                    	"id": 2,
+	                    	"img_filename":"johnsonville_river.png",
+	                    	"name":"Johnsonville River",
+	                    	"start_tag":"Front",
+	                    	"region_id":2
+	                    }
+	                   ];
+	$rootScope.traps = [
+	        			{
+	        			      "id" : 123,
+	        			      "line_id" : 1,
+	        			      "coord_lat" : -40.314206,
+	        			      "coord_long" : 175.779946,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "active",
+	        			      "created" : "2016-04-16T10:26:07",
+	        			      "last_reset" : "2016-08-16T10:28:07",
+	        			      "bait_id" : 123456789101111,
+	        			      "number" : 1
+	        			},
+	        			{
+	        			      "id" : 254,
+	        			      "line_id" : 2,
+	        			      "coord_lat" : -40.311086,
+	        			      "coord_long" : 175.775306,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "inactive",
+	        			      "created" : "2016-04-16T10:30:07",
+	        			      "last_reset" : "2016-08-16T10:30:07",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 2
+	        			},
+	        			{
+	        			      "id" : 388,
+	        			      "line_id" : 1,
+	        			      "coord_lat" : -40.311821,
+	        			      "coord_long" : 175.775993,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "active",
+	        			      "created" : "2016-04-16T10:35:07",
+	        			      "last_reset" : "2016-08-16T10:35:07",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 3
+	        			},
+	        			{
+	        			      "id" : 367,
+	        			      "line_id" : 2,
+	        			      "coord_lat" : -40.311821,
+	        			      "coord_long" : 175.775993,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "inactive",
+	        			      "created" : "2016-04-16T10:36:07",
+	        			      "last_reset" : "2016-08-16T10:36:07",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 4
+	        			},
+	        			{
+	        			      "id" : 433,
+	        			      "line_id" : 1,
+	        			      "coord_lat" : -40.312105,
+	        			      "coord_long" : 175.778328,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "active",
+	        			      "created" : "2016-04-16T10:37:07",
+	        			      "last_reset" : "2016-08-16T10:37:07",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 5
+	        			},
+	        			{
+	        			      "id" : 587,
+	        			      "line_id" : 2,
+	        			      "coord_lat" : -40.312119,
+	        			      "coord_long" : 175.777347,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "inactive",
+	        			      "created" : "2016-04-16T10:40:07",
+	        			      "last_reset" : "2016-08-16T10:40:07",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 6
+	        			},
+	        			{
+	        			      "id" : 635,
+	        			      "line_id" : 1,
+	        			      "coord_lat" : -40.309037,
+	        			      "coord_long" : 175.772448,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "active",
+	        			      "created" : "2016-04-16T10:44:07",
+	        			      "last_reset" : "2016-08-16T10:44:07",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 7
+	        			},
+	        			{
+	        			      "id" : 754,
+	        			      "line_id" : 2,
+	        			      "coord_lat" : -40.309705,
+	        			      "coord_long" : 175.772583,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "inactive",
+	        			      "created" : "2016-04-16T10:47:07",
+	        			      "last_reset" : "2016-08-16T10:47:07",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 8
+	        			},
+	        			{
+	        			      "id" : 867,
+	        			      "line_id" : 1,
+	        			      "coord_lat" : -40.310519,
+	        			      "coord_long" : 175.774827,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "active",
+	        			      "created" : "2016-04-16T10:55:07",
+	        			      "last_reset" : "2016-08-16T10:55:57",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 9
+	        			},
+	        			{
+	        			      "id" : 967,
+	        			      "line_id" : 2,
+	        			      "coord_lat" : -40.309849,
+	        			      "coord_long" : 175.773379,
+	        			      "type_id" : 1234567891011,
+	        			      "status" : "active",
+	        			      "created" : "2016-04-16T10:57:07",
+	        			      "last_reset" : "2016-08-16T10:57:07",
+	        			      "bait_id" : 123456789101112,
+	        			      "number" : 10
+	        		}];
+	        	    	
+	        	    $scope.baits =[
+	        		    {
+	        				"id" : 123456789101112,
+	        				"name" : "egg"
+	        			},
+	        			{
+	        				"id" : 123456789101111,
+	        				"name" : "rabbit"
+	        			},
+	        			{
+	        				"id" : 49506062,
+	        				"name" : "poisonA"
+	        			}
+	        		];
+	        	    
+	        		$rootScope.volunteers = [
+	        		                 		{
+	        		                 			id: 1,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},	
+	        		                 		{
+	        		                 			id: 2,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 3,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 4,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 5,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 6,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 7,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 8,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 9,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 10,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		},
+	        		                 		{
+	        		                 			id: 11,
+	        		                 			firstNames : 'John',
+	        		                 			lastName: 'Smith',
+	        		                 			email: 'johnsmith@yahoo.com',
+	        		                 			startDate: '2016-04-16T10:26:07',
+	        		                 			permission: 'none'
+	        		                 			
+	        		                 		}
+	        		                 		
+	        		                 		];
+	//console.log($rootScope.traps);
+	
+	// Valid Trapline objects are nested in each region object. 
+	var region, trapline;
+	for (var i = 0; i < $rootScope.regions.length; i++) {
+	    region = $rootScope.regions[i];
+	    region.traplines = [];
+	    for (var x = 0; x < $rootScope.traplines.length; x++) {
+	        trapline = $rootScope.traplines[x];
+	        if (trapline.region_id == region.id) {
+	            region.traplines.push(trapline);
+	        }
+	    }
+	}
+
+	console.log($rootScope.regions);
+			
+}])
+.controller('AdminTrapController',['$scope', '$rootScope','$http',function ($scope,$rootScope,$http) {
 		$rootScope.wrapClass = undefined;
-		//$http.get('https://www.nestnz.org/api/trap')
-        //.then(function(response) {
-        //    $scope.trapData = response.data;
-        //    console.log($scope.trapData);
-        //});
-    	var traps = [
-			{
-			      "id" : 123,
-			      "line_id" : 2345678910,
-			      "coord_lat" : -40.314206,
-			      "coord_long" : 175.779946,
-			      "type_id" : 1234567891011,
-			      "status" : "active",
-			      "created" : "2016-04-16T10:26:07",
-			      "last_reset" : "2016-08-16T10:28:07",
-			      "bait_id" : 123456789101111,
-			      "number" : 1
-			},
-			{
-			      "id" : 254,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.311086,
-			      "coord_long" : 175.775306,
-			      "type_id" : 1234567891011,
-			      "status" : "inactive",
-			      "created" : "2016-04-16T10:30:07",
-			      "last_reset" : "2016-08-16T10:30:07",
-			      "bait_id" : 123456789101112,
-			      "number" : 2
-			},
-			{
-			      "id" : 388,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.311821,
-			      "coord_long" : 175.775993,
-			      "type_id" : 1234567891011,
-			      "status" : "active",
-			      "created" : "2016-04-16T10:35:07",
-			      "last_reset" : "2016-08-16T10:35:07",
-			      "bait_id" : 123456789101112,
-			      "number" : 3
-			},
-			{
-			      "id" : 367,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.311821,
-			      "coord_long" : 175.775993,
-			      "type_id" : 1234567891011,
-			      "status" : "inactive",
-			      "created" : "2016-04-16T10:36:07",
-			      "last_reset" : "2016-08-16T10:36:07",
-			      "bait_id" : 123456789101112,
-			      "number" : 4
-			},
-			{
-			      "id" : 433,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.312105,
-			      "coord_long" : 175.778328,
-			      "type_id" : 1234567891011,
-			      "status" : "active",
-			      "created" : "2016-04-16T10:37:07",
-			      "last_reset" : "2016-08-16T10:37:07",
-			      "bait_id" : 123456789101112,
-			      "number" : 5
-			},
-			{
-			      "id" : 587,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.312119,
-			      "coord_long" : 175.777347,
-			      "type_id" : 1234567891011,
-			      "status" : "inactive",
-			      "created" : "2016-04-16T10:40:07",
-			      "last_reset" : "2016-08-16T10:40:07",
-			      "bait_id" : 123456789101112,
-			      "number" : 6
-			},
-			{
-			      "id" : 635,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.309037,
-			      "coord_long" : 175.772448,
-			      "type_id" : 1234567891011,
-			      "status" : "active",
-			      "created" : "2016-04-16T10:44:07",
-			      "last_reset" : "2016-08-16T10:44:07",
-			      "bait_id" : 123456789101112,
-			      "number" : 7
-			},
-			{
-			      "id" : 754,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.309705,
-			      "coord_long" : 175.772583,
-			      "type_id" : 1234567891011,
-			      "status" : "inactive",
-			      "created" : "2016-04-16T10:47:07",
-			      "last_reset" : "2016-08-16T10:47:07",
-			      "bait_id" : 123456789101112,
-			      "number" : 8
-			},
-			{
-			      "id" : 867,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.310519,
-			      "coord_long" : 175.774827,
-			      "type_id" : 1234567891011,
-			      "status" : "active",
-			      "created" : "2016-04-16T10:55:07",
-			      "last_reset" : "2016-08-16T10:55:57",
-			      "bait_id" : 123456789101112,
-			      "number" : 9
-			},
-			{
-			      "id" : 967,
-			      "line_id" : 12345678910,
-			      "coord_lat" : -40.309849,
-			      "coord_long" : 175.773379,
-			      "type_id" : 1234567891011,
-			      "status" : "active",
-			      "created" : "2016-04-16T10:57:07",
-			      "last_reset" : "2016-08-16T10:57:07",
-			      "bait_id" : 123456789101112,
-			      "number" : 10
-		}];
-	    	
-	    $scope.baits =[
-		    {
-				"id" : 123456789101112,
-				"name" : "egg"
-			},
-			{
-				"id" : 123456789101111,
-				"name" : "rabbit"
-			},
-			{
-				"id" : 49506062,
-				"name" : "poisonA"
-			}
-		];
+		$http.get('https://www.nestnz.org/api/trap')
+        .then(function(response) {
+            $scope.trapData = response.data;
+            console.log($scope.trapData);
+        });
+		
+    	
 	    
 	    var pageLength = 10,
-	    	numTraps = traps.length,
+	    	numTraps = $rootScope.traps.length,
 	    	newArray = [],
 	    	pages = Math.ceil(numTraps/pageLength);
 	    
@@ -156,18 +322,18 @@ angular.module('Admin')
 		}
 	    
 	    var page, trap;
-	    for (var i = 0; i < traps.length; i++) {
-			trap = traps[i];
+	    for (var i = 0; i < $rootScope.traps.length; i++) {
+			trap = $rootScope.traps[i];
 	    	page = Math.floor(i/pageLength);
 	    	newArray[page].push(trap);
 		}
 	    $scope.currentPage = 0;
-	    $scope.traps = newArray;
+	    $rootScope.traps = newArray;
 	
 		    var mymap = L.map('mapid'),trap;
 		    
 		    var mapDefault = function() {
-		    	mymap.setView([traps[0].coord_lat, traps[0].coord_long], 13);	
+		    	mymap.setView([$rootScope.traps[0].coord_lat, $rootScope.traps[0].coord_long], 13);	
 		    };
 		    mapDefault();
 				        
@@ -179,8 +345,8 @@ angular.module('Admin')
 	        }).addTo(mymap);
 	        
 	        var marker, popupText;
-		    for (var i = 0; i < traps.length; i++) {
-		    	trap = traps[i];
+		    for (var i = 0; i < $rooScope.traps.length; i++) {
+		    	trap = $rootScope.traps[i];
 		    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
 		    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
 			}
@@ -239,112 +405,8 @@ angular.module('Admin')
     	
     }])
 
-.controller('AdminControllertwo',['$scope', '$rootScope',function ($scope,$rootScope) {
+.controller('AdminVolunteerController',['$scope', '$rootScope',function ($scope,$rootScope) {
 	$rootScope.wrapClass = undefined;
-	var volunteers = [
-		{
-			id: 1,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},	
-		{
-			id: 2,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 3,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 4,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 5,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 6,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 7,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 8,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 9,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 10,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		},
-		{
-			id: 11,
-			firstNames : 'John',
-			lastName: 'Smith',
-			email: 'johnsmith@yahoo.com',
-			startDate: '2016-04-16T10:26:07',
-			permission: 'none'
-			
-		}
-		
-		];
-    	
-
 	  
     $scope.addNew = function() {
     	$scope.selected = false;
@@ -352,7 +414,7 @@ angular.module('Admin')
 	
 	
 	var pageLength = 10,
-		numVolunteers = volunteers.length,
+		numVolunteers = $rootScope.volunteers.length,
 		newArray = [],
 		pages = Math.ceil(numVolunteers/pageLength);
 	
@@ -361,13 +423,13 @@ angular.module('Admin')
 	}
 	
 	var page, volunteer;
-	for (var i = 0; i < volunteers.length; i++) {
-		volunteer = volunteers[i];
+	for (var i = 0; i < $rootScope.volunteers.length; i++) {
+		volunteer = $rootScope.volunteers[i];
 		page = Math.floor(i/pageLength);
 		newArray[page].push(volunteer);
 	}
 	$scope.currentPage = 0;
-	$scope.volunteers = newArray;
+	$rootScope.volunteers = newArray;
 
 	
     $scope.setSelected = function(item){
