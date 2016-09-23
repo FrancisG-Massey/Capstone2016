@@ -18,21 +18,41 @@ package org.nestnz.app.views.map;
 
 import java.util.Iterator;
 
+import com.gluonhq.charm.down.common.Position;
 import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapPoint;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.util.Pair;
 
 public class PositionLayer extends MapLayer {
 
-    private final ObservableList<Pair<MapPoint, Node>> points = FXCollections.observableArrayList();
+    protected final ObservableList<Pair<MapPoint, Node>> points = FXCollections.observableArrayList();
+    
+    protected final ObjectProperty<Position> currentPosition = new SimpleObjectProperty<>();
+	
+	/**
+	 * The icon indicating the user's current position on the map
+	 */
+    protected final Node curPosIcon = new Circle(10, Color.YELLOW);
     
     public PositionLayer() {
-    	
+    	currentPosition.addListener((obs, oldVal, newVal) -> {
+    		MapPoint curPoint = new MapPoint(newVal.getLatitude(), newVal.getLongitude());
+    		removePoint(curPosIcon);
+			addPoint(curPoint, curPosIcon);
+    	});
+    }
+    
+    public final void setCurrentPosition (Position postition) {
+    	currentPosition.set(postition);
     }
 
     public void addPoint(MapPoint p, Node icon) {
@@ -52,6 +72,8 @@ public class PositionLayer extends MapLayer {
     	this.getChildren().removeAll(icon);
     	this.markDirty();
     }
+    
+    
 
     @Override
     protected void layoutLayer() {

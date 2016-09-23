@@ -29,8 +29,7 @@ import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.services.CompassService;
-import org.nestnz.app.services.NestPlatformFactory;
+import org.nestnz.app.views.map.TrapPositionLayer;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
 import com.gluonhq.charm.down.common.Position;
@@ -39,8 +38,9 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import com.gluonhq.maps.MapPoint;
+import com.gluonhq.maps.MapView;
 
-import eu.hansolo.fx.AirCompass;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -73,6 +73,10 @@ public class NavigationView extends View {
     final StringProperty distanceToTrap = new SimpleStringProperty();
     
     final Dialog<CatchType> catchSelectDialog;
+	
+	final MapView map = new MapView();
+	
+	final TrapPositionLayer trapPositionLayer = new TrapPositionLayer();
 
     public NavigationView() {
         this(false);
@@ -121,6 +125,12 @@ public class NavigationView extends View {
         	catchSelectDialog.showAndWait();
         });
         setBottom(logCatch);
+        
+
+		map.setZoom(17); 
+        map.setCenter(new MapPoint(-40.3148, 175.7775));
+		map.addLayer(trapPositionLayer);
+		setCenter(map);
     	
     	
     	trapProperty.addListener((obs, oldV, newV) -> {
@@ -141,20 +151,9 @@ public class NavigationView extends View {
         		double distance = getDistance(newPos, targetCoordsProperty.get());
         		LOG.info(String.format("Found coordinates: %1$.3f, %2$.3f (distance=%3$.2fm)", newPos.getLatitude(), newPos.getLongitude(), distance));
         		distanceToTrap.set(String.format("%1$.0fm", distance));
+    			trapPositionLayer.setCurrentPosition(newPos);
         	}
         });
-        
-        /*CompassService headingService = NestPlatformFactory.getPlatform().getCompassService();
-        
-        if (headingService.isHeadingAvailable()) {
-        	AirCompass compass = new AirCompass();
-        	headingService.headingProperty().addListener((obs, oldHeading, newHeading) -> {
-            	if (newHeading != null) {
-            		compass.setBearing(newHeading.doubleValue());
-            	}
-            });
-        	//setCenter(compass);
-        }*/
     }
     
     private final Dialog<CatchType> makeCatchDialog () {
@@ -170,7 +169,6 @@ public class NavigationView extends View {
         controls.getColumnConstraints().addAll(column1, column2);
     	
     	Button empty = new Button("Empty");
-    	empty.setMaxSize(1000, 1000);
     	GridPane.setConstraints(empty, 0, 0);//Set as top-left cell
     	GridPane.setHgrow(empty, Priority.ALWAYS);
     	GridPane.setVgrow(empty, Priority.ALWAYS);
@@ -182,7 +180,7 @@ public class NavigationView extends View {
     	Button option2 = makeOptionButton(op2, 1);
     	
     	Button other = new Button("Other");
-    	other.setMaxSize(1000, 1000);
+    	other.getStyleClass().add("large-button");
     	GridPane.setConstraints(other, 0, 1, 2, 1);//Set as center cell (spans both rows)
 
     	CatchType op3 = new CatchType(3, "Option 3", null);
@@ -197,7 +195,7 @@ public class NavigationView extends View {
     
     private Button makeOptionButton (CatchType catchType, int place) {
     	Button button = new Button(catchType.getName());
-    	button.setMaxSize(1000, 1000);
+    	button.getStyleClass().add("large-button");
     	GridPane.setConstraints(button, place % 2, place > 1 ? 2 : 0);
     	GridPane.setHgrow(button, Priority.ALWAYS);
     	GridPane.setVgrow(button, Priority.ALWAYS);

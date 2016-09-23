@@ -64,11 +64,6 @@ public class AddTrapView extends View {
 	 */
 	private final ObjectProperty<Position> currentPosition = new SimpleObjectProperty<>();
 	
-	/**
-	 * The icon indicating the user's current position on the map
-	 */
-	private final Node curPosIcon = new Circle(10, Color.YELLOW);
-	
 	private IntegerProperty nextTrapNumber = new SimpleIntegerProperty();
 	
 	public AddTrapView() {
@@ -76,7 +71,8 @@ public class AddTrapView extends View {
 		addTrapButton.setMaxHeight(1000.0);
 		addTrapButton.setMaxWidth(1000.0);
 		addTrapButton.setVisible(false);//Hide the 'add trap' button until we've set the trapline
-		map.setZoom(17); 
+		map.setZoom(17);		
+		
         map.setCenter(new MapPoint(-40.3148, 175.7775));
 		map.addLayer(mapPositionLayer);
 
@@ -124,10 +120,8 @@ public class AddTrapView extends View {
 		currentPosition.addListener((obs, oldPos, newPos) -> {
 			if (newPos != null) {
 				LOG.log(Level.INFO, String.format("Found coords: %1$.6f, %2$.6f", newPos.getLatitude(), newPos.getLongitude()));
-				MapPoint curPoint = new MapPoint(newPos.getLatitude(), newPos.getLongitude());
-				map.setCenter(curPoint);
-				mapPositionLayer.removePoint(curPosIcon);
-				mapPositionLayer.addPoint(curPoint, curPosIcon);
+				mapPositionLayer.setCurrentPosition(newPos);
+				map.setCenter(newPos.getLatitude(), newPos.getLongitude());
         	}
 		});
 	}
