@@ -50,6 +50,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
 public class NavigationView extends View {
@@ -99,15 +100,18 @@ public class NavigationView extends View {
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
     }
     
-    private void initControls () {        
+    private void initControls () {
+    	HBox topBox = new HBox();
+    	
         Label distanceLabel = new Label("0.0");
         distanceLabel.setMaxWidth(1000.0);
         distanceLabel.setId("distance-label");
         distanceLabel.setAlignment(Pos.CENTER);
         
         distanceLabel.textProperty().bind(distanceToTrap);
+        HBox.setHgrow(distanceLabel, Priority.ALWAYS);
                 
-        setTop(distanceLabel);
+        setTop(topBox);
         
         prev.toFront();
         prev.setAlignment(Pos.CENTER);
@@ -115,8 +119,8 @@ public class NavigationView extends View {
         next.toFront();
         next.setAlignment(Pos.CENTER);
         
-        setLeft(prev);
-        setRight(next);
+        topBox.getChildren().addAll(prev, distanceLabel, next);
+        
         
         Button logCatch = new Button();
         logCatch.getStyleClass().add("large-button");
