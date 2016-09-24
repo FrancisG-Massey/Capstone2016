@@ -20,10 +20,9 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.views.map.PositionLayer;
+import org.nestnz.app.views.map.TrapPositionLayer;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
 import com.gluonhq.charm.down.common.Position;
@@ -31,17 +30,13 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 
 public class AddTrapView extends View {
 
@@ -55,7 +50,7 @@ public class AddTrapView extends View {
 	
 	protected final MapView map = new MapView();
 	
-	protected final PositionLayer mapPositionLayer = new PositionLayer();
+	protected final TrapPositionLayer trapPositionLayer = new TrapPositionLayer();
 	
 	private Position lastTrapPosition;
 	
@@ -73,8 +68,7 @@ public class AddTrapView extends View {
 		addTrapButton.setVisible(false);//Hide the 'add trap' button until we've set the trapline
 		map.setZoom(17);		
 		
-        map.setCenter(new MapPoint(-40.3148, 175.7775));
-		map.addLayer(mapPositionLayer);
+		map.addLayer(trapPositionLayer);
 
 		getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
 				e -> System.out.println("Info")));
@@ -102,17 +96,8 @@ public class AddTrapView extends View {
 		Trap trap = new Trap(number, position.getLatitude(), position.getLongitude());
 		nextTrapNumber.set(number+1);
 		trapline.getTraps().add(trap);
-		((NestApplication)this.getApplication()).getTrapDataService().updateTrapline(trapline);
-		
-		Node icon = new Circle(7, Color.RED);
-		mapPositionLayer.addPoint(new MapPoint(position.getLatitude(), position.getLongitude()), icon);		
-	}
-	
-	private void addExistingTraps () {
-		for (Trap trap : trapline.getTraps()) {
-			Node icon = new Circle(7, Color.BLUE);
-			mapPositionLayer.addPoint(new MapPoint(trap.getLatitude(), trap.getLongitude()), icon);
-		}
+		trapPositionLayer.getTraps().add(trap);
+		trapPositionLayer.setActiveTrap(trap);
 	}
 	
 	private void initPositionMonitor () {
@@ -120,8 +105,8 @@ public class AddTrapView extends View {
 		currentPosition.addListener((obs, oldPos, newPos) -> {
 			if (newPos != null) {
 				LOG.log(Level.INFO, String.format("Found coords: %1$.6f, %2$.6f", newPos.getLatitude(), newPos.getLongitude()));
-				mapPositionLayer.setCurrentPosition(newPos);
-				map.setCenter(newPos.getLatitude(), newPos.getLongitude());
+				trapPositionLayer.setCurrentPosition(newPos);
+				//map.setCenter(newPos.getLatitude(), newPos.getLongitude());
         	}
 		});
 	}
@@ -140,7 +125,8 @@ public class AddTrapView extends View {
 			}
 		}
 		this.nextTrapNumber.set(nextTrapNumber+1);
-		addExistingTraps();
+		
+		trapPositionLayer.getTraps().setAll(trapline.getTraps());
 	}
 
     @Override

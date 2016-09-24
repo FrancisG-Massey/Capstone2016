@@ -17,11 +17,14 @@
 package org.nestnz.app.views.map;
 
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.gluonhq.charm.down.common.Position;
 import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapPoint;
 
+import static javafx.beans.binding.Bindings.createDoubleBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -33,6 +36,8 @@ import javafx.scene.shape.Circle;
 import javafx.util.Pair;
 
 public class PositionLayer extends MapLayer {
+
+    private static final Logger LOG = Logger.getLogger(PositionLayer.class.getName());
 
     protected final ObservableList<Pair<MapPoint, Node>> points = FXCollections.observableArrayList();
     
@@ -51,11 +56,20 @@ public class PositionLayer extends MapLayer {
     	});
     }
     
+    @Override
+    protected void initialize() {
+    	baseMap.prefCenterLat().bind(createDoubleBinding(() -> 
+    		currentPosition.get() == null ? 0.0 : currentPosition.get().getLatitude(), currentPosition));
+    	baseMap.prefCenterLon().bind(createDoubleBinding(() -> 
+    		currentPosition.get() == null ? 0.0 : currentPosition.get().getLongitude(), currentPosition));
+    }
+    
     public final void setCurrentPosition (Position postition) {
     	currentPosition.set(postition);
     }
 
     public void addPoint(MapPoint p, Node icon) {
+    	LOG.log(Level.FINE, String.format("Point added at %f, %f (icon=%s)", p.getLatitude(), p.getLongitude(), icon));
         points.add(new Pair<MapPoint, Node>(p, icon));
         this.getChildren().add(icon);
         this.markDirty();

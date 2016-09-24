@@ -245,6 +245,7 @@ public class NavigationView extends View {
      */
     void setTrap (Trap trap) {
     	trapProperty.set(trap);
+    	trapPositionLayer.setActiveTrap(trap);
     }
     
     /**
@@ -262,6 +263,7 @@ public class NavigationView extends View {
     	});
     	
     	setTrap(orderedTraps.get(0));
+    	trapPositionLayer.getTraps().setAll(trapline.getTraps());
     }
 
     @Override
