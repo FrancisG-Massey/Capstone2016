@@ -127,9 +127,7 @@ th, td{
 }
 
 #404page{
-body {
-    background-image: url("deadrodent.jpg");
-    background-repeat: no-repeat;
-    background-position: left top;
-}
+	background-image: url("deadrodent.jpg");
+    	background-repeat: no-repeat;
+    	background-position: left top;
 }
