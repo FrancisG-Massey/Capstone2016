@@ -12,6 +12,9 @@ import com.google.gson.JsonParser;
 import java.io.FileInputStream;
 import java.sql.*;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -19,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -86,9 +91,17 @@ public class RequestServlet extends HttpServlet {
             throws ServletException, IOException {
         String dirtySQL;
         
-        // Parse out the request path from the URL
+        // Parse out the requested entity type and id from the request URL
+        // Seems the java regex matcher isn't fully PCRE compliant? We'll have to strip slashes manually
+        
+        //Matcher m = Pattern.compile("/^\\/(?>([a-z][a-z-_]*))(?>\\/(\\d+))?/i").matcher(request.getPathInfo());
+        Matcher m = Pattern.compile("\\/([\\w-]*)").matcher(request.getPathInfo().toLowerCase());
+        String requestEntity = m.find() ? m.group().substring(1) : "";
+        String requestEntityID = m.find() ? m.group().substring(1) : "";
+        
+        // Retrieve the SQL query string mapped to the requested entity's GET method
         try {
-            dirtySQL = getSQLQuery(request.getPathInfo().substring(1), "GET");
+            dirtySQL = getSQLQuery(requestEntity, "GET");
         } catch (IOException ex) {
             // TODO: Log ex
             response.setHeader("Error", ex.getMessage());            
@@ -114,17 +127,38 @@ public class RequestServlet extends HttpServlet {
             return;
         }
         
-        // TODO: Build a map of parameters which appear in the retrieved query i.e. regex matches for /%[^\s\d]\S*%/g
+        // Build a map of parameters which appear in the retrieved query i.e. regex matches for #session-token# etc.
+        // ParamOrder will be used when we dynamically bind our parameters later. 
+        // FYI, Its not going to be pretty using java's static typing...
+        List<String> datasetParamOrder = new ArrayList<>();
+        Map<String, String> datasetParams = new HashMap<>();
+        m = Pattern.compile("#([a-z-_][\\w-]*)#").matcher(dirtySQL.toLowerCase());
+        while (m.find()) {
+            datasetParamOrder.add(m.group());
+            datasetParams.put(m.group(), null);
+        }
         
-        // Parse out any query parameters and if they appear in the query, map them to that parameter
-        Map<String, String[]> params = request.getParameterMap();
-        // TODO: Finish this next line, parse out the id if there is one provided, i.e. /tablename/42/, also validate it
-        final String objectID = request.getPathInfo();
-        // TODO: Inject the above parameter into the parameter map if it is provided
+        // Fill the datasetParams map with values if they are provided in the request
+        // Note if a query string parameter has multiple mappings, its undefined behaviour as to which one will be used.
+        Enumeration<String> parameterNames = request.getParameterNames();
+        while (parameterNames.hasMoreElements()) {
+            final String paramName = (String) parameterNames.nextElement();
+            if (datasetParams.containsKey(paramName)) {
+                datasetParams.put(paramName, request.getParameter(paramName));
+            }
+        }
+        // Add the session token as a parameter (we've already validated it above)
+        datasetParams.put("session-token", sessionToken);
+        // If a subroute was provided specifying the entity id, use it
+        if (!requestEntityID.isEmpty()) {
+            datasetParams.put("id", requestEntityID);
+        }
         
-        
-        // TODO: Build the SQL query for the DB by injecting the parsed query parameters into it (Remember to bind with '?' !
-        List<String> sqlParams = new ArrayList<>();
+        // Replace the placeholders in the retrieved SQL with the values supplied by the request
+        // Temporary measure until we get binding going on.
+        for (Map.Entry<String, String> entry : datasetParams.entrySet()) {
+            dirtySQL = dirtySQL.replaceAll("#" + entry.getKey() + "#", "'" + entry.getValue() + "'");
+        }
         String cleanSQL = dirtySQL;
         
         // Get the DB response and convert it to JSON
