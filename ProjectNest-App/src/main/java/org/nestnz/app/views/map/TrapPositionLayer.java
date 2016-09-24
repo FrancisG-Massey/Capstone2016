@@ -96,7 +96,9 @@ public class TrapPositionLayer extends PositionLayer implements ListChangeListen
 					MapPoint pos = new MapPoint(t.getLatitude(), t.getLongitude());
 					Node icon = makeTrapIcon();
 					trapIcons.put(t, icon);
-					addPoint(pos, icon);
+					if (t != getActiveTrap()) {
+						addPoint(pos, icon);
+					}					
 				}
 			} else if (c.wasUpdated()) {
 				for (Trap t : c.getList().subList(c.getFrom(), c.getTo())) {
