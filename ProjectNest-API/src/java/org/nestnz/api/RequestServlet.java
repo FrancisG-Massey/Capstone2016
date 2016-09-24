@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -41,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class RequestServlet extends HttpServlet {
     private String propPath = null, datasetsPath = null;
+    private static final Logger LOG = Logger.getLogger(RequestServlet.class.getName());
     
     /**
      * Attempt to connect to the database on servlet creation
@@ -62,7 +65,7 @@ public class RequestServlet extends HttpServlet {
         try {
             Common.getNestDS(propPath);
         } catch (IOException ex) {
-            // TODO: Log ex
+            LOG.log(Level.SEVERE, "Unable to get a datasource db connection", ex);
         }
     }
     
@@ -74,7 +77,7 @@ public class RequestServlet extends HttpServlet {
         try {
             Common.closeNestDS();
         } catch (SQLException ex) {
-            // TODO: Log ex
+            LOG.log(Level.WARNING, "Unable to close datasource object", ex);
         }
     }
     
@@ -103,7 +106,7 @@ public class RequestServlet extends HttpServlet {
         try {
             dirtySQL = getSQLQuery(requestEntity, "GET");
         } catch (IOException ex) {
-            // TODO: Log ex
+            LOG.log(Level.SEVERE, "Unable to load dataset mappings", ex);
             response.setHeader("Error", ex.getMessage());            
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
@@ -111,7 +114,7 @@ public class RequestServlet extends HttpServlet {
         
         // Check that the request target is mapped and valid
         if (dirtySQL == null) {
-            // TODO: Log ex
+            LOG.log(Level.INFO, "Unable to locate requested dataset: {0}", requestEntity);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -176,8 +179,7 @@ public class RequestServlet extends HttpServlet {
                 jsonArray = "[]";
             }
         } catch (IOException | SQLException ex) {
-            // TODO: Log ex
-            response.setHeader("Error", ex.getMessage());            
+            LOG.log(Level.SEVERE, "Unable to execute \"" + requestEntity + "\" dataset GET query", ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
                 
