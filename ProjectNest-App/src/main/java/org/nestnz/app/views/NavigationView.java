@@ -103,6 +103,8 @@ public class NavigationView extends View {
     private void initControls () {
     	HBox topBox = new HBox();
     	
+    	topBox.setAlignment(Pos.CENTER);
+    	
         Label distanceLabel = new Label("0.0");
         distanceLabel.setMaxWidth(1000.0);
         distanceLabel.setId("distance-label");

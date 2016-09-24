@@ -7,3 +7,8 @@
 	-fx-padding: 1.5em;
 	-fx-font-size: 1.5em;
 }
+
+#distance-label {
+	-fx-font-size: 1.3em;
+	-fx-alignment: center;
+}
