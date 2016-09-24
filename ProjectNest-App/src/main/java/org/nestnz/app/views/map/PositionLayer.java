@@ -17,25 +17,59 @@
 package org.nestnz.app.views.map;
 
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import com.gluonhq.charm.down.common.Position;
 import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapPoint;
 
+import static javafx.beans.binding.Bindings.createDoubleBinding;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.util.Pair;
 
 public class PositionLayer extends MapLayer {
 
-    private final ObservableList<Pair<MapPoint, Node>> points = FXCollections.observableArrayList();
+    private static final Logger LOG = Logger.getLogger(PositionLayer.class.getName());
+
+    protected final ObservableList<Pair<MapPoint, Node>> points = FXCollections.observableArrayList();
+    
+    protected final ObjectProperty<Position> currentPosition = new SimpleObjectProperty<>();
+	
+	/**
+	 * The icon indicating the user's current position on the map
+	 */
+    protected final Node curPosIcon = new Circle(10, Color.YELLOW);
     
     public PositionLayer() {
-    	
+    	currentPosition.addListener((obs, oldVal, newVal) -> {
+    		MapPoint curPoint = new MapPoint(newVal.getLatitude(), newVal.getLongitude());
+    		removePoint(curPosIcon);
+			addPoint(curPoint, curPosIcon);
+    	});
+    }
+    
+    @Override
+    protected void initialize() {
+    	baseMap.prefCenterLat().bind(createDoubleBinding(() -> 
+    		currentPosition.get() == null ? 0.0 : currentPosition.get().getLatitude(), currentPosition));
+    	baseMap.prefCenterLon().bind(createDoubleBinding(() -> 
+    		currentPosition.get() == null ? 0.0 : currentPosition.get().getLongitude(), currentPosition));
+    }
+    
+    public final void setCurrentPosition (Position postition) {
+    	currentPosition.set(postition);
     }
 
     public void addPoint(MapPoint p, Node icon) {
+    	LOG.log(Level.FINE, String.format("Point added at %f, %f (icon=%s)", p.getLatitude(), p.getLongitude(), icon));
         points.add(new Pair<MapPoint, Node>(p, icon));
         this.getChildren().add(icon);
         this.markDirty();
@@ -52,6 +86,8 @@ public class PositionLayer extends MapLayer {
     	this.getChildren().removeAll(icon);
     	this.markDirty();
     }
+    
+    
 
     @Override
     protected void layoutLayer() {
