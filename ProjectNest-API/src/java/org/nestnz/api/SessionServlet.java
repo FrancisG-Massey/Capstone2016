@@ -149,7 +149,7 @@ public class SessionServlet extends HttpServlet {
         
         // Check for a well-formed basic auth header.
         final String auth = request.getHeader("Authorization");
-        if (auth == null || !auth.startsWith("Basic")) {
+        if (auth == null || !auth.startsWith("Basic ")) {
             // No basic auth header found, or header is not well-formed
             response.addHeader("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
