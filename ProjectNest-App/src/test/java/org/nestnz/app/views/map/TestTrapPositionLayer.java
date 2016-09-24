@@ -22,6 +22,7 @@ import static org.junit.Assume.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.nestnz.app.model.Trap;
 
 import com.gluonhq.charm.down.common.Position;
 import com.gluonhq.maps.MapPoint;
@@ -65,6 +66,68 @@ public class TestTrapPositionLayer {
 		
 		assertEquals(pos.getLatitude(), point.getLatitude(), 0.0001);
 		assertEquals(pos.getLongitude(), point.getLongitude(), 0.0001);
+	}
+	
+	@Test
+	public void testAddTrapPositions() {
+		Trap t1 = new Trap(1, -40.82365, 170.27632);
+		Trap t2 = new Trap(2, -40.82765, 170.27676);
+		layer.getTraps().addAll(t1, t2);
+		
+		assertEquals(2, layer.points.size());//Make sure there's two points on the map
+		
+		MapPoint point = layer.points.get(0).getKey();//Check the first trap
+		assertEquals(t1.getLatitude(), point.getLatitude(), 0.0001);
+		assertEquals(t1.getLongitude(), point.getLongitude(), 0.0001);
+		
+		point = layer.points.get(1).getKey();//Check the second trap
+		assertEquals(t2.getLatitude(), point.getLatitude(), 0.0001);
+		assertEquals(t2.getLongitude(), point.getLongitude(), 0.0001);
+	}
+	
+	@Test
+	public void testActiveTrap() {
+		Trap t1 = new Trap(1, -40.82365, 170.27632);
+		Trap t2 = new Trap(2, -40.82765, 170.27676);
+		layer.getTraps().addAll(t1, t2);
+		
+		assumeTrue(layer.points.size() == 2);//Assume there's two points on the map
+		
+		layer.setActiveTrap(t1);
+		
+		assertEquals(2, layer.points.size());//Make sure there's still only two points on the map
+		
+		MapPoint point = layer.points.get(1).getKey();//Check the position of the active trap
+		assertEquals(t1.getLatitude(), point.getLatitude(), 0.0001);
+		assertEquals(t1.getLongitude(), point.getLongitude(), 0.0001);
+		
+		assertEquals(layer.activeTrapIcon, layer.points.get(1).getValue());//Make sure the active trap icon is used
+	}
+	
+	@Test
+	public void testChangeActiveTrap() {
+		Trap t1 = new Trap(1, -40.82365, 170.27632);
+		Trap t2 = new Trap(2, -40.82765, 170.27676);
+		layer.getTraps().addAll(t1, t2);
+		
+		layer.setActiveTrap(t1);
+		
+		assumeTrue(layer.points.size() == 2);//Assume there's only two points on the map
+		
+		layer.setActiveTrap(t2);
+		
+		assertEquals(2, layer.points.size());//Make sure there's still two points on the map (i.e. the old active trap is still on the map)
+				
+		MapPoint point = layer.points.get(1).getKey();//Make sure the active trap is the second trap
+		assertEquals(t2.getLatitude(), point.getLatitude(), 0.0001);
+		assertEquals(t2.getLongitude(), point.getLongitude(), 0.0001);		
+		assertEquals(layer.activeTrapIcon, layer.points.get(1).getValue());//Make sure the active trap icon is used
+		
+		point = layer.points.get(0).getKey();//Make sure the inactive trap is still displayed
+		assertEquals(t1.getLatitude(), point.getLatitude(), 0.0001);
+		assertEquals(t1.getLongitude(), point.getLongitude(), 0.0001);		
+		assertEquals(layer.trapIcons.get(t1), layer.points.get(0).getValue());//Make sure the inactive trap icon is used
+		
 	}
 
 }
