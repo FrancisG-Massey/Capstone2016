@@ -287,7 +287,7 @@ public class RequestServlet extends HttpServlet {
                     }
                 }
             } catch (
-                ParseException ex
+                ParseException | NumberFormatException ex
             ) {
                 // Write log within inner catch block so we still have params
                 LOG.log(Level.INFO, "Supplied request parameter '" + nextParamValue + 
@@ -305,7 +305,7 @@ public class RequestServlet extends HttpServlet {
                 }
             }
 
-        } catch (ParseException ex){
+        } catch (ParseException | NumberFormatException ex){
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         } catch (IOException | SQLException ex) {
