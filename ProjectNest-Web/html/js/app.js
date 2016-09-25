@@ -49,11 +49,15 @@ var myApp = angular.module('myApp', [
             controller: 'AdminTraplineController',
             templateUrl: 'modules/admin/views/trapline-admin.html'        	
         })
-        .when('/volunteer-admin', {
+        .when('/trap-admin', {
+            controller: 'AdminTrapController',
+            templateUrl: 'modules/admin/views/trap-admin.html'
+        })
+        .when('/volunteer-admin/:traplineId', {
             controller: 'AdminVolunteerController',
             templateUrl: 'modules/admin/views/volunteer-admin.html'
         })
-        .when('/trap-admin', {
+        .when('/trap-admin/:traplineId', {
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html'
         })
