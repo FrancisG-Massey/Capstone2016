@@ -1,11 +1,31 @@
 {
     "GET" : "
+        WITH logged_user AS (
+            SELECT
+                user_id,
+                user_is_admin,
+                user_is_inactive
+            FROM users u
+            JOIN session s ON u.user_id = s.session_user_id
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
+            LIMIT 1
+        )
+
         SELECT 
             ct.catch_type_id as id,
             ct.catch_type_name as name,
             ct.catch_type_image_filename as img_filename
-        FROM 
-            public.catch_type ct
+        FROM
+            logged_user lu,
+            catch_type ct
+        WHERE
+            (lu.user_is_inactive = false) AND
+            ((#bigint:id# IS NULL) OR (ct.catch_type_id = #bigint:id#)) AND
+            ((#string:name# IS NULL) OR (lower(ct.catch_type_name) LIKE lower('%' || #string:name# || '%')))
+        GROUP BY
+            ct.catch_type_id
+        ORDER BY
+            ct.catch_type_id
     ",
     "POST" : "",
     "PUT" : "",

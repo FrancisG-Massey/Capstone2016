@@ -12,16 +12,26 @@ import com.google.gson.JsonParser;
 import java.io.FileInputStream;
 import java.sql.*;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -36,6 +46,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class RequestServlet extends HttpServlet {
     private String propPath = null, datasetsPath = null;
+    private static final Logger LOG = Logger.getLogger(RequestServlet.class.getName());
     
     /**
      * Attempt to connect to the database on servlet creation
@@ -57,7 +68,7 @@ public class RequestServlet extends HttpServlet {
         try {
             Common.getNestDS(propPath);
         } catch (IOException ex) {
-            // TODO: Log ex
+            LOG.log(Level.SEVERE, "Unable to get a datasource db connection", ex);
         }
     }
     
@@ -69,7 +80,7 @@ public class RequestServlet extends HttpServlet {
         try {
             Common.closeNestDS();
         } catch (SQLException ex) {
-            // TODO: Log ex
+            LOG.log(Level.WARNING, "Unable to close datasource object", ex);
         }
     }
     
@@ -86,11 +97,19 @@ public class RequestServlet extends HttpServlet {
             throws ServletException, IOException {
         String dirtySQL;
         
-        // Parse out the request path from the URL
+        // Parse out the requested entity type and id from the request URL
+        // Seems the java regex matcher isn't fully PCRE compliant? We'll have to strip slashes manually
+        
+        //Matcher m = Pattern.compile("/^\\/(?>([a-z][a-z-_]*))(?>\\/(\\d+))?/i").matcher(request.getPathInfo());
+        Matcher m = Pattern.compile("\\/([\\w-]*)").matcher(request.getPathInfo().toLowerCase());
+        String requestEntity = m.find() ? m.group().substring(1) : "";
+        String requestEntityID = m.find() ? m.group().substring(1) : "";
+        
+        // Retrieve the SQL query string mapped to the requested entity's GET method
         try {
-            dirtySQL = getSQLQuery(request.getPathInfo().substring(1), "GET");
+            dirtySQL = getSQLQuery(requestEntity, "GET");
         } catch (IOException ex) {
-            // TODO: Log ex
+            LOG.log(Level.SEVERE, "Unable to load dataset mappings", ex);
             response.setHeader("Error", ex.getMessage());            
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
@@ -98,7 +117,7 @@ public class RequestServlet extends HttpServlet {
         
         // Check that the request target is mapped and valid
         if (dirtySQL == null) {
-            // TODO: Log ex
+            LOG.log(Level.INFO, "Unable to locate requested dataset: {0}", requestEntity);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -114,37 +133,177 @@ public class RequestServlet extends HttpServlet {
             return;
         }
         
-        // TODO: Build a map of parameters which appear in the retrieved query i.e. regex matches for /%[^\s\d]\S*%/g
+        // Build a map of typed parameters which appear in the retrieved query i.e. regex matches for #string:session-token# etc.
+        // ParamOrder maintains insert positions as we dynamically bind our parameters later from the unordered map. 
+        Map<String, String> datasetParams = new HashMap<>();
+        List<String> datasetParamOrder = new ArrayList<>();
+        // Find all parameters including their datatypes
+        String paramRegex = "#([a-z]+:[a-z-_][\\w-]*)#";
+        m = Pattern.compile(paramRegex).matcher(dirtySQL.toLowerCase());
+        while (m.find()) {
+            final String param = m.group();
+            // Discard the datatype in the parameter value map but not in the order list
+            // This means we support casting the same value to different types in different places in the dataset if required
+            datasetParamOrder.add(param);
+            datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
+        }
         
-        // Parse out any query parameters and if they appear in the query, map them to that parameter
-        Map<String, String[]> params = request.getParameterMap();
-        // TODO: Finish this next line, parse out the id if there is one provided, i.e. /tablename/42/, also validate it
-        final String objectID = request.getPathInfo();
-        // TODO: Inject the above parameter into the parameter map if it is provided
+        // Fill the datasetParams map with values if they are provided in the request
+        // Note if a query string parameter has multiple mappings, its undefined behaviour as to which one will be used.
+        Enumeration<String> parameterNames = request.getParameterNames();
+        while (parameterNames.hasMoreElements()) {
+            final String paramName = (String) parameterNames.nextElement();
+            if (datasetParams.containsKey(paramName)) {
+                datasetParams.put(paramName, request.getParameter(paramName));
+            }
+        }
+        // Add the session token as a parameter (we've already validated it above)
+        datasetParams.put("session-token", sessionToken);
+        // If a subroute was provided specifying the entity id, use it
+        if (!requestEntityID.isEmpty()) {
+            datasetParams.put("id", requestEntityID);
+        }
         
-        
-        // TODO: Build the SQL query for the DB by injecting the parsed query parameters into it (Remember to bind with '?' !
-        List<String> sqlParams = new ArrayList<>();
-        String cleanSQL = dirtySQL;
+        // Replace the placeholders in the retrieved SQL with the values supplied by the request
+        final String cleanSQL = dirtySQL.replaceAll(paramRegex, "?");
         
         // Get the DB response and convert it to JSON
-        String jsonArray = null;
+        String jsonArray;
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
             PreparedStatement st = conn.prepareStatement(cleanSQL);
-            ResultSet rsh = st.executeQuery();
         ) {
-            if (rsh.isBeforeFirst()) {
-                response.setStatus(HttpServletResponse.SC_OK);
-                jsonArray = Common.resultSetAsJSON(rsh);
-            } else {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                jsonArray = "[]";
+            // Bind all of the parameters to their placeholders
+            String nextParam = null;
+            String nextParamValue = null;
+
+            SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+
+            try {
+                for (int i=1; i<=datasetParamOrder.size(); i++) {
+                    // Depending on the specified type, cast and bind
+                    nextParam = datasetParamOrder.get(i-1);
+                    final String paramType = nextParam.substring(1, nextParam.indexOf(":"));
+                    final String paramName = nextParam.substring(nextParam.indexOf(":") + 1, nextParam.length()-1);
+                    nextParamValue = datasetParams.get(paramName);
+                    nextParamValue = ((nextParamValue==null) || (nextParamValue.length()==0)) ? null : nextParamValue;
+
+                    // Use this to test that parameters are parsed correctly
+                    //response.setHeader("Param-" + i, nextParam + ", " + nextParamValue + ", " + paramType + ", " + paramName);
+
+                    switch (paramType) {
+                        case "bigint":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.BIGINT);
+                                continue;
+                            }
+                            st.setLong(i, Long.parseLong(nextParamValue));
+                            break;
+                        case "bit":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.BIT);
+                                continue;
+                            }
+                        case "boolean":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.BOOLEAN);
+                                continue;
+                            }
+                            st.setBoolean(i, Boolean.parseBoolean(nextParamValue));
+                            break;
+                        case "decimal":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.DECIMAL);
+                                continue;
+                            }
+                        case "numeric":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.NUMERIC);
+                                continue;
+                            }
+                            st.setBigDecimal(i, new BigDecimal(nextParamValue));
+                            break;
+                        case "double":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.DOUBLE);
+                                continue;
+                            }
+                            st.setDouble(1, Double.parseDouble(nextParamValue));
+                            break;
+                        case "float":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.FLOAT);
+                                continue;
+                            }
+                            st.setFloat(i, Float.parseFloat(nextParamValue));
+                            break;
+                        case "integer":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.INTEGER);
+                                continue;
+                            }
+                            st.setInt(i, Integer.parseInt(nextParamValue));
+                            break;
+                        case "nvarchar":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.NVARCHAR);
+                                continue;
+                            }
+                            st.setNString(i, nextParamValue);
+                            break;
+                        case "date":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.DATE);
+                                continue;
+                            }
+                            java.util.Date dt1 = ISO8601DATEFORMAT.parse(nextParamValue.trim().replaceAll(" ", "T"));
+                            st.setDate(i, new java.sql.Date(dt1.getTime()));
+                            break;
+                        case "timestamp":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.TIMESTAMP);
+                                continue;
+                            }
+                            java.util.Date dt2 = ISO8601DATEFORMAT.parse(nextParamValue.trim().replaceAll(" ", "T"));
+                            st.setTimestamp(i, new java.sql.Timestamp(dt2.getTime()));
+                            break;
+                        //case "string":
+                        //case "varchar":
+                        default:
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.VARCHAR);
+                                continue;
+                            }
+                            st.setString(i, nextParamValue);
+                            break;
+                    }
+                }
+            } catch (
+                ParseException ex
+            ) {
+                // Write log within inner catch block so we still have params
+                LOG.log(Level.INFO, "Supplied request parameter '" + nextParamValue + 
+                        "' does not match expected parameter '" + nextParam + "'" , ex);
+                throw ex;
             }
+
+            try (ResultSet rsh = st.executeQuery();) {
+                if (rsh.isBeforeFirst()) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    jsonArray = Common.resultSetAsJSON(rsh);
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    jsonArray = "[]";
+                }
+            }
+
+        } catch (ParseException ex){
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
         } catch (IOException | SQLException ex) {
-            // TODO: Log ex
-            response.setHeader("Error", ex.getMessage());            
+            LOG.log(Level.SEVERE, "Unable to execute \"" + requestEntity + "\" dataset GET query", ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
         }
                 
         // Return the JSON array to the user

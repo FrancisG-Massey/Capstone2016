@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 public class SessionServlet extends HttpServlet {
 	
 	private static final long serialVersionUID = 1191162081764524199L;
-
 	private static final Logger LOG = Logger.getLogger(SessionServlet.class.getName());
 
     private static String propPath = null;
@@ -76,7 +75,7 @@ public class SessionServlet extends HttpServlet {
         try {
             Common.closeNestDS();
         } catch (SQLException ex) {
-            // TODO: Log ex
+            LOG.log(Level.WARNING, "Unable to close datasource object", ex);
         }
     }
     
@@ -97,7 +96,6 @@ public class SessionServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         
         try (PrintWriter out = response.getWriter()) {
-            /* TODO remove this method in production lol. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -151,7 +149,7 @@ public class SessionServlet extends HttpServlet {
         
         // Check for a well-formed basic auth header.
         final String auth = request.getHeader("Authorization");
-        if (auth == null || !auth.startsWith("Basic")) {
+        if (auth == null || !auth.startsWith("Basic ")) {
             // No basic auth header found, or header is not well-formed
             response.addHeader("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -191,7 +189,8 @@ public class SessionServlet extends HttpServlet {
                     dbUserID = rsh.getLong("user_id");
                 } else {
                     // No such-named user is registered in the database.
-                    // TODO: Log failed login attempt and reason
+                    LOG.log(Level.INFO, "Failed login attempt from {0} with unrecognised username: \"{1}\" and password: \"{2}\"", 
+                            new Object[]{request.getRemoteHost(), inputUsername, inputPassword});
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
@@ -205,7 +204,8 @@ public class SessionServlet extends HttpServlet {
         // Compare the two passwords, returning a fail if they don't match
         if (!BCrypt.checkpw(inputPassword, dbPassword)) {
             // User exists but password attempt is incorrect
-            // TODO: Log failed login attempt and reason
+            LOG.log(Level.INFO, "Failed login attempt from {0} with recognised username: \"{1}\" and password: \"{2}\"", 
+                    new Object[]{request.getRemoteHost(), inputUsername, inputPassword});
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -230,7 +230,7 @@ public class SessionServlet extends HttpServlet {
                 throw new SQLException("Failed to create new session.");
             }
          } catch (SQLException | IOException ex) {
-         	LOG.log(Level.SEVERE, "Problem executing query", ex);
+         	LOG.log(Level.SEVERE, "Unable to execute query to create new session record", ex);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
@@ -275,7 +275,7 @@ public class SessionServlet extends HttpServlet {
             // Return a response appropriate to whether we actually logged out or the session did not exist/was expired
             response.setStatus((rows>=1)? HttpServletResponse.SC_NO_CONTENT : HttpServletResponse.SC_NOT_FOUND);
         } catch (SQLException ex) {
-        	LOG.log(Level.SEVERE, "Problem executing query", ex);
+        	LOG.log(Level.SEVERE, "Unable to execute query to delete session record", ex);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }    

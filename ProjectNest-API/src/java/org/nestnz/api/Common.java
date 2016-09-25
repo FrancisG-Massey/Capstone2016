@@ -86,6 +86,9 @@ public class Common {
                     case java.sql.Types.BIT:
                         jsonObj.addProperty(column_name, rsh.getBoolean(i));
                         break;
+                    case java.sql.Types.NUMERIC:
+                    case java.sql.Types.DECIMAL:
+                        jsonObj.addProperty(column_name, rsh.getBigDecimal(i));
                     case java.sql.Types.DOUBLE:
                         jsonObj.addProperty(column_name, rsh.getDouble(i));
                         break;
@@ -97,12 +100,6 @@ public class Common {
                         break;
                     case java.sql.Types.NVARCHAR:
                         jsonObj.addProperty(column_name, rsh.getNString(i));
-                        break;
-                    case java.sql.Types.TINYINT:
-                        jsonObj.addProperty(column_name, rsh.getInt(i));
-                        break;
-                    case java.sql.Types.SMALLINT:
-                        jsonObj.addProperty(column_name, rsh.getInt(i));
                         break;
                     //case java.sql.Types.VARCHAR:
                     //case java.sql.Types.DATE:

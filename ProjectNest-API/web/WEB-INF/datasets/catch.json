@@ -1,5 +1,16 @@
 {
     "GET" : "
+        WITH logged_user AS (
+            SELECT
+                user_id,
+                user_is_admin,
+                user_is_inactive
+            FROM users u
+            JOIN session s ON u.user_id = s.session_user_id
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
+            LIMIT 1
+        )
+
         SELECT 
             c.catch_id as id,
             c.catch_trap_id as trap_id,
@@ -11,7 +22,25 @@
             c.catch_logged as logged,
             c.catch_image_filename as img_filename
         FROM 
-            public.catch c
+            logged_user lu,
+            catch c
+            LEFT JOIN trap t
+                ON t.trap_id = c.catch_trap_id
+            LEFT JOIN trapline tl
+                ON tl.trapline_id = t.trap_trapline_id
+            LEFT JOIN trapline_user tlu
+                ON tlu.trapline_user_trapline_id = tl.trapline_id
+        WHERE
+            (lu.user_is_inactive = false) AND
+            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id) OR (c.catch_user_id = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (c.catch_id = #bigint:id#)) AND
+            ((#bigint:trap-id# IS NULL) OR (t.trap_id = #bigint:trap-id#)) AND
+            ((#bigint:trap-number# IS NULL) OR (t.trap_number = #bigint:trap-number#)) AND
+            ((#bigint:trapline-id# IS NULL) OR (tl.trapline_id = #bigint:trapline-id#))
+        GROUP BY
+            c.catch_id
+        ORDER BY
+            c.catch_logged DESC
     ",
     "POST" : "",
     "PUT" : "",

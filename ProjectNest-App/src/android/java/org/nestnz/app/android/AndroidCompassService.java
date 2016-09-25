@@ -102,7 +102,7 @@ public class AndroidCompassService implements CompassService, SensorEventListene
 			if (success) {
 				float orientation[] = new float[3];//Orientation contains: azimuth, pitch and roll
 				SensorManager.getOrientation(R, orientation);
-				float azimuth = (float) (((orientation[0]*180)/Math.PI)+180);//Convert to degrees
+				float azimuth = (float) ((orientation[0]*180)/Math.PI)+180;//Convert to degrees
 				LOG.info(String.format("Found azimuth %f", azimuth));
 				Platform.runLater(() -> {
 					headingProperty.set(azimuth);

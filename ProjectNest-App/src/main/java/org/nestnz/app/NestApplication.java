@@ -49,12 +49,12 @@ public class NestApplication extends MobileApplication {
     @Override
     public void init() throws IOException {
         appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
-        trapDataService = new TrapDataService(new File(appStoragePath, "cache"));
+        trapDataService = new TrapDataService(new File(appStoragePath, "cache"), LoginService.getInstance());
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));
         addViewFactory(NavigationView.NAME, () -> new NavigationView());
-        addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView());
+        addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService));
         addViewFactory(AddTrapView.NAME, () -> new AddTrapView());
         
     	addLayerFactory("loading", () -> new Layer() {
@@ -86,8 +86,8 @@ public class NestApplication extends MobileApplication {
                     return;
                 }
 		        spinner.resizeRelocate(
-		        		(getGlassPane().getWidth() - (radius*2))/2, 
-		        		(getGlassPane().getHeight()- (radius*2))/2, 
+		        		(getGlassPane().getWidth() - radius*2)/2, 
+		        		(getGlassPane().getHeight()- radius*2)/2, 
 		        		radius*2, radius*2);
 		    }
 		});
