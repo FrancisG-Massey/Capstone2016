@@ -1,20 +1,32 @@
 {
     "GET" : "
+        WITH logged_user AS (
+            SELECT
+            user_id,
+            user_is_admin,
+            user_is_inactive
+            FROM users u
+            JOIN session s ON u.user_id = s.session_user_id
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
+            LIMIT 1
+        )
+
         SELECT 
             s.session_id AS id, 
             s.session_user_id AS user_id, 
             substring(s.session_token from 1 for 31)||'xxxxx' AS token, 
             s.session_created AS created
         FROM 
-            public.session s /*,
-            (  
-                SELECT u.user_is_admin AS is_admin
-                FROM public.users u JOIN public.session s ON u.user_id = s.session_user_id
-                WHERE s.session_token = %session_token%
-                LIMIT 1
-            ) su
-        WHERE 
-            su.is_admin = TRUE; */",
+            logged_user lu,
+            session s
+        WHERE
+            (lu.user_is_inactive = false) AND
+            (lu.user_is_admin = true)
+        GROUP BY
+            s.session_id
+        ORDER BY
+            s.session_id
+    ",
     "POST" : "", 
     "PUT" : "",
     "DELETE" : ""

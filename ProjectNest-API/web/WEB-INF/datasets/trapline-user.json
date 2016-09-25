@@ -1,12 +1,35 @@
 {
     "GET" : "
+        WITH logged_user AS (
+            SELECT
+                user_id,
+                user_is_admin,
+                user_is_inactive
+            FROM users u
+            JOIN session s ON u.user_id = s.session_user_id
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
+            LIMIT 1
+        )
+
         SELECT 
             tlu.trapline_user_id as id,
             tlu.trapline_user_user_id as user_id,
             tlu.trapline_user_trapline_id as trapline_id,
-            tlu.trapline_user_role_id as role_id
-        FROM 
-            public.trapline_user tlu
+            tlu.trapline_user_admin as admin
+        FROM
+            logged_user lu,
+            trapline_user tlu
+        WHERE
+            (lu.user_is_inactive = false) AND
+            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (tlu.trapline_user_id = #bigint:id#)) AND
+            ((#bigint:user-id# IS NULL) OR (tlu.trapline_user_user_id = #bigint:user-id#)) AND
+            ((#bigint:trapline-id# IS NULL) OR (tlu.trapline_user_trapline_id = #bigint:trapline-id#)) AND
+            ((#boolean:admin# IS NULL) OR (tlu.trapline_user_admin = #boolean:admin#))
+        GROUP BY
+            tlu.trapline_user_id
+        ORDER BY
+            tlu.trapline_user_id
     ",
     "POST" : "",
     "PUT" : "",
