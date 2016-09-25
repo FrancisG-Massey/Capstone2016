@@ -1,0 +1,72 @@
+
+<div class="page-header">
+<h1 class="text-center" style="margin-top: -50px; ">Available Regions</h1>
+</div>
+ <div class="row"> 
+    <div class="col-sm-7">  
+    <div ng-repeat="region in regions">
+     <a ng-click="addNew()" id="addButton" ><span class="glyphicon glyphicon-plus" ></span> Add Trap Line</a>  
+      <table style="table-layout:fixed" class="table table-condensed table-hover admin" >
+      	<caption class="text-center">{{region.name}}</caption>
+        <thead>
+          <tr>
+            <th>Trap line</th>
+            <th>View Traps</th>
+            <th>View Volunteers</th>
+          </tr>
+        </thead>
+		<tbody data-ng-repeat="trapline in region.traplines">
+          <tr data-ng-click="setSelected();" class="{{trapline == selected ? 'success' : ''}}">
+            <td scope="row">{{trapline.name}}</td>
+            <td><a href="#/trap-admin/{{trapline.id}}">Traps</a></td>
+            <td><a href="#/volunteer-admin/{{trapline.id}}">Volunteers</a></td>
+          </tr>    
+        </tbody>
+      </table>
+    </div>
+    </div>
+    
+
+    <div class="col-sm-5"> 
+      <div class="well">
+        <h3 style="margin-top: 0">{{selected.id ? 'Trapline ID: ' + selected.id : 'Add New Trapline'}}</h3>
+        <!--  <p>: <strong>d</strong></p>-->
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label>Name</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.name}}">
+            </div>
+          </div>
+          <div class="col-md-6 form-group">  
+            <label>Coordinator</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="MJ">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label>Start</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.start_tag}}">
+            </div>
+          </div>
+          <div class="col-md-6 form-group">  
+            <label>End</label>
+            <div class="input-group">
+              <input type="text" class="form-control" value ="{{selected.end_tag}}">
+            </div>
+          </div>
+        </div>
+        
+    
+		<div class="pull-right" style="margin-top: 10px;">
+        <button class="btn btn-success" type="button" ng-if="!selected">Save</button>
+        <div ng-if="selected">
+        <button class="btn btn-success" type="button">Edit</button>
+        <button class="btn btn-danger" type="button">Delete</button>
+        </div>
+      </div>
+	</div>
+</div>

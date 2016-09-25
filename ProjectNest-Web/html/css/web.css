@@ -125,3 +125,9 @@ footer>.container {
 th, td{
 	text-align:center;
 }
+
+#404page{
+	background-image: url("deadrodent.jpg");
+    	background-repeat: no-repeat;
+    	background-position: left top;
+}
