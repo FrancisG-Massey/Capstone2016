@@ -18,6 +18,7 @@ package org.nestnz.app.model;
 
 import java.time.LocalDateTime;
 
+import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -68,7 +69,7 @@ public final class Trap {
 	 */
 	private final ObjectProperty<LocalDateTime> lastResetProperty = new SimpleObjectProperty<>();
 	
-	private final ObservableList<Catch> catches = FXCollections.observableArrayList();
+	private final ObservableList<Catch> catches = FXCollections.observableArrayList(c -> new Observable[]{ c.catchTypeProperty() });
 
 	public Trap(int number, double latitude, double longitude) {
 		this(number, latitude, longitude, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());

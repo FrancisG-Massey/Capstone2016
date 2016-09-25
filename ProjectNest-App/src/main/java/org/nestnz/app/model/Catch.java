@@ -70,5 +70,9 @@ public final class Catch {
 		this.catchTypeProperty.set(catchType);
 	}
 	
+	public ObjectProperty<CatchType> catchTypeProperty () {
+		return catchTypeProperty;
+	}
+	
 	
 }
