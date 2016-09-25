@@ -15,16 +15,17 @@
             <th>View Volunteers</th>
           </tr>
         </thead>
-        <tbody data-ng-repeat="trapline in region.traplines">
-          <tr data-ng-click="setSelected();" class="{{trapline == selected ? 'success' : ''}}">
+		<tbody data-ng-repeat="trapline in region.traplines">
+          <tr>
             <td scope="row">{{trapline.name}}</td>
-            <td><a href="#/trap-admin">Traps</a></td>
-            <td><a href="#/volunteer-admin">Volunteers</a></td>
+            <td><a href="#/trap-admin/{{trapline.id}}">Traps</a></td>
+            <td><a href="#/volunteer-admin/{{trapline.id}}">Volunteers</a></td>
           </tr>    
         </tbody>
       </table>
     </div>
     </div>
+    
 
     <div class="col-sm-5"> 
       <div class="well">
