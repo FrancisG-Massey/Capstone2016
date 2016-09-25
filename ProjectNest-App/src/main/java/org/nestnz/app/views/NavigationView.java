@@ -174,18 +174,14 @@ public class NavigationView extends View {
         column2.setPercentWidth(50);
         controls.getColumnConstraints().addAll(column1, column2);
     	
-    	Button empty = new Button("Empty");
-    	GridPane.setConstraints(empty, 0, 0);//Set as top-left cell
-    	GridPane.setHgrow(empty, Priority.ALWAYS);
-    	GridPane.setVgrow(empty, Priority.ALWAYS);
-    	empty.setOnAction(evt -> {
-    		LOG.log(Level.INFO, "Empty.");
-    	});
+        CatchType emptyCatch = new CatchType(-1, "Empty", null);
+    	Button empty = makeOptionButton(emptyCatch, 0);
     	
     	CatchType op2 = new CatchType(2, "Option 2", null);
     	Button option2 = makeOptionButton(op2, 1);
     	
     	Button other = new Button("Other");
+    	other.setMaxSize(1000, 1000);
     	other.getStyleClass().add("large-button");
     	GridPane.setConstraints(other, 0, 1, 2, 1);//Set as center cell (spans both rows)
 
@@ -201,7 +197,8 @@ public class NavigationView extends View {
     
     private Button makeOptionButton (CatchType catchType, int place) {
     	Button button = new Button(catchType.getName());
-    	button.getStyleClass().add("large-button");
+    	button.setMaxSize(1000, 1000);
+    	//button.getStyleClass().add("large-button");
     	GridPane.setConstraints(button, place % 2, place > 1 ? 2 : 0);
     	GridPane.setHgrow(button, Priority.ALWAYS);
     	GridPane.setVgrow(button, Priority.ALWAYS);

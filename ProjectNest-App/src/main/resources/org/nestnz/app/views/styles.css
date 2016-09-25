@@ -3,9 +3,14 @@
 }
 
 #trapline-list .list-cell .button, .large-button {
-	-fx-max-width: 1000;
+	-fx-max-width: 1000px;
+	-fx-max-height: 1000px;
 	-fx-padding: 1.5em;
 	-fx-font-size: 1.5em;
+}
+
+.catch-select-option {
+	
 }
 
 #distance-label {
