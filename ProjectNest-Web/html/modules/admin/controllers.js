@@ -325,7 +325,7 @@ angular.module('Admin')
 	                 		},	
 	                 		{
 	                 			id: 2,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John1',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -334,7 +334,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 3,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John2',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -343,7 +343,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 4,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John3',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -352,7 +352,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 5,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John4',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -361,7 +361,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 6,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John5',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -370,7 +370,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 7,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John6',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -379,7 +379,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 8,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John7',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -388,7 +388,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 9,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John8',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -397,7 +397,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 10,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John9',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -406,7 +406,7 @@ angular.module('Admin')
 	                 		},
 	                 		{
 	                 			id: 11,
-	                 			firstNames : 'John',
+	                 			firstNames : 'John10',
 	                 			lastName: 'Smith',
 	                 			email: 'johnsmith@yahoo.com',
 	                 			startDate: '2016-04-16T10:26:07',
@@ -415,15 +415,84 @@ angular.module('Admin')
 	                 		}
 	                 		
 	                 		];
+	
+	$scope.traplineUsers = [
+		    {
+				userId: 1,
+				traplineId : 1,
+				roles:"none"
+			},	
+		    {
+				userId: 2,
+				traplineId : 2,
+				roles:"none"
+			},	
+		    {
+				userId: 3,
+				traplineId : 1,
+				roles:"none"
+			},	
+		    {
+				userId: 4,
+				traplineId : 2,
+				roles:"none"
+			},	
+		    {
+				userId: 5,
+				traplineId : 1,
+				roles:"none"
+			},	
+		    {
+				userId: 6,
+				traplineId : 2,
+				roles:"none"
+			},	
+		    {
+				userId: 7,
+				traplineId : 1,
+				roles:"none"
+			},	
+		    {
+				userId: 8,
+				traplineId : 2,
+				roles:"none"
+			},	
+		    {
+				userId: 9,
+				traplineId : 1,
+				roles:"none"
+			},	
+		    {
+				userId: 10,
+				traplineId : 2,
+				roles:"none"
+			},	
+		    {
+				userId: 11,
+				traplineId : 1,
+				roles:"none"
+			}	                       
+	];
+	var usersForTrapLine = [], trapLineUser, volunteer;
+	for (var i = 0; i < $scope.traplineUsers.length; i++) {
+		trapLineUser = $scope.traplineUsers[i];
+		if (trapLineUser.traplineId ==  traplineId) {
+			for (var x = 0; x < $scope.volunteers.length; x++) {
+				volunteer = $scope.volunteers[x];
+				if (volunteer.id == trapLineUser.userId) {
+					usersForTrapLine.push(volunteer);
+				}
+			}
+		}
+	};
 
-	  
     $scope.addNew = function() {
     	$scope.selected = false;
     };
 	
 	
 	var pageLength = 10,
-		numVolunteers = $rootScope.volunteers.length,
+		numVolunteers = usersForTrapLine.length,
 		newArray = [],
 		pages = Math.ceil(numVolunteers/pageLength);
 	
@@ -432,13 +501,13 @@ angular.module('Admin')
 	}
 	
 	var page, volunteer;
-	for (var i = 0; i < $rootScope.volunteers.length; i++) {
-		volunteer = $rootScope.volunteers[i];
+	for (var i = 0; i < usersForTrapLine.length; i++) {
+		volunteer = usersForTrapLine[i];
 		page = Math.floor(i/pageLength);
 		newArray[page].push(volunteer);
 	}
 	$scope.currentPage = 0;
-	$rootScope.volunteers = newArray;
+	$scope.volunteers = newArray;
 
 	
     $scope.setSelected = function(item){
