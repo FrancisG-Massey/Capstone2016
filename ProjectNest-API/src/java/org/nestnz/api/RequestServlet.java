@@ -187,11 +187,8 @@ public class RequestServlet extends HttpServlet {
                     final String paramName = nextParam.substring(nextParam.indexOf(":") + 1, nextParam.length()-1);
                     nextParamValue = datasetParams.get(paramName);
 
-                    // Remove this after we're sure every data type is parsed correctly
-                    response.setHeader("Param-" + i, nextParam);
-                    response.setHeader("Param-Value-" + i, nextParamValue);
-                    response.setHeader("Param-Type-" + i, paramType);
-                    response.setHeader("Param-Name-" + i, paramName);
+                    // Use this to test that parameters are parsed correctly
+                    //response.setHeader("Param-" + i, nextParam + ", " + nextParamValue + ", " + paramType + ", " + paramName);
 
                     switch (paramType) {
                         case "bigint":
