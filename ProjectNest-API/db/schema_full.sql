@@ -91,19 +91,6 @@ CREATE SEQUENCE public.region_region_id_seq
 ALTER TABLE public.region_region_id_seq
   OWNER TO nestnz;
 
--- Sequence: public.role_role_id_seq
-
--- DROP SEQUENCE public.role_role_id_seq;
-
-CREATE SEQUENCE public.role_role_id_seq
-  INCREMENT 1
-  MINVALUE 1
-  MAXVALUE 9223372036854775807
-  START 1
-  CACHE 1;
-ALTER TABLE public.role_role_id_seq
-  OWNER TO nestnz;
-
 -- Sequence: public.trapline_trapline_id_seq
 
 -- DROP SEQUENCE public.trapline_trapline_id_seq;
@@ -327,24 +314,6 @@ CREATE INDEX tl_rid_idx
   (trapline_region_id);
 
 
-
--- Table: public.role
-
--- DROP TABLE public.role;
-
-CREATE TABLE public.role
-(
-  role_id bigint NOT NULL DEFAULT nextval('role_role_id_seq'::regclass),
-  role_name text NOT NULL,
-  CONSTRAINT role_pkey PRIMARY KEY (role_id)
-)
-WITH (
-  OIDS=FALSE
-);
-ALTER TABLE public.role
-  OWNER TO nestnz;
-
-
 -- Table: public.catch_type
 
 -- DROP TABLE public.catch_type;
@@ -372,11 +341,8 @@ CREATE TABLE public.trapline_user
   trapline_user_id bigint NOT NULL DEFAULT nextval('trapline_user_trapline_user_id_seq'::regclass),
   trapline_user_user_id bigint NOT NULL,
   trapline_user_trapline_id bigint NOT NULL,
-  trapline_user_role_id bigint NOT NULL,
+  trapline_user_admin boolean NOT NULL,
   CONSTRAINT trapline_user_pkey PRIMARY KEY (trapline_user_id),
-  CONSTRAINT trapline_user_trapline_user_role_id_fkey FOREIGN KEY (trapline_user_role_id)
-      REFERENCES public.role (role_id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT trapline_user_trapline_user_trapline_id_fkey FOREIGN KEY (trapline_user_trapline_id)
       REFERENCES public.trapline (trapline_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -389,15 +355,6 @@ WITH (
 );
 ALTER TABLE public.trapline_user
   OWNER TO nestnz;
-
--- Index: public.tlu_rid_idx
-
--- DROP INDEX public.tlu_rid_idx;
-
-CREATE INDEX tlu_rid_idx
-  ON public.trapline_user
-  USING btree
-  (trapline_user_role_id);
 
 -- Index: public.tlu_tlid_idx
 
