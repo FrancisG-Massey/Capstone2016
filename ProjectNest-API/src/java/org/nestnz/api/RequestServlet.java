@@ -200,16 +200,24 @@ public class RequestServlet extends HttpServlet {
                             st.setLong(i, Long.parseLong(nextParamValue));
                             break;
                         case "bit":
-                            if (nextParamValue == null) {
-                                st.setNull(i, java.sql.Types.BIT);
-                                continue;
-                            }
                         case "boolean":
                             if (nextParamValue == null) {
                                 st.setNull(i, java.sql.Types.BOOLEAN);
                                 continue;
                             }
-                            st.setBoolean(i, Boolean.parseBoolean(nextParamValue));
+                            switch (nextParamValue.trim().toLowerCase()) {
+                                case "true":
+                                case "1":
+                                    st.setBoolean(i, true);
+                                    break;
+                                case "false":
+                                case "0":
+                                    st.setBoolean(i, false);
+                                    break;
+                                default:
+                                    st.setNull(i, java.sql.Types.BOOLEAN);
+                                    break;
+                            }
                             break;
                         case "decimal":
                             if (nextParamValue == null) {
