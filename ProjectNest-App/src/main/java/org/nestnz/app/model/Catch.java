@@ -19,6 +19,9 @@ package org.nestnz.app.model;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 public final class Catch {
 
 	/**
@@ -35,11 +38,11 @@ public final class Catch {
 	/**
 	 * The type of pest caught in the trap
 	 */
-	private CatchType catchType;	
+	private final ObjectProperty<CatchType> catchTypeProperty = new SimpleObjectProperty<>();	
 	
 
 	public Catch(CatchType catchType) {
-		this.catchType = catchType;
+		this.catchTypeProperty.set(catchType);
 		this.timestamp = LocalDateTime.now();
 	}
 
@@ -60,11 +63,11 @@ public final class Catch {
 	}
 
 	public CatchType getCatchType() {
-		return catchType;
+		return catchTypeProperty.get();
 	}
 
 	public void setCatchType(CatchType catchType) {
-		this.catchType = catchType;
+		this.catchTypeProperty.set(catchType);
 	}
 	
 	

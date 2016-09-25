@@ -67,6 +67,10 @@ public class PositionLayer extends MapLayer {
     public final void setCurrentPosition (Position postition) {
     	currentPosition.set(postition);
     }
+    
+    public final ObjectProperty<Position> currentPositionProperty () {
+    	return currentPosition;    	
+    }
 
     public void addPoint(MapPoint p, Node icon) {
     	LOG.log(Level.FINE, String.format("Point added at %f, %f (icon=%s)", p.getLatitude(), p.getLongitude(), icon));

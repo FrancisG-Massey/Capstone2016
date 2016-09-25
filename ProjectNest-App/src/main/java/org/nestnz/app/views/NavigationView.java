@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.NestApplication;
+import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
@@ -33,14 +34,15 @@ import org.nestnz.app.views.map.TrapPositionLayer;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
 import com.gluonhq.charm.down.common.Position;
+import com.gluonhq.charm.down.common.PositionService;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapView;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -128,13 +130,12 @@ public class NavigationView extends View {
         logCatch.getStyleClass().add("large-button");
         logCatch.setText("Log Catch");
         logCatch.setOnAction(evt -> {
-        	catchSelectDialog.showAndWait();
+        	logCatch();
         });
         setBottom(logCatch);
         
 
-		map.setZoom(17); 
-        map.setCenter(new MapPoint(-40.3148, 175.7775));
+		map.setZoom(17);
 		map.addLayer(trapPositionLayer);
 		setCenter(map);
     	
@@ -151,17 +152,54 @@ public class NavigationView extends View {
     	});
     }
     
-    private void initMonitors () {    	
-    	PlatformFactory.getPlatform().getPositionService().positionProperty().addListener((obs, oldPos, newPos) -> {
-        	if (newPos != null && targetCoordsProperty.get() != null) {
-        		double distance = getDistance(newPos, targetCoordsProperty.get());
-        		LOG.info(String.format("Found coordinates: %1$.3f, %2$.3f (distance=%3$.2fm)", newPos.getLatitude(), newPos.getLongitude(), distance));
-        		distanceToTrap.set(String.format("%1$.0fm", distance));
-    			trapPositionLayer.setCurrentPosition(newPos);
-        	}
-        });
+    private void initMonitors () {
+    	PositionService gpsService = PlatformFactory.getPlatform().getPositionService();
+    	
+    	trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty());
+    	
+    	distanceToTrap.bind(Bindings.format("%1.0f m",
+    			Bindings.createDoubleBinding(() -> gpsService.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
+    				getDistance(gpsService.getPosition(), targetCoordsProperty.get()), 
+    					gpsService.positionProperty(), targetCoordsProperty)));
     }
     
+    /**
+     * Displays a dialog prompting the user to select the catch type for the current trap
+     */
+    private void logCatch () {
+		Trap forTrap = trapProperty.get();
+    	catchSelectDialog.setTitleText(String.format("Log catch #%d", forTrap.getNumber()));
+    	catchSelectDialog.showAndWait().ifPresent(catchType -> {
+    		Catch loggedCatch = new Catch(catchType);
+        	getApplication().showMessage(String.format("Logged %s in trap #%d", 
+        			catchType.getName(), forTrap.getNumber()), "Change", evt -> {
+        		modifyCatch(loggedCatch);
+        	});
+        	forTrap.getCatches().add(loggedCatch);
+    	});
+    }
+    
+    /**
+     * Displays the catch type dialog also displayed in {@link #logCatch()}, but allows the user to change the catch specified {@link integer} {@code loggedCatch} 
+     * @param loggedCatch The previously specified catch to ask the user to change
+     */
+    private void modifyCatch (Catch loggedCatch) {
+		Trap forTrap = trapProperty.get();
+    	catchSelectDialog.setTitleText(String.format("Change catch #%d", forTrap.getNumber()));
+    	catchSelectDialog.showAndWait().ifPresent(catchType -> {
+    		LOG.log(Level.INFO, "Changed catch to "+catchType);
+        	getApplication().showMessage(String.format("Changed catch in trap #%d from %s to %s", 
+        			forTrap.getNumber(), loggedCatch.getCatchType().getName(), catchType.getName()), "Change", evt -> {
+        		modifyCatch(loggedCatch);
+        	});
+        	loggedCatch.setCatchType(catchType);
+    	});
+    }
+    
+    /**
+     * Builds the catch selection dialog, used by {@link #logCatch()}. This only ever needs to be called once when the view is created
+     * @return The dialog used to select the creature caught in the active trap
+     */
     private final Dialog<CatchType> makeCatchDialog () {
     	Dialog<CatchType> dialog = new Dialog<>(true);
     	GridPane controls = new GridPane();
@@ -203,7 +241,9 @@ public class NavigationView extends View {
     	GridPane.setHgrow(button, Priority.ALWAYS);
     	GridPane.setVgrow(button, Priority.ALWAYS);
     	button.setOnAction(evt -> {
-    		LOG.log(Level.INFO, "Selected catch: "+catchType);
+    		LOG.log(Level.FINE, "Selected catch: "+catchType);
+    		catchSelectDialog.setResult(catchType);
+    		catchSelectDialog.hide();
     	});
     	return button;
     }
