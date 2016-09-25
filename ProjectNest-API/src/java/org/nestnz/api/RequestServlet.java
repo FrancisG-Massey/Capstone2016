@@ -186,6 +186,7 @@ public class RequestServlet extends HttpServlet {
                     final String paramType = nextParam.substring(1, nextParam.indexOf(":"));
                     final String paramName = nextParam.substring(nextParam.indexOf(":") + 1, nextParam.length()-1);
                     nextParamValue = datasetParams.get(paramName);
+                    nextParamValue = ((nextParamValue==null) || (nextParamValue.length()==0)) ? null : nextParamValue;
 
                     // Use this to test that parameters are parsed correctly
                     //response.setHeader("Param-" + i, nextParam + ", " + nextParamValue + ", " + paramType + ", " + paramName);
