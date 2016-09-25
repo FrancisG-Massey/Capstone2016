@@ -20,7 +20,9 @@
             logged_user lu,
             bait b
         WHERE
-            (lu.user_is_inactive = false)
+            (lu.user_is_inactive = false) AND
+            ((#bigint:id# IS NULL) OR (b.bait_id = #bigint:id#)) AND
+            ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY
             b.bait_id
         ORDER BY

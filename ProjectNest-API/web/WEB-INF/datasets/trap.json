@@ -31,7 +31,13 @@
                 ON tlu.trapline_user_trapline_id = tl.trapline_id
         WHERE
             (lu.user_is_inactive = false) AND
-            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id))
+            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (t.trap_id = #bigint:id#)) AND
+            ((#bigint:number# IS NULL) OR (t.trap_number = #bigint:number#)) AND
+            ((#bigint:trapline-id# IS NULL) OR (t.trap_trapline_id = #bigint:trapline-id#)) AND
+            ((#bigint:trap-type-id# IS NULL) OR (t.trap_type_id = #bigint:trap-type-id#)) AND
+            ((#integer:status# IS NULL) OR (t.trap_status = #integer:status#)) AND
+            ((#bigint:bait-id# IS NULL) OR (t.trap_bait_id = #bigint:bait-id#))
         GROUP BY
             t.trap_id
         ORDER BY

@@ -21,7 +21,11 @@
             trapline_user tlu
         WHERE
             (lu.user_is_inactive = false) AND
-            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id))
+            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (tlu.trapline_user_id = #bigint:id#)) AND
+            ((#bigint:user-id# IS NULL) OR (tlu.trapline_user_user_id = #bigint:user-id#)) AND
+            ((#bigint:trapline-id# IS NULL) OR (tlu.trapline_user_trapline_id = #bigint:trapline-id#)) AND
+            ((#boolean:admin# IS NULL) OR (tlu.trapline_user_admin = #boolean:admin#))
         GROUP BY
             tlu.trapline_user_id
         ORDER BY

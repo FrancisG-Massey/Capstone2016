@@ -28,7 +28,10 @@
                 ON tlu.trapline_user_trapline_id = tl.trapline_id
         WHERE
             (lu.user_is_inactive = false) AND
-            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id))
+            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (tl.trapline_id = #bigint:id#)) AND
+            ((#bigint:region-id# IS NULL) OR (tl.trapline_region_id = #bigint:region-id#)) AND
+            ((#string:name# IS NULL) OR (lower(tl.trapline_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY
             tl.trapline_id
         ORDER BY

@@ -24,7 +24,11 @@
             LEFT JOIN trapline_user tlu ON tlu.trapline_user_user_id = u.user_id
         WHERE
             (lu.user_is_inactive = false) AND
-            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id) OR (u.user_id = lu.user_id))
+            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id) OR (u.user_id = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (u.user_id = #bigint:id#)) AND
+            ((#bigint:created-user-id# IS NULL) OR (u.user_created_user_id = #bigint:created-user-id#)) AND
+            ((#string:name# IS NULL) OR (lower(u.user_name) LIKE lower('%' || #string:name# || '%'))) AND
+            ((#boolean:admin# IS NULL) OR (u.user_is_admin = #boolean:admin#))
         GROUP BY
             u.user_id
         ORDER BY

@@ -19,7 +19,9 @@
             logged_user lu,
             catch_type ct
         WHERE
-            (lu.user_is_inactive = false)
+            (lu.user_is_inactive = false) AND
+            ((#bigint:id# IS NULL) OR (ct.catch_type_id = #bigint:id#)) AND
+            ((#string:name# IS NULL) OR (lower(ct.catch_type_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY
             ct.catch_type_id
         ORDER BY

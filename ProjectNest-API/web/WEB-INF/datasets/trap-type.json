@@ -20,7 +20,9 @@
             logged_user lu,
             trap_type tt
         WHERE
-            (lu.user_is_inactive = false)
+            (lu.user_is_inactive = false) AND
+            ((#bigint:id# IS NULL) OR (tt.trap_type_id = #bigint:id#)) AND
+            ((#string:name# IS NULL) OR (lower(tt.trap_type_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY
             tt.trap_type_id
         ORDER BY
