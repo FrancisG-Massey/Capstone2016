@@ -7,7 +7,7 @@
             user_is_inactive
             FROM users u
             JOIN session s ON u.user_id = s.session_user_id
-            WHERE (#session-token# IS NOT NULL) AND (s.session_token = #session-token#)
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
             LIMIT 1
         )
 
