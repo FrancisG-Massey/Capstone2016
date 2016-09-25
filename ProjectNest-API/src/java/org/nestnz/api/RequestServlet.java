@@ -145,7 +145,7 @@ public class RequestServlet extends HttpServlet {
             // Discard the datatype in the parameter value map but not in the order list
             // This means we support casting the same value to different types in different places in the dataset if required
             datasetParamOrder.add(param);
-            datasetParams.put(param.substring(param.indexOf(":")+1), null);
+            datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
         }
         
         // Fill the datasetParams map with values if they are provided in the request
@@ -188,10 +188,10 @@ public class RequestServlet extends HttpServlet {
                     nextParamValue = datasetParams.get(paramName);
 
                     // Remove this after we're sure every data type is parsed correctly
-                    response.setHeader("nextParam", nextParam);
-                    response.setHeader("nextParamValue", nextParamValue);
-                    response.setHeader("paramType", paramType);
-                    response.setHeader("paramName", paramName);
+                    response.setHeader("Param-" + i, nextParam);
+                    response.setHeader("Param-Value-" + i, nextParamValue);
+                    response.setHeader("Param-Type-" + i, paramType);
+                    response.setHeader("Param-Name-" + i, paramName);
 
                     switch (paramType) {
                         case "bigint":
