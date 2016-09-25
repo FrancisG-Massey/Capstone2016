@@ -65,7 +65,10 @@ angular.module('Admin')
     	$scope.selected = this.trapline;
     };
 
-	console.log($scope.regions);
+    $scope.addNew = function() {  	
+    	$scope.selected = false;
+    };
+    
 			
 }])
 .controller('AdminTrapController',['$scope', '$rootScope','$http', '$routeParams',function ($scope,$rootScope,$http, $routeParams) {

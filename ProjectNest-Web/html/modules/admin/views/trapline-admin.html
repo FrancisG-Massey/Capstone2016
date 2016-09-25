@@ -16,7 +16,7 @@
           </tr>
         </thead>
 		<tbody data-ng-repeat="trapline in region.traplines">
-          <tr>
+          <tr data-ng-click="setSelected();" class="{{trapline == selected ? 'success' : ''}}">
             <td scope="row">{{trapline.name}}</td>
             <td><a href="#/trap-admin/{{trapline.id}}">Traps</a></td>
             <td><a href="#/volunteer-admin/{{trapline.id}}">Volunteers</a></td>
@@ -29,19 +29,19 @@
 
     <div class="col-sm-5"> 
       <div class="well">
-        <h3 style="margin-top: 0">dd</h3>
-        <p>: <strong>d</strong></p>
+        <h3 style="margin-top: 0">{{selected.id ? 'Trapline ID: ' + selected.id : 'Add New Trapline'}}</h3>
+        <!--  <p>: <strong>d</strong></p>-->
         <div class="row">
           <div class="col-md-6 form-group">
             <label>Name</label>
             <div class="input-group">
-              <input type="text" class="form-control" value ="selected.firstNames">
+              <input type="text" class="form-control" value ="{{selected.name}}">
             </div>
           </div>
           <div class="col-md-6 form-group">  
             <label>Coordinator</label>
             <div class="input-group">
-              <input type="text" class="form-control" value ="selected.lastName">
+              <input type="text" class="form-control" value ="MJ">
             </div>
           </div>
         </div>
@@ -49,13 +49,13 @@
           <div class="col-md-6 form-group">
             <label>Start</label>
             <div class="input-group">
-              <input type="text" class="form-control" value ="selected.phone">
+              <input type="text" class="form-control" value ="{{selected.start_tag}}">
             </div>
           </div>
           <div class="col-md-6 form-group">  
             <label>End</label>
             <div class="input-group">
-              <input type="text" class="form-control" value ="selected.email">
+              <input type="text" class="form-control" value ="{{selected.end_tag}}">
             </div>
           </div>
         </div>
