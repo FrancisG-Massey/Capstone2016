@@ -17,7 +17,14 @@ import org.apache.tomcat.jdbc.pool.PoolProperties;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Assists with connecting to the Nest DB via JDBC:
@@ -27,6 +34,7 @@ import java.util.Properties;
  */
 public class Common {    
     private static DataSource nestDS = null;
+    private static final Logger LOG = Logger.getLogger(Common.class.getName());
 
     /**
      * Attempt a fresh connection to the specified DB and get a handle to it.
@@ -112,5 +120,129 @@ public class Common {
             jsonArray.add(jsonObj);
         }
         return jsonArray.toString();
+    }
+    
+    public static void bindDynamicParameters(PreparedStatement st, Map<String, String> datasetParams, List<String> datasetParamOrder) throws ParseException, NumberFormatException, SQLException {
+        // Bind all of the parameters to their placeholders
+        String nextParam = null;
+        String nextParamValue = null;
+
+        SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+
+        try {
+            for (int i=1; i<=datasetParamOrder.size(); i++) {
+                // Depending on the specified type, cast and bind
+                nextParam = datasetParamOrder.get(i-1);
+                final String paramType = nextParam.substring(1, nextParam.indexOf(":"));
+                final String paramName = nextParam.substring(nextParam.indexOf(":") + 1, nextParam.length()-1);
+                nextParamValue = datasetParams.get(paramName);
+                nextParamValue = ((nextParamValue==null) || (nextParamValue.length()==0)) ? null : nextParamValue;
+
+                // Use this to test that parameters are parsed correctly
+                //response.setHeader("Param-" + i, nextParam + ", " + nextParamValue + ", " + paramType + ", " + paramName);
+
+                switch (paramType) {
+                    case "bigint":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.BIGINT);
+                            continue;
+                        }
+                        st.setLong(i, Long.parseLong(nextParamValue));
+                        break;
+                    case "bit":
+                    case "boolean":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.BOOLEAN);
+                            continue;
+                        }
+                        switch (nextParamValue.trim().toLowerCase()) {
+                            case "true":
+                            case "1":
+                                st.setBoolean(i, true);
+                                break;
+                            case "false":
+                            case "0":
+                                st.setBoolean(i, false);
+                                break;
+                            default:
+                                st.setNull(i, java.sql.Types.BOOLEAN);
+                                break;
+                        }
+                        break;
+                    case "decimal":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.DECIMAL);
+                            continue;
+                        }
+                    case "numeric":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.NUMERIC);
+                            continue;
+                        }
+                        st.setBigDecimal(i, new BigDecimal(nextParamValue));
+                        break;
+                    case "double":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.DOUBLE);
+                            continue;
+                        }
+                        st.setDouble(1, Double.parseDouble(nextParamValue));
+                        break;
+                    case "float":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.FLOAT);
+                            continue;
+                        }
+                        st.setFloat(i, Float.parseFloat(nextParamValue));
+                        break;
+                    case "integer":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.INTEGER);
+                            continue;
+                        }
+                        st.setInt(i, Integer.parseInt(nextParamValue));
+                        break;
+                    case "nvarchar":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.NVARCHAR);
+                            continue;
+                        }
+                        st.setNString(i, nextParamValue);
+                        break;
+                    case "date":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.DATE);
+                            continue;
+                        }
+                        java.util.Date dt1 = ISO8601DATEFORMAT.parse(nextParamValue.trim().replaceAll(" ", "T"));
+                        st.setDate(i, new java.sql.Date(dt1.getTime()));
+                        break;
+                    case "timestamp":
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.TIMESTAMP);
+                            continue;
+                        }
+                        java.util.Date dt2 = ISO8601DATEFORMAT.parse(nextParamValue.trim().replaceAll(" ", "T"));
+                        st.setTimestamp(i, new java.sql.Timestamp(dt2.getTime()));
+                        break;
+                    //case "string":
+                    //case "varchar":
+                    default:
+                        if (nextParamValue == null) {
+                            st.setNull(i, java.sql.Types.VARCHAR);
+                            continue;
+                        }
+                        st.setString(i, nextParamValue);
+                        break;
+                }
+            }
+        } catch (
+            ParseException | NumberFormatException ex
+        ) {
+            // Write log within inner catch block so we still have params
+            LOG.log(Level.INFO, "Supplied request parameter '" + nextParamValue + 
+                    "' does not match expected parameter '" + nextParam + "'" , ex);
+            throw ex;
+        }
     }
 }
