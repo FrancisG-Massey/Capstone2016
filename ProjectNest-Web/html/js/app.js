@@ -13,10 +13,15 @@ var myApp = angular
 		} ])
 		.config([ '$routeProvider', function($routeProvider) {
 
-		$routeProvider.when('/login', {
+		$routeProvider
+		.when('/login', {
 				controller : 'LoginController',
 				templateUrl : 'modules/authentication/views/login.html',
 			})
+		.when('/', {
+			controller : 'HomeController',
+			templateUrl : 'templates/home.html'
+		})
         .when('/about', {
             controller: 'HomeController',
             templateUrl: 'templates/about.html'
@@ -53,9 +58,17 @@ var myApp = angular
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html'
         })
+<<<<<<< 7c76f9b8bcda8137467aefeada3dc879ff630a0e
         .otherwise({ redirectTo: 'templates/404.html' });
 }])
 >>>>>>> Stashed changes
+=======
+        .otherwise({
+			redirectTo : '/'
+		});
+	} ])
+/*>>>>>>> Stashed changes
+>>>>>>> Put the homepage routing back
 
 			.when('/', {
 				controller : 'HomeController',
@@ -89,7 +102,7 @@ var myApp = angular
 			}).otherwise({
 				redirectTo : '/'
 			});
-		} ])
+		} ])*/
 
 		.run(
 				[
