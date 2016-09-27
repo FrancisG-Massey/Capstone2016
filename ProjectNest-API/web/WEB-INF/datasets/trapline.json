@@ -9,6 +9,27 @@
             JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
             LIMIT 1
+        ),
+
+        -- Common Catches
+        -- This may get slow, but we can abstract to a view later if required
+        cc AS (
+            SELECT
+                tl.trapline_id,
+                c.catch_catchtypeid,
+                ct.catchtype_name,
+                COUNT (*) as catches_of_type
+            FROM
+                catch c
+                JOIN catchtype ct ON ct.catchtype_id = c.catch_catchtypeid
+                JOIN trap t ON t.trap_id = c.catch_trapid
+                JOIN trapline tl ON tl.trapline_id = t.trap_traplineid
+            GROUP BY
+                tl.trapline_id,
+                c.catch_catchtypeid,
+                ct.catchtype_name
+            ORDER BY
+                catches_of_type DESC
         )
 
         SELECT
@@ -18,9 +39,9 @@
             tl.trapline_starttag AS start_tag,
             tl.trapline_endtag AS end_tag,
             tl.trapline_imagefilename AS img_filename,
-            1 AS common_ct_id_1,
-            2 AS common_ct_id_2,
-            3 AS common_ct_id_3
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 0) AS common_ct_id_1,
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 1) AS common_ct_id_2,
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3
         FROM
             logged_user lu,
             trapline tl
