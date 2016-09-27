@@ -13,12 +13,10 @@ var myApp = angular
 		} ])
 		.config([ '$routeProvider', function($routeProvider) {
 
-<<<<<<< Updated upstream
-			$routeProvider.when('/login', {
+		$routeProvider.when('/login', {
 				controller : 'LoginController',
 				templateUrl : 'modules/authentication/views/login.html',
 			})
-=======
         .when('/about', {
             controller: 'HomeController',
             templateUrl: 'templates/about.html'
