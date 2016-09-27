@@ -1,19 +1,15 @@
-<div class="text-center mast">
-      <h1>What We're Doing</h1>
-      <p class="lead">Project Nest is the development of a mobile application to aid volunteers of DOC with the resetting of traplines.</p>
-      <p>Four students from Massey University are undertaking the design, implementation, testing, and deployment of this application to satisfy the requirements of a Software Engineering capstone project.</p> 
-      <p>We are working closely with volunteers and academic staff to provide a professional and successful cross-platform experience.</p>
-      <a class="btn btn-default btn-lg" href="/#/about"> Learn about us  &raquo;</a>
-  </div>
-
-        <hr>
         <div class="row">
             <div class="col-sm-4" data-ng-repeat="image in images">
+                <h2 class="text-center"><strong>{{image.header}}</strong></h2>
                 <a href="{{image.link}}">
-                <img class="img-circle img-responsive" data-ng-src="{{image.photo}}" alt="">
+                <br>
+                <img class="img-circle img-responsive center-block" data-ng-src="{{image.photo}}" alt="">
                 </a>
-                <h2>{{image.header}}</h2>
-				<p>{{image.description}}</p></div>
+                <br>
+                <div class="text-center mast">
+				<p><strong>{{image.description}}</strong></p>
+				</div>
+				</div>
             <!-- <div class="col-sm-4">
                 <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
                 <h2>Data</h2>

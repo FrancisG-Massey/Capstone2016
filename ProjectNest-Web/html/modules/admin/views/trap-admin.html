@@ -46,6 +46,14 @@
 	</div>
 
 	<div class="col-sm-5">
+	<!--  <div class="clearfix" style="margin-bottom: 40px;">
+	 	<div class="pull-right">
+			<button  ng-click="goBack()" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-arrow-left"></span> Back
+		</button>
+		</div>
+		</div>
+		-->
 		<div class="well clearfix">
 			<h3 style="margin-top: 0; margin-bottom: 25px">
 				{{selected.id ? 'Trap ID: ' + selected.id : 'Add New Trap'}}
@@ -144,11 +152,13 @@
 
 	<div id="mapid"></div>
 
+	<div class="clearfix">
 	<div class = "pull-right" style="margin-top: 10px;">
 		<button class="btn btn-success" type="button"  ng-if="!selected" >Save</button>
 		<div ng-if="selected">
 		<button class="btn btn-success" type="button" >Edit</button>
 		<button class="btn btn-danger" type="button">Delete</button>
+		</div>
 		</div>
 	</div>
 	</div>
