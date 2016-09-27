@@ -53,7 +53,7 @@ var myApp = angular
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html'
         })
-        .otherwise({ redirectTo: '/404page.html' });
+        .otherwise({ redirectTo: 'templates/404.html' });
 }])
 >>>>>>> Stashed changes
 
