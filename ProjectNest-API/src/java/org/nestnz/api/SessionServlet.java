@@ -105,7 +105,7 @@ public class SessionServlet extends HttpServlet {
             out.println("<h1>Servlet NestSessionServlet at " + request.getContextPath() + "</h1>");
             
             
-            final String sqlQuery = "SELECT session_id, session_user_id, substring(session_token from 1 for 31)||'xxxxx' AS session_token, session_created FROM public.session;";
+            final String sqlQuery = "SELECT session_id, session_userid, substring(session_token from 1 for 31)||'xxxxx' AS session_token, session_createdtimestamp FROM session;";
             //out.println("<p>dbconfig.properties filepath: \"" + propPath + "\"</p>");
             out.println("<p>Querying: \"" + sqlQuery + "\"</p>");
             
