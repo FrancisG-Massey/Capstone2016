@@ -3,29 +3,29 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_is_admin,
-                user_is_inactive
+                user_isadmin,
+                user_isinactive
             FROM users u
-            JOIN session s ON u.user_id = s.session_user_id
+            JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
             LIMIT 1
         )
 
         SELECT 
-            ct.catch_type_id as id,
-            ct.catch_type_name as name,
-            ct.catch_type_image_filename as img_filename
+            ct.catchtype_id as id,
+            ct.catchtype_name as name,
+            ct.catchtype_imagefilename as img_filename
         FROM
             logged_user lu,
-            catch_type ct
+            catchtype ct
         WHERE
-            (lu.user_is_inactive = false) AND
-            ((#bigint:id# IS NULL) OR (ct.catch_type_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(ct.catch_type_name) LIKE lower('%' || #string:name# || '%')))
+            (lu.user_isinactive = false) AND
+            ((#bigint:id# IS NULL) OR (ct.catchtype_id = #bigint:id#)) AND
+            ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY
-            ct.catch_type_id
+            ct.catchtype_id
         ORDER BY
-            ct.catch_type_id
+            ct.catchtype_id
     ",
     "POST" : "",
     "PUT" : "",

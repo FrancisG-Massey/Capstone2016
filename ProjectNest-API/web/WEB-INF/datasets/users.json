@@ -3,10 +3,10 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_is_admin,
-                user_is_inactive
+                user_isadmin,
+                user_isinactive
             FROM users u
-            JOIN session s ON u.user_id = s.session_user_id
+            JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
             LIMIT 1
         )
@@ -14,21 +14,21 @@
         SELECT
             u.user_id as id, 
             u.user_name as name, 
-            u.user_created_timestamp as created_timestamp, 
-            u.user_created_user_id as created_user_id, 
-            u.user_is_admin as admin, 
-            u.user_is_inactive as inactive
+            u.user_createdtimestamp as created_timestamp, 
+            u.user_createduserid as created_user_id, 
+            u.user_isadmin as admin, 
+            u.user_isinactive as inactive
         FROM
             logged_user lu,
             users u
-            LEFT JOIN trapline_user tlu ON tlu.trapline_user_user_id = u.user_id
+            LEFT JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id
         WHERE
-            (lu.user_is_inactive = false) AND
-            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id) OR (u.user_id = lu.user_id)) AND
+            (lu.user_isinactive = false) AND
+            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id) OR (u.user_id = lu.user_id)) AND
             ((#bigint:id# IS NULL) OR (u.user_id = #bigint:id#)) AND
-            ((#bigint:created-user-id# IS NULL) OR (u.user_created_user_id = #bigint:created-user-id#)) AND
+            ((#bigint:created-user-id# IS NULL) OR (u.user_createduserid = #bigint:created-user-id#)) AND
             ((#string:name# IS NULL) OR (lower(u.user_name) LIKE lower('%' || #string:name# || '%'))) AND
-            ((#boolean:admin# IS NULL) OR (u.user_is_admin = #boolean:admin#))
+            ((#boolean:admin# IS NULL) OR (u.user_isadmin = #boolean:admin#))
         GROUP BY
             u.user_id
         ORDER BY
