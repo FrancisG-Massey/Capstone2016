@@ -51,7 +51,7 @@
 						<li><a href="#/volunteer">Volunteer</a></li>
 						<li><a href="#/contact">Contact</a></li>
 
-						<li class="dropdown" ng-if="globals.currentUser">
+						<li ng-if="globals.currentUser">
 							<a href="#/trapline-admin">
 								Admin
 							</a>
@@ -73,13 +73,13 @@
 
 		<!-- Image Background Page Header -->
 		<!-- Note: The background image is set within the business-casual.css file. -->
-		<header ng-if="!wrapClass" class="business-header">
+		<header data-ng-if="!wrapClass" class="business-header">
 			<div class="container">
 				<!-- <h1 class="tagline">Project Nest</h1>-->
 			</div>
 		</header>
 		<div class="container">
-		<div ng-view class="container main-content"></div>
+		<div data-ng-view class="container main-content"></div>
 		</div>
 	</div>
 	<footer>

@@ -19,7 +19,7 @@ myApp.controller('HomeController', ['$scope', '$rootScope', function($scope, $ro
   		link:'/#/statistics'
   	}, 
   	{
-  		header:'volunteers',
+  		header:'Volunteers',
   		name: 'Kea',
   		photo: 'img/Kea.jpg',
   		description:'View information on how to sign up as a DOC volunteer.',
