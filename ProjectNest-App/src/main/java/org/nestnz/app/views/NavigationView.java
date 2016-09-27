@@ -43,10 +43,11 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -56,6 +57,33 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
 public class NavigationView extends View {
+	
+	private static enum Distance {
+		FAR(100, "far"),
+		NORMAL(20, null),
+		CLOSE(10, "close"),
+		CLOSER(5, "closer"),
+		CLOSEST(0, "closest");
+		
+		double lowerBound;
+		PseudoClass cssPseudoClass;
+		
+		Distance (double lowerBound, String cssClass) {
+			this.lowerBound = lowerBound;
+			if (cssClass != null) {
+				cssPseudoClass = PseudoClass.getPseudoClass(cssClass);
+			}
+		}
+		
+		static Distance getForDistance (double distance) {
+			for (Distance d : values()) {
+				if (distance > d.lowerBound) {
+					return d;
+				}
+			}
+			return CLOSEST;
+		}
+	}
 	
 	public static final String NAME = "navigation";
 
@@ -73,7 +101,7 @@ public class NavigationView extends View {
     
     final ObjectProperty<Position> targetCoordsProperty = new SimpleObjectProperty<>();
     
-    final StringProperty distanceToTrap = new SimpleStringProperty();
+    final DoubleProperty distanceToTrap = new SimpleDoubleProperty();
     
     final Dialog<CatchType> catchSelectDialog;
 	
@@ -112,7 +140,7 @@ public class NavigationView extends View {
         distanceLabel.setId("distance-label");
         distanceLabel.setAlignment(Pos.CENTER);
         
-        distanceLabel.textProperty().bind(distanceToTrap);
+        distanceLabel.textProperty().bind(Bindings.format("%1.0f m", distanceToTrap));
         HBox.setHgrow(distanceLabel, Priority.ALWAYS);
                 
         setTop(topBox);
@@ -150,6 +178,15 @@ public class NavigationView extends View {
     			next.setVisible(hasNextTrap());
     		}
     	});
+    	
+    	distanceToTrap.addListener((obs, oldDist, newDist) -> {
+    		Distance oldDistance = Distance.getForDistance(oldDist.doubleValue());
+    		Distance newDistance = Distance.getForDistance(newDist.doubleValue());
+    		if (oldDistance != newDistance) {
+    			distanceLabel.pseudoClassStateChanged(oldDistance.cssPseudoClass, false);
+    			distanceLabel.pseudoClassStateChanged(newDistance.cssPseudoClass, true);
+    		}
+    	});
     }
     
     private void initMonitors () {
@@ -157,10 +194,9 @@ public class NavigationView extends View {
     	
     	trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty());
     	
-    	distanceToTrap.bind(Bindings.format("%1.0f m",
-    			Bindings.createDoubleBinding(() -> gpsService.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
+    	distanceToTrap.bind(Bindings.createDoubleBinding(() -> gpsService.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
     				getDistance(gpsService.getPosition(), targetCoordsProperty.get()), 
-    					gpsService.positionProperty(), targetCoordsProperty)));
+    					gpsService.positionProperty(), targetCoordsProperty));
     }
     
     /**
