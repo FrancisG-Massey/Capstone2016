@@ -188,7 +188,7 @@ CREATE TABLE public.users
   user_contactfullname text,
   user_contactphone text,
   user_contactemail text,
-  user_createdtimestamp timestamp without time zone NOT NULL DEFAULT now(),
+  user_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   user_createduserid bigint,
   user_isadmin boolean NOT NULL DEFAULT false,
   user_isinactive boolean NOT NULL DEFAULT false,
@@ -215,7 +215,7 @@ CREATE TABLE public.session
   session_id bigint NOT NULL DEFAULT nextval('session_session_id_seq'::regclass),
   session_userid bigint NOT NULL,
   session_token text NOT NULL,
-  session_createdtimestamp timestamp without time zone NOT NULL DEFAULT now(),
+  session_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   CONSTRAINT session_pkey PRIMARY KEY (session_id),
   CONSTRAINT session_session_token UNIQUE (session_token),
   CONSTRAINT session_session_userid_fkey FOREIGN KEY (session_userid)
@@ -380,8 +380,8 @@ CREATE TABLE public.trap
   trap_coordy numeric NOT NULL,
   trap_traptypeid bigint NOT NULL,
   trap_status integer NOT NULL DEFAULT 1,
-  trap_createdtimestamp timestamp without time zone NOT NULL DEFAULT now(),
-  trap_lastresettimestamp timestamp without time zone NOT NULL DEFAULT now(),
+  trap_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
+  trap_lastresettimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   trap_baitid bigint,
   CONSTRAINT trap_pkey PRIMARY KEY (trap_id),
   CONSTRAINT trap_trap_baitid_fkey FOREIGN KEY (trap_baitid)
@@ -441,7 +441,7 @@ CREATE TABLE public.catch
   catch_catchtypeid bigint NOT NULL,
   catch_baitid bigint NOT NULL,
   catch_note text,
-  catch_loggedtimestamp timestamp without time zone NOT NULL DEFAULT now(),
+  catch_loggedtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   catch_imagefilename text,
   CONSTRAINT catch_pkey PRIMARY KEY (catch_id),
   CONSTRAINT catch_catch_trapid_fkey FOREIGN KEY (catch_trapid)
