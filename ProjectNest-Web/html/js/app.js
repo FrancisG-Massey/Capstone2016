@@ -58,17 +58,11 @@ var myApp = angular
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html'
         })
-<<<<<<< 7c76f9b8bcda8137467aefeada3dc879ff630a0e
-        .otherwise({ redirectTo: 'templates/404.html' });
-}])
->>>>>>> Stashed changes
-=======
         .otherwise({
 			redirectTo : '/'
 		});
 	} ])
 /*>>>>>>> Stashed changes
->>>>>>> Put the homepage routing back
 
 			.when('/', {
 				controller : 'HomeController',
