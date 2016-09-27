@@ -26,6 +26,8 @@
         <string>APPL</string>
         <key>LSRequiresIPhoneOS</key>
         <true/>
+        <key>NSLocationAlwaysUsageDescription</key>
+		<string>Optional message</string>
         <key>UISupportedInterfaceOrientations</key>
         <array>
                 <string>UIInterfaceOrientationPortrait</string>
