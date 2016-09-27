@@ -13,10 +13,51 @@ var myApp = angular
 		} ])
 		.config([ '$routeProvider', function($routeProvider) {
 
+<<<<<<< Updated upstream
 			$routeProvider.when('/login', {
 				controller : 'LoginController',
 				templateUrl : 'modules/authentication/views/login.html',
 			})
+=======
+        .when('/about', {
+            controller: 'HomeController',
+            templateUrl: 'templates/about.html'
+        })
+		.when('/mobile', {
+			controller: 'HomeController',
+			templateUrl: 'templates/mobile.html'
+		})
+        .when('/contact', {
+            controller: 'HomeController',
+            templateUrl: 'templates/contact.html'
+        })
+        .when('/statistics', {
+            controller: 'HomeController',
+            templateUrl: 'templates/statistics.html'
+        })
+        .when('/volunteer', {
+            controller: 'HomeController',
+            templateUrl: 'templates/volunteer.html'
+        })
+        .when('/trapline-admin',{
+            controller: 'AdminTraplineController',
+            templateUrl: 'modules/admin/views/trapline-admin.html'        	
+        })
+        .when('/trap-admin', {
+            controller: 'AdminTrapController',
+            templateUrl: 'modules/admin/views/trap-admin.html'
+        })
+        .when('/volunteer-admin/:traplineId', {
+            controller: 'AdminVolunteerController',
+            templateUrl: 'modules/admin/views/volunteer-admin.html'
+        })
+        .when('/trap-admin/:traplineId', {
+            controller: 'AdminTrapController',
+            templateUrl: 'modules/admin/views/trap-admin.html'
+        })
+        .otherwise({ redirectTo: '/404page.html' });
+}])
+>>>>>>> Stashed changes
 
 			.when('/', {
 				controller : 'HomeController',
