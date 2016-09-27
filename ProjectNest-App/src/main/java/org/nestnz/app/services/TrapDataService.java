@@ -240,8 +240,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         				}
         				int id = trapJson.getInt("id");
         				int number = trapJson.getInt("number");
-        				double latitude = Double.parseDouble(trapJson.getString("coord_lat"));
-        				double longitude = Double.parseDouble(trapJson.getString("coord_long"));
+        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
+        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
         				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
         				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
         				Trap trap = trapline.getTrap(id);
