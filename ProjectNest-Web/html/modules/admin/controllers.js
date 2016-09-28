@@ -63,13 +63,15 @@ angular.module('Admin')
     
 			
 }])
-.controller('AdminTrapController',['$scope','$rootScope','traps','baits',function ($scope, $rootScope,traps,baits) {
+.controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type',function ($scope, $rootScope,traps,baits,trap_type) {
 		//var traplineId = $routeParams.traplineId;
 		$rootScope.wrapClass = undefined;
 		$scope.traps = traps;
 		console.log(traps)
 		$scope.baits = baits;
 		console.log($scope.baits);
+		$scope.trap_type = trap_type;
+		console.log($scope.trap_type);
 
 	        	    
 	   /* $scope.baits =[

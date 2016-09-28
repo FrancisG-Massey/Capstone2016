@@ -69,7 +69,14 @@ var myApp = angular
                     .then(function(response){
                         return response.data;
                 })
-            }
+                },
+                trap_type:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/trap-type')
+                    .then(function(response){
+                        return response.data;
+                })
+                }
             }
         })
         .when('/volunteer-admin/:traplineId', {
