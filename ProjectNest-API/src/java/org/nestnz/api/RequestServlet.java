@@ -7,8 +7,12 @@
  **********************************************************/
 package org.nestnz.api;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.MalformedJsonException;
 import java.io.FileInputStream;
 import java.sql.*;
 
@@ -18,6 +22,7 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -212,8 +217,128 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String dirtySQL;
         
-        response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        // Parse out the requested entity type and id from the request URL
+        // Seems the java regex matcher isn't fully PCRE compliant? We'll have to strip slashes manually
+        
+        //Matcher m = Pattern.compile("/^\\/(?>([a-z][a-z-_]*))(?>\\/(\\d+))?/i").matcher(request.getPathInfo());
+        Matcher m = Pattern.compile("\\/([\\w-]*)").matcher(request.getPathInfo().toLowerCase());
+        String requestEntity = m.find() ? m.group().substring(1) : "";
+        String requestEntityID = m.find() ? m.group().substring(1) : "";
+        
+        // Check that an entity id has not been supplied
+        if (!requestEntityID.equals("")) {
+            LOG.log(Level.INFO, "Bad request syntax: Entity id supplied to POST request: {0}", requestEntityID);        
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        
+        // Retrieve the SQL query string mapped to the requested entity's GET method
+        try {
+            dirtySQL = getSQLQuery(requestEntity, "POST");
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Unable to load dataset mappings", ex);        
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        
+        // Check that the request target is mapped and valid
+        if (dirtySQL == null) {
+            LOG.log(Level.INFO, "Unable to locate requested dataset: {0}", requestEntity);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+       
+        // Check for a "Session-Token" header with regex validation
+        final String sessionToken = request.getHeader("Session-Token");
+        final String uuidRegex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+        if (sessionToken == null) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        } else if (!sessionToken.matches(uuidRegex)) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        
+        // Build a map of typed parameters which appear in the retrieved query i.e. regex matches for #string:session-token# etc.
+        // ParamOrder maintains insert positions as we dynamically bind our parameters later from the unordered map. 
+        Map<String, String> datasetParams = new HashMap<>();
+        List<String> datasetParamOrder = new ArrayList<>();
+        // Find all parameters including their datatypes
+        String paramRegex = "#([a-z]+:[a-z-_][\\w-]*)#";
+        m = Pattern.compile(paramRegex).matcher(dirtySQL.toLowerCase());
+        while (m.find()) {
+            final String param = m.group();
+            // Discard the datatype in the parameter value map but not in the order list
+            // This means we support casting the same value to different types in different places in the dataset if required
+            datasetParamOrder.add(param);
+            datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
+        }
+        
+        // If the json object provided by the request is unparsable, a 400 bad request is returned.
+        String requestJSON = null;
+        Map<String,String> requestObjectParams = null;
+        try {
+            if (!request.getContentType().matches("application/json")) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+            // Parse the json object with gson
+            requestJSON = Common.BufferedReaderToString(request.getReader());
+            Type stringStringMap = new TypeToken<Map<String, String>>(){}.getType();
+            requestObjectParams = new Gson().fromJson(requestJSON, stringStringMap);
+        } 
+        catch (JsonSyntaxException | MalformedJsonException ex) {
+            LOG.log(Level.WARNING, "Malformed JSON object received:\n" + requestJSON, requestEntity);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        
+        
+        // Fill the datasetParams map with values if they are provided in the request
+        for (Map.Entry<String, String> requestParam : requestObjectParams.entrySet()) {
+            final String paramName = requestParam.getKey();
+            if (datasetParams.containsKey(paramName)) {
+                datasetParams.put(paramName, requestParam.getValue());
+            }
+        }
+        
+        // Add the session token as a parameter (we've already validated it above)
+        datasetParams.put("session-token", sessionToken);
+                
+        // Replace the placeholders in the retrieved SQL with the values supplied by the request
+        final String cleanSQL = dirtySQL.replaceAll(paramRegex, "?");
+        
+        // Get the DB response (new record id) and convert it to a location header to output
+        String jsonArray;
+        try (
+            Connection conn = Common.getNestDS(propPath).getConnection();
+            PreparedStatement st = conn.prepareStatement(cleanSQL);
+        ) {
+            // Bind all of the parameters to their placeholders
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            try (ResultSet rsh = st.executeQuery();) {
+                if (rsh.isBeforeFirst()) {
+                    rsh.next();
+                    final String newEntity = "/" + requestEntity + "/" + rsh.getString(1);
+                    LOG.log(Level.INFO, "New entity created on server: {0}", newEntity);
+                    response.setStatus(HttpServletResponse.SC_CREATED);
+                    response.addHeader("Location", newEntity);
+                } else {
+                    LOG.log(Level.INFO, "Unable to create new {0} on server", requestEntity);
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                }
+            }
+
+        } catch (ParseException | NumberFormatException ex){
+            // Error is written to log lower down the stack so parameter values can be logged.
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+        } catch (IOException | SQLException ex) {
+            LOG.log(Level.SEVERE, "Unable to execute \"" + requestEntity + "\" dataset POST query", ex);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

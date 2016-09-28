@@ -9,6 +9,7 @@ package org.nestnz.api;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.io.BufferedReader;
 import java.sql.*;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
@@ -244,5 +245,14 @@ public class Common {
                     "' does not match expected parameter '" + nextParam + "'" , ex);
             throw ex;
         }
+    }
+
+    public static String BufferedReaderToString(BufferedReader in) throws IOException {
+        String line = null;
+        StringBuilder rslt = new StringBuilder();
+        while ((line = in.readLine()) != null) {
+            rslt.append(line);
+        }
+        return rslt.toString();
     }
 }
