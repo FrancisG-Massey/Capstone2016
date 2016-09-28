@@ -62,7 +62,14 @@ var myApp = angular
                         .then(function(response){
                             return response.data;
                     })
-                }
+                },
+                baits:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/bait')
+                    .then(function(response){
+                        return response.data;
+                })
+            }
             }
         })
         .when('/volunteer-admin/:traplineId', {

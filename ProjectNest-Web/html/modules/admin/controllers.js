@@ -63,14 +63,16 @@ angular.module('Admin')
     
 			
 }])
-.controller('AdminTrapController',['$scope','$rootScope','traps',function ($scope, $rootScope,traps) {
+.controller('AdminTrapController',['$scope','$rootScope','traps','baits',function ($scope, $rootScope,traps,baits) {
 		//var traplineId = $routeParams.traplineId;
 		$rootScope.wrapClass = undefined;
 		$scope.traps = traps;
 		console.log(traps)
+		$scope.baits = baits;
+		console.log($scope.baits);
 
 	        	    
-	    $scope.baits =[
+	   /* $scope.baits =[
 		    {
 				"id" : 123456789101112,
 				"name" : "egg"
@@ -83,7 +85,7 @@ angular.module('Admin')
 				"id" : 49506062,
 				"name" : "poisonA"
 			}
-		];
+		];*/
 
 
 	    

@@ -19,10 +19,10 @@
 			<tbody data-ng-repeat="trap in traps[currentPage]">
 				<tr data-ng-click="setSelected();"
 					class="{{trap == selected ? 'success' : ''}}">
-					<td scope="row">{{trap.id}}</td>
+					<td scope="row">{{trap.number}}</td>
 					<td>{{trap.coord_lat + ' '}}<b>S</b>{{' ' + trap.coord_long +
 						' '}}<b>E</b></td>
-					<td>{{trap.status}}</td>
+					<td>{{trap.status? "active":"inactive"}}</td>
 					<td>{{trap.created | date:"dd/MM/yyyy 'at' h:mma"}}</td>
 					<td>{{trap.last_reset| date:"dd/MM/yyyy 'at' h:mma"}}</td>
 				</tr>
@@ -56,7 +56,7 @@
 		-->
 		<div class="well clearfix">
 			<h3 style="margin-top: 0; margin-bottom: 25px">
-				{{selected.id ? 'Trap Number: ' + selected.id : 'Add New Trap'}}
+				{{selected.id ? 'Trap Number: ' + selected.number : 'Add New Trap'}}
 				<div class="btn-group pull-right" data-toggle="buttons">
 					<label
 						ng-class="{ 'btn btn-default': true, 'active': selected.status == 'active' }">
