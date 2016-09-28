@@ -67,7 +67,18 @@ var myApp = angular
         })
         .when('/volunteer-admin/:traplineId', {
             controller: 'AdminVolunteerController',
-            templateUrl: 'modules/admin/views/volunteer-admin.html'
+            templateUrl: 'modules/admin/views/volunteer-admin.html',
+            resolve: {
+                trapline_users: function($http, $route){
+                    return $http
+                        .get('https://www.nestnz.org/api/trapline-user?trapline-id='+$route.current.params.traplineId)
+                        .then(function(response){
+                            return response.data;
+                    })
+                },
+                users: ['$http', function($http) {
+                    return $http.get('https://www.nestnz.org/api/user');}]
+            }
         })
         .otherwise({
             templateUrl : 'templates/404.html'

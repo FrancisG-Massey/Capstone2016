@@ -17,10 +17,10 @@
         <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
           <tr data-ng-click="setSelected();" class="{{volunteer == selected ? 'success' : ''}}">
             <td scope="row">{{volunteer.id}}</td>
-            <td>{{volunteer.firstNames + ' ' + volunteer.lastName}}</td>
+            <td>{{volunteer.name}}</td>
             <td>{{volunteer.email}}</td>
-            <td>{{volunteer.startDate |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
-            <td>{{volunteer.permission}}</td>
+            <td>{{volunteer.created_timestamp |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
+            <td>{{volunteer.admin?"admin":"none"}}</td>
           </tr>    
         </tbody>
       </table>
@@ -50,12 +50,12 @@
     <div class="col-sm-5"> 
       <div class="well">
         <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'Add New Volunteer'}}</h3>
-        <p>{{selected.id ? 'First Volunteered:' + (selected.startDate  |  date:"dd MMMM yyyy") : " "}}</p>
+        <p>{{selected.id ? 'First Volunteered:' + (selected.created_timestamp  |  date:"dd MMMM yyyy") : " "}}</p>
         <div class="row">
           <div class="col-md-6 form-group">
             <label>First Name</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.firstNames}}">
+              <input type="text" class="form-control" value ="{{selected.name}}">
             </div>
           </div>
           <div class="col-md-6 form-group">  

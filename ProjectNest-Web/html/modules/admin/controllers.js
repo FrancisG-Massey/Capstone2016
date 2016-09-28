@@ -13,12 +13,6 @@ angular.module('Admin')
         console.log($scope.trapline);
     });*/
 	
-	$http.get('https://www.nestnz.org/api/trapline')
-    .then(function(response) {
-        $scope.trapline = response.data;
-        console.log($scope.trapline);
-    });
-	
 	/*$http.get('https://www.nestnz.org/api/user')
     .then(function(response) {
         $scope.user =  response.data;
@@ -187,12 +181,14 @@ angular.module('Admin')
     	
     }])
 
-.controller('AdminVolunteerController', ['$scope', '$rootScope', '$http', '$routeParams',function ($scope,$rootScope, $http, $routeParams) {
+.controller('AdminVolunteerController', ['$scope','$rootScope','trapline_users','users',function ($scope, $rootScope,trapline_users,users) {
 	//var traplineId = $routeParams.traplineId;
-
 	$rootScope.wrapClass = undefined;
-	
-	$scope.volunteers = [
+    $scope.trapline_users = trapline_users;
+    console.log($scope.trapline_users);
+    $scope.users = users.data;
+    console.log($scope.users);
+	/*$scope.volunteers = [
 	                 		{
 	                 			id: 1,
 	                 			firstNames : 'John',
@@ -351,8 +347,19 @@ angular.module('Admin')
 				traplineId : 1,
 				roles:"none"
 			}	                       
-	];
-	var usersForTrapLine = [], trapLineUser, volunteer;
+	];*/
+    
+	var usersForTrapLine = [], trapLineUser, user;
+	for(var i = 0; i< $scope.trapline_users.length; i++){
+		trapLineUser = $scope.trapline_users[i];
+		for(var x = 0; x < $scope.users.length; x++){
+			user = $scope.users[x];
+			if(user.id == trapLineUser.user_id){
+				usersForTrapLine.push(user);
+			}
+		}
+	};
+	/*var usersForTrapLine = [], trapLineUser, volunteer;
 	for (var i = 0; i < $scope.traplineUsers.length; i++) {
 		trapLineUser = $scope.traplineUsers[i];
 		if (trapLineUser.traplineId ==  traplineId) {
@@ -363,7 +370,7 @@ angular.module('Admin')
 				}
 			}
 		}
-	};
+	};*/
 
     $scope.addNew = function() {
     	$scope.selected = false;
