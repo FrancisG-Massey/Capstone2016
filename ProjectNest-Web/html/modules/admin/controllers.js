@@ -1,33 +1,31 @@
 'use strict';
  
 angular.module('Admin')
-.controller('AdminTraplineController',['$scope', '$rootScope','$http',function ($scope,$rootScope,$http) {
+.controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline',function ($scope,$rootScope,$http,region,trapline) {
 	$rootScope.wrapClass = undefined;
 	
-	/*$http.get('https://www.nestnz.org/api/region')
-    .then(function(response) {
-        $scope.regions = response.data;
-        console.log($scope.regions);
-    });
-	$http.get('https://www.nestnz.org/api/trapline')
+    $scope.regions = region.data;
+    console.log($scope.region);
+    $scope.traplines = trapline.data;
+	/*$http.get('https://www.nestnz.org/api/trap?trapline_id=1')
     .then(function(response) {
         $scope.trapline = response.data;
         console.log($scope.trapline);
     });*/
 	
-    $scope.regions = [
-		              {
-		            	  "id" : 1,
-		            	  "name" : "Manawatu"
-		              },
-		              {
-		            	  "id":2,
-		            	  "name" : "Wellington"
-		              }
-		              ];
-		
-		//console.log($scope.regions);
-	$scope.traplines = [
+	$http.get('https://www.nestnz.org/api/trapline')
+    .then(function(response) {
+        $scope.trapline = response.data;
+        console.log($scope.trapline);
+    });
+	
+	/*$http.get('https://www.nestnz.org/api/user')
+    .then(function(response) {
+        $scope.user =  response.data;
+    });
+	console.log($scope.user);*/
+
+	/*$scope.traplines = [
 	                    {
 	                    	"end_tag":"Woodville",
 	                    	"id": 1,
@@ -44,7 +42,7 @@ angular.module('Admin')
 	                    	"start_tag":"Front",
 	                    	"region_id":2
 	                    }
-	                   ];
+	                   ];*/
 
 	//console.log($rootScope.traps);
 	
@@ -71,131 +69,12 @@ angular.module('Admin')
     
 			
 }])
-.controller('AdminTrapController',['$scope', '$rootScope','$http', '$routeParams',function ($scope,$rootScope,$http, $routeParams) {
-		var traplineId = $routeParams.traplineId;
+.controller('AdminTrapController',['$scope','$rootScope','traps',function ($scope, $rootScope,traps) {
+		//var traplineId = $routeParams.traplineId;
 		$rootScope.wrapClass = undefined;
-		    	
-		var traps = [
-	        			{
-	        			      "id" : 123,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.314206,
-	        			      "coord_long" : 175.779946,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:26:07",
-	        			      "last_reset" : "2016-08-16T10:28:07",
-	        			      "bait_id" : 123456789101111,
-	        			      "number" : 1
-	        			},
-	        			{
-	        			      "id" : 254,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.311086,
-	        			      "coord_long" : 175.775306,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "inactive",
-	        			      "created" : "2016-04-16T10:30:07",
-	        			      "last_reset" : "2016-08-16T10:30:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 2
-	        			},
-	        			{
-	        			      "id" : 388,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.311821,
-	        			      "coord_long" : 175.775993,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:35:07",
-	        			      "last_reset" : "2016-08-16T10:35:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 3
-	        			},
-	        			{
-	        			      "id" : 367,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.311821,
-	        			      "coord_long" : 175.775993,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "inactive",
-	        			      "created" : "2016-04-16T10:36:07",
-	        			      "last_reset" : "2016-08-16T10:36:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 4
-	        			},
-	        			{
-	        			      "id" : 433,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.312105,
-	        			      "coord_long" : 175.778328,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:37:07",
-	        			      "last_reset" : "2016-08-16T10:37:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 5
-	        			},
-	        			{
-	        			      "id" : 587,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.312119,
-	        			      "coord_long" : 175.777347,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "inactive",
-	        			      "created" : "2016-04-16T10:40:07",
-	        			      "last_reset" : "2016-08-16T10:40:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 6
-	        			},
-	        			{
-	        			      "id" : 635,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.309037,
-	        			      "coord_long" : 175.772448,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:44:07",
-	        			      "last_reset" : "2016-08-16T10:44:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 7
-	        			},
-	        			{
-	        			      "id" : 754,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.309705,
-	        			      "coord_long" : 175.772583,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "inactive",
-	        			      "created" : "2016-04-16T10:47:07",
-	        			      "last_reset" : "2016-08-16T10:47:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 8
-	        			},
-	        			{
-	        			      "id" : 867,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.310519,
-	        			      "coord_long" : 175.774827,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:55:07",
-	        			      "last_reset" : "2016-08-16T10:55:57",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 9
-	        			},
-	        			{
-	        			      "id" : 967,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.309849,
-	        			      "coord_long" : 175.773379,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:57:07",
-	        			      "last_reset" : "2016-08-16T10:57:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 10
-	        		}];
+		$scope.traps = traps;
+		console.log(traps)
+
 	        	    
 	    $scope.baits =[
 		    {
@@ -212,10 +91,7 @@ angular.module('Admin')
 			}
 		];
 
-	    // traps matching its trapline
-	    traps = traps.filter(function(trap) {
-			return trap.line_id == traplineId;
-		});
+
 	    
 	    var pageLength = 10,
 	    	numTraps = traps.length,
@@ -312,7 +188,7 @@ angular.module('Admin')
     }])
 
 .controller('AdminVolunteerController', ['$scope', '$rootScope', '$http', '$routeParams',function ($scope,$rootScope, $http, $routeParams) {
-	var traplineId = $routeParams.traplineId;
+	//var traplineId = $routeParams.traplineId;
 
 	$rootScope.wrapClass = undefined;
 	
