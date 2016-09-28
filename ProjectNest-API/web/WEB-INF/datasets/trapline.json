@@ -58,7 +58,16 @@
         ORDER BY
             tl.trapline_id
     ",
-    "POST" : "", 
+    "POST" : "
+        INSERT INTO trapline
+            (trapline_name, trapline_regionid, trapline_starttag, trapline_endtag, trapline_imagefilename)
+        SELECT
+            #string:name#, #bigint:region_id#, #string:start_tag#, #string:end_tag#, #string:img_filename#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            trapline_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

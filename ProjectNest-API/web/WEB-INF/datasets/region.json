@@ -32,7 +32,16 @@
         ORDER BY
             r.region_id
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO region
+            (region_name)
+        SELECT
+            #string:name#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            region_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

@@ -27,7 +27,16 @@
         ORDER BY
             ct.catchtype_id
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO catchtype
+            (catchtype_name, catchtype_imagefilename)
+        SELECT
+            #string:name#, #string:img_filename#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            catchtype_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

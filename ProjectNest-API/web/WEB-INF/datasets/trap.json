@@ -44,7 +44,16 @@
             t.trap_traplineid,
             t.trap_number
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO trap
+            (trap_traplineid, trap_number, trap_coordx, trap_coordy, trap_traptypeid, trap_createdtimestamp, trap_lastresettimestamp, trap_baitid)
+        SELECT
+            #bigint:trapline_id#, #bigint:number#, #numeric:coord_long#, #numeric:coord_lat#, #bigint:traptype_id#, #timestamp:created#, #timestamp:last_reset#, #bigint:bait_id#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            trap_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }
