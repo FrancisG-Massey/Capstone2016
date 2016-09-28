@@ -3,34 +3,55 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_is_admin,
-                user_is_inactive
+                user_isadmin,
+                user_isinactive
             FROM users u
-            JOIN session s ON u.user_id = s.session_user_id
+            JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
             LIMIT 1
+        ),
+
+        -- Common Catches
+        -- This may get slow, but we can abstract to a view later if required
+        cc AS (
+            SELECT
+                tl.trapline_id,
+                c.catch_catchtypeid,
+                ct.catchtype_name,
+                COUNT (*) as catches_of_type
+            FROM
+                catch c
+                JOIN catchtype ct ON ct.catchtype_id = c.catch_catchtypeid
+                JOIN trap t ON t.trap_id = c.catch_trapid
+                JOIN trapline tl ON tl.trapline_id = t.trap_traplineid
+            GROUP BY
+                tl.trapline_id,
+                c.catch_catchtypeid,
+                ct.catchtype_name
+            ORDER BY
+                catches_of_type DESC
         )
 
         SELECT
             tl.trapline_id AS id,
             tl.trapline_name AS name,
-            tl.trapline_region_id AS region_id,
-            tl.trapline_start_tag AS start_tag,
-            tl.trapline_end_tag AS end_tag,
-            tl.trapline_image_filename AS img_filename,
-            1 AS common_ct_id_1,
-            2 AS common_ct_id_2,
-            3 AS common_ct_id_3
+            tl.trapline_regionid AS region_id,
+            tl.trapline_starttag AS start_tag,
+            tl.trapline_endtag AS end_tag,
+            tl.trapline_imagefilename AS img_filename,
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 0) AS common_ct_id_1,
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 1) AS common_ct_id_2,
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3
         FROM
             logged_user lu,
             trapline tl
-            LEFT JOIN trapline_user tlu
-                ON tlu.trapline_user_trapline_id = tl.trapline_id
+            LEFT JOIN traplineuser tlu
+                ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            (lu.user_is_inactive = false) AND
-            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id)) AND
+            (lu.user_isinactive = false) AND
+            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
             ((#bigint:id# IS NULL) OR (tl.trapline_id = #bigint:id#)) AND
-            ((#bigint:region-id# IS NULL) OR (tl.trapline_region_id = #bigint:region-id#)) AND
+            ((#bigint:region-id# IS NULL) OR (tl.trapline_regionid = #bigint:region-id#)) AND
             ((#string:name# IS NULL) OR (lower(tl.trapline_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY
             tl.trapline_id

@@ -3,10 +3,10 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_is_admin,
-                user_is_inactive
+                user_isadmin,
+                user_isinactive
             FROM users u
-            JOIN session s ON u.user_id = s.session_user_id
+            JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
             LIMIT 1
         )
@@ -14,13 +14,13 @@
         SELECT 
             b.bait_id as id,
             b.bait_name as name,
-            b.bait_image_filename as img_filename,
+            b.bait_imagefilename as img_filename,
             b.bait_note as note
         FROM
             logged_user lu,
             bait b
         WHERE
-            (lu.user_is_inactive = false) AND
+            (lu.user_isinactive = false) AND
             ((#bigint:id# IS NULL) OR (b.bait_id = #bigint:id#)) AND
             ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY

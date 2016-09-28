@@ -3,30 +3,30 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_is_admin,
-                user_is_inactive
+                user_isadmin,
+                user_isinactive
             FROM users u
-            JOIN session s ON u.user_id = s.session_user_id
+            JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
             LIMIT 1
         )
 
         SELECT 
-            tt.trap_type_id as id,
-            tt.trap_type_name as name,
-            tt.trap_type_model as model,
-            tt.trap_type_note as note
+            tt.traptype_id as id,
+            tt.traptype_name as name,
+            tt.traptype_model as model,
+            tt.traptype_note as note
         FROM 
             logged_user lu,
-            trap_type tt
+            traptype tt
         WHERE
-            (lu.user_is_inactive = false) AND
-            ((#bigint:id# IS NULL) OR (tt.trap_type_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(tt.trap_type_name) LIKE lower('%' || #string:name# || '%')))
+            (lu.user_isinactive = false) AND
+            ((#bigint:id# IS NULL) OR (tt.traptype_id = #bigint:id#)) AND
+            ((#string:name# IS NULL) OR (lower(tt.traptype_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY
-            tt.trap_type_id
+            tt.traptype_id
         ORDER BY
-            tt.trap_type_id
+            tt.traptype_id
     ",
     "POST" : "",
     "PUT" : "",

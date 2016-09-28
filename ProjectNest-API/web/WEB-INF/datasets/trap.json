@@ -3,45 +3,45 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_is_admin,
-                user_is_inactive
+                user_isadmin,
+                user_isinactive
             FROM users u
-            JOIN session s ON u.user_id = s.session_user_id
+            JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
             LIMIT 1
         )
 
         SELECT 
             t.trap_id as id,
-            t.trap_trapline_id as trapline_id,
+            t.trap_traplineid as trapline_id,
             t.trap_number as number,
-            t.trap_coord_x as coord_long,
-            t.trap_coord_y as coord_lat,
-            t.trap_type_id as type_id,
+            t.trap_coordx as coord_long,
+            t.trap_coordy as coord_lat,
+            t.trap_traptypeid as traptype_id,
             t.trap_status as status,
-            t.trap_created as created,
-            t.trap_last_reset as last_reset,
-            t.trap_bait_id as bait_id
+            t.trap_createdtimestamp as created,
+            t.trap_lastresettimestamp as last_reset,
+            t.trap_baitid as bait_id
         FROM
             logged_user lu,
             trap t
             LEFT JOIN trapline tl
-                ON tl.trapline_id = t.trap_trapline_id
-            LEFT JOIN trapline_user tlu
-                ON tlu.trapline_user_trapline_id = tl.trapline_id
+                ON tl.trapline_id = t.trap_traplineid
+            LEFT JOIN traplineuser tlu
+                ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            (lu.user_is_inactive = false) AND
-            ((lu.user_is_admin = true) OR (tlu.trapline_user_user_id = lu.user_id)) AND
+            (lu.user_isinactive = false) AND
+            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
             ((#bigint:id# IS NULL) OR (t.trap_id = #bigint:id#)) AND
             ((#bigint:number# IS NULL) OR (t.trap_number = #bigint:number#)) AND
-            ((#bigint:trapline-id# IS NULL) OR (t.trap_trapline_id = #bigint:trapline-id#)) AND
-            ((#bigint:trap-type-id# IS NULL) OR (t.trap_type_id = #bigint:trap-type-id#)) AND
+            ((#bigint:trapline-id# IS NULL) OR (t.trap_traplineid = #bigint:trapline-id#)) AND
+            ((#bigint:trap-type-id# IS NULL) OR (t.trap_traptypeid = #bigint:trap-type-id#)) AND
             ((#integer:status# IS NULL) OR (t.trap_status = #integer:status#)) AND
-            ((#bigint:bait-id# IS NULL) OR (t.trap_bait_id = #bigint:bait-id#))
+            ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#))
         GROUP BY
             t.trap_id
         ORDER BY
-            t.trap_trapline_id,
+            t.trap_traplineid,
             t.trap_number
     ",
     "POST" : "",
