@@ -217,7 +217,7 @@ public class SessionServlet extends HttpServlet {
         String newSessionToken = java.util.UUID.randomUUID().toString();
 
         // Log it in the session table in the DB
-        String sql = "INSERT INTO public.session (session_user_id, session_token) VALUES (?, ?)";
+        String sql = "INSERT INTO public.session (session_userid, session_token) VALUES (?, ?)";
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
             PreparedStatement sth = conn.prepareStatement(sql);
