@@ -42,6 +42,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
+import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.ParserTrapline;
 
@@ -74,7 +75,7 @@ public class TestTrapDataService {
 	@Before
 	public void setUp() throws Exception {
 		cachePath = Files.createTempDirectory("trapDataCache");
-		dataService = new TrapDataService(cachePath.toFile());
+		dataService = new TrapDataService(cachePath.toFile(), null);
 	}
 
 	@After
@@ -118,7 +119,7 @@ public class TestTrapDataService {
 		
 		Trapline trapline = future.get(2, TimeUnit.SECONDS);//Wait 2 seconds at most
 		
-		Trapline oracle = new Trapline(20, "Test trapline", null, "Test Start");
+		Trapline oracle = new Trapline(20, "Test trapline", new Region(20, "Test Region"), "Test Start");
 				
 		//Check if the trapline itself is equal to the expected trapline
 		assertEquals(oracle, trapline);
@@ -126,7 +127,7 @@ public class TestTrapDataService {
 		//Make sure the trapline has 3 traps
 		assertEquals(3, trapline.getTraps().size());
 		
-		Trap oracleTrap = new Trap(2, -40.311086, 175.775306, null, LocalDateTime.parse("2016-04-16T10:30:07"), LocalDateTime.parse("2016-08-16T10:30:07"));
+		Trap oracleTrap = new Trap(7468, 2, -40.311086, 175.775306, TrapStatus.ACTIVE, LocalDateTime.parse("2016-04-16T10:30:07"), LocalDateTime.parse("2016-08-16T10:30:07"));
 		
 		//Check one of the traps to ensure it loaded correctly
 		assertEquals(oracleTrap, trapline.getTraps().get(1));    	
@@ -134,9 +135,9 @@ public class TestTrapDataService {
 	
 	@Test
 	public void testSaveAndLoad () throws Exception {
-		Trapline trapline = new Trapline(20, "Test trapline", null, "Test Start");
-		Trap trap1 = new Trap(1, -40.314206, 175.779946, null, LocalDateTime.parse("2016-04-16T10:26:07"), LocalDateTime.parse("2016-08-16T10:28:07"));
-		Trap trap2 = new Trap(2, 4.7238, 50.8456, null, LocalDateTime.parse("2016-08-16T10:37:07.565"), null);
+		Trapline trapline = new Trapline(20, "Test trapline", new Region(20, "Test Region"), "Test Start");
+		Trap trap1 = new Trap(49, 1, -40.314206, 175.779946, TrapStatus.ACTIVE, LocalDateTime.parse("2016-04-16T10:26:07"), LocalDateTime.parse("2016-08-16T10:28:07"));
+		Trap trap2 = new Trap(76, 2, 4.7238, 50.8456, TrapStatus.INACTIVE, LocalDateTime.parse("2016-08-16T10:37:07.565"), null);
 		trapline.getTraps().add(trap1);
 		trapline.getTraps().add(trap2);
 

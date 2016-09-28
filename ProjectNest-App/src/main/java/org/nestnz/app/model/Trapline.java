@@ -16,12 +16,9 @@
  *******************************************************************************/
 package org.nestnz.app.model;
 
-import java.util.Objects;
 import java.util.Optional;
 
-import org.nestnz.app.parser.ParserTrap;
-import org.nestnz.app.parser.ParserTrapline;
-
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -48,7 +45,10 @@ public final class Trapline {
 	/**
 	 * The traps located within the trapline
 	 */
-	private final ObservableList<Trap> traps = FXCollections.observableArrayList();
+	private final ObservableList<Trap> traps = FXCollections.observableArrayList(trap -> {
+		return new Observable[] { trap.numberProperty(), trap.latitudeProperty(), trap.longitudeProperty(),
+				trap.lastResetProperty(), trap.getCatches(), trap.statusProperty() };
+	});
 	
 	/**
 	 * The region in which this trapline is located (e.g. Auckland, Waikato, Manawatu, etc)
@@ -69,19 +69,6 @@ public final class Trapline {
 	 * Signals some of the data has changed since it was last synchronized with the server
 	 */
 	private final BooleanProperty dirtyProperty = new SimpleBooleanProperty(false);
-	
-	public Trapline (ParserTrapline pTrapline) {
-		Objects.requireNonNull(pTrapline);
-		
-		this.idProperty.set(pTrapline.getId());
-		this.nameProperty.set(pTrapline.getName());
-		//this.region = null;//TODO: Get the region data here
-		this.startProperty.set(pTrapline.getStart());
-		this.endProperty.set(pTrapline.getEnd());
-		for (ParserTrap pTrap : pTrapline.getTraps()) {
-			traps.add(new Trap(pTrap));
-		}
-	}
 	
 	public Trapline(int id) {
 		this.idProperty.set(id);
@@ -122,10 +109,23 @@ public final class Trapline {
 	public ObservableList<Trap> getTraps() {
 		return traps;
 	}
+	
+	public Trap getTrap (int id) {
+		for (Trap t : traps) {
+			if (t.getId() == id) {
+				return t;
+			}
+		}
+		return null;
+	}
 
 	public Region getRegion() {
 		return regionProperty.get();
-	}	
+	}
+	
+	public void setRegion (Region region) {
+		regionProperty.set(region);
+	}
 	
 	public ObjectProperty<Region> regionProperty () {
 		return regionProperty;
@@ -171,11 +171,11 @@ public final class Trapline {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((endProperty == null) ? 0 : endProperty.hashCode());
-		result = prime * result + ((idProperty == null) ? 0 : idProperty.hashCode());
-		result = prime * result + ((nameProperty == null) ? 0 : nameProperty.hashCode());
-		result = prime * result + ((regionProperty == null) ? 0 : regionProperty.hashCode());
-		result = prime * result + ((startProperty == null) ? 0 : startProperty.hashCode());
+		result = prime * result + ((endProperty.get() == null) ? 0 : endProperty.get().hashCode());
+		result = prime * result + idProperty.get();
+		result = prime * result + ((nameProperty.get() == null) ? 0 : nameProperty.get().hashCode());
+		result = prime * result + ((regionProperty.get() == null) ? 0 : regionProperty.get().hashCode());
+		result = prime * result + ((startProperty.get() == null) ? 0 : startProperty.get().hashCode());
 		return result;
 	}
 
@@ -188,30 +188,27 @@ public final class Trapline {
 		if (getClass() != obj.getClass())
 			return false;
 		Trapline other = (Trapline) obj;
-		if (endProperty == null) {
-			if (other.endProperty != null)
+		if (endProperty.get() == null) {
+			if (other.endProperty.get() != null)
 				return false;
-		} else if (!endProperty.equals(other.endProperty))
+		} else if (!endProperty.get().equals(other.endProperty.get()))
 			return false;
-		if (idProperty == null) {
-			if (other.idProperty != null)
-				return false;
-		} else if (!idProperty.equals(other.idProperty))
+		if (idProperty.get() != other.idProperty.get())
 			return false;
-		if (nameProperty == null) {
-			if (other.nameProperty != null)
+		if (nameProperty.get() == null) {
+			if (other.nameProperty.get() != null)
 				return false;
-		} else if (!nameProperty.equals(other.nameProperty))
+		} else if (!nameProperty.get().equals(other.nameProperty.get()))
 			return false;
-		if (regionProperty == null) {
-			if (other.regionProperty != null)
+		if (regionProperty.get() == null) {
+			if (other.regionProperty.get() != null)
 				return false;
-		} else if (!regionProperty.equals(other.regionProperty))
+		} else if (!regionProperty.get().equals(other.regionProperty.get()))
 			return false;
-		if (startProperty == null) {
-			if (other.startProperty != null)
+		if (startProperty.get() == null) {
+			if (other.startProperty.get() != null)
 				return false;
-		} else if (!startProperty.equals(other.startProperty))
+		} else if (!startProperty.get().equals(other.startProperty.get()))
 			return false;
 		return true;
 	}

@@ -17,10 +17,15 @@
 package org.nestnz.app.model;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
-import org.nestnz.app.parser.ParserTrap;
-
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -30,24 +35,28 @@ public final class Trap {
 	 * The internal server ID of the trap, if the trap has been posted to the server.
 	 * If the trap has not yet been posted to the server, this will be Optional.empty()
 	 */
-	private Optional<Integer> id;
+	private final ReadOnlyIntegerWrapper idProperty = new ReadOnlyIntegerWrapper();
 	
-	private final int number;
+	/**
+	 * The assigned number of the trap (visible on the yellow tags along the trapline).
+	 * Traps are numbered in the sequence they occur from the start of the trapline.
+	 */
+	private final IntegerProperty numberProperty = new SimpleIntegerProperty();
 	
 	/**
 	 * The longitude coordinate of the trap
 	 */
-	private final double longitude;
+	private final DoubleProperty longitudeProperty = new SimpleDoubleProperty();
 	
 	/**
 	 * The latitude coordinate of the trap
 	 */
-	private final double latitude;
+	private final DoubleProperty latitudeProperty = new SimpleDoubleProperty();
 	
 	/**
 	 * The current status of the trap (whether it's active or not)
 	 */
-	private TrapStatus status;
+	private final ObjectProperty<TrapStatus> statusProperty = new SimpleObjectProperty<>();
 	
 	/**
 	 * The date & time the trap was created
@@ -57,71 +66,87 @@ public final class Trap {
 	/**
 	 * The date & time the trap was last checked & reset
 	 */
-	private LocalDateTime lastReset;
+	private final ObjectProperty<LocalDateTime> lastResetProperty = new SimpleObjectProperty<>();
 	
 	private final ObservableList<Catch> catches = FXCollections.observableArrayList();
-	
-	public Trap(ParserTrap trap) {
-		this.id = Optional.empty();
-		this.number = trap.getNumber();
-		this.latitude = trap.getCoordLat();
-		this.longitude = trap.getCoordLong();
-		this.created = LocalDateTime.parse(trap.getCreated());
-		this.lastReset = trap.getLastReset() == null ? null : LocalDateTime.parse(trap.getLastReset());
-	}
 
 	public Trap(int number, double latitude, double longitude) {
 		this(number, latitude, longitude, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
 	}
 
 	public Trap(int number, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
-		this.id = Optional.empty();
-		this.number = number;
-		this.latitude = latitude;
-		this.longitude = longitude;
-		this.status = status;
+		this.numberProperty.set(number);
+		this.latitudeProperty.set(latitude);
+		this.longitudeProperty.set(longitude);
+		this.statusProperty.set(status);
 		this.created = created;
-		this.lastReset = lastReset;
+		this.lastResetProperty.set(lastReset);
 	}
 
 	public Trap(int id, int number, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
-		this.id = Optional.of(id);
-		this.number = number;
-		this.latitude = latitude;
-		this.longitude = longitude;
-		this.status = status;
+		this.idProperty.set(id);
+		this.numberProperty.set(number);
+		this.latitudeProperty.set(latitude);
+		this.longitudeProperty.set(longitude);
+		this.statusProperty.set(status);
 		this.created = created;
-		this.lastReset = lastReset;
+		this.lastResetProperty.set(lastReset);
 	}
 
-	/**
-	 * @see #id
-	 */
-	public Optional<Integer> getId() {
-		return id;
+	public int getId() {
+		return idProperty.get();
 	}
 	
-	public void setId(Optional<Integer> id) {
-		this.id = id;
+	public ReadOnlyIntegerProperty idProperty() {
+		return idProperty.getReadOnlyProperty();
 	}
 
 	public int getNumber() {
-		return number;
+		return numberProperty.get();
 	}
-
-	/**
-	 * @see #longitude
-	 */
-	public double getLongitude() {
-		return longitude;
+	
+	public void setNumber(int number) {
+		numberProperty.set(number);
+	}
+	
+	public IntegerProperty numberProperty () {
+		return numberProperty;
 	}
 
 	public double getLatitude() {
-		return latitude;
+		return latitudeProperty.get();
+	}
+	
+	public void setLatitude(double latitude) {
+		latitudeProperty.set(latitude);
+	}
+	
+	public DoubleProperty latitudeProperty () {
+		return latitudeProperty;
+	}
+	
+	public double getLongitude() {
+		return longitudeProperty.get();
+	}
+	
+	public void setLongitude (double longitude) {
+		longitudeProperty.set(longitude);
+	}
+	
+	public DoubleProperty longitudeProperty () {
+		return longitudeProperty;
 	}
 
 	public TrapStatus getStatus() {
-		return status;
+		return statusProperty.get();
+	}
+	
+	public void setStatus (TrapStatus status) {
+		statusProperty.set(status);
+	}
+	
+	public ObjectProperty<TrapStatus> statusProperty () {
+		return statusProperty;
 	}
 
 	public LocalDateTime getCreated() {
@@ -129,7 +154,15 @@ public final class Trap {
 	}
 
 	public LocalDateTime getLastReset() {
-		return lastReset;
+		return lastResetProperty.get();
+	}
+	
+	public void setLastReset (LocalDateTime lastReset) {
+		lastResetProperty.set(lastReset);
+	}
+	
+	public ObjectProperty<LocalDateTime> lastResetProperty () {
+		return lastResetProperty;
 	}
 
 	public ObservableList<Catch> getCatches() {
@@ -141,15 +174,15 @@ public final class Trap {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((catches == null) ? 0 : catches.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((lastReset == null) ? 0 : lastReset.hashCode());
+		result = prime * result + idProperty.get();
+		result = prime * result + ((lastResetProperty.get() == null) ? 0 : lastResetProperty.get().hashCode());
 		long temp;
-		temp = Double.doubleToLongBits(latitude);
+		temp = Double.doubleToLongBits(latitudeProperty.get());
 		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(longitude);
+		temp = Double.doubleToLongBits(longitudeProperty.get());
 		result = prime * result + (int) (temp ^ (temp >>> 32));
-		result = prime * result + number;
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result + numberProperty.get();
+		result = prime * result + ((statusProperty.get() == null) ? 0 : statusProperty.get().hashCode());
 		return result;
 	}
 
@@ -167,30 +200,27 @@ public final class Trap {
 				return false;
 		} else if (!catches.equals(other.catches))
 			return false;
-		if (id == null) {
-			if (other.id != null)
+		if (idProperty.get() != other.idProperty.get())
+			return false;
+		if (lastResetProperty.get() == null) {
+			if (other.lastResetProperty.get() != null)
 				return false;
-		} else if (!id.equals(other.id))
+		} else if (!lastResetProperty.get().equals(other.lastResetProperty.get()))
 			return false;
-		if (lastReset == null) {
-			if (other.lastReset != null)
-				return false;
-		} else if (!lastReset.equals(other.lastReset))
+		if (Double.doubleToLongBits(latitudeProperty.get()) != Double.doubleToLongBits(other.latitudeProperty.get()))
 			return false;
-		if (Double.doubleToLongBits(latitude) != Double.doubleToLongBits(other.latitude))
+		if (Double.doubleToLongBits(longitudeProperty.get()) != Double.doubleToLongBits(other.longitudeProperty.get()))
 			return false;
-		if (Double.doubleToLongBits(longitude) != Double.doubleToLongBits(other.longitude))
+		if (numberProperty.get() != other.numberProperty.get())
 			return false;
-		if (number != other.number)
-			return false;
-		if (status != other.status)
+		if (statusProperty.get() != other.statusProperty.get())
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Trap [id=" + id + ", longitude=" + longitude + ", latitude=" + latitude + ", status=" + status
-				+ ", lastReset=" + lastReset + "]";
+		return "Trap [id=" + getId() +", number=" + getNumber() + ", longitude=" + getLongitude() + ", latitude=" + getLatitude() 
+				+ ", status=" + getStatus() + ", lastReset=" + getLastReset() + "]";
 	}
 }

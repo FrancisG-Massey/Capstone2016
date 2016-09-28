@@ -26,7 +26,6 @@ import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.mvc.View;
 
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
@@ -67,18 +66,16 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 		super(NAME);
 		this.loginService = loginService;
 		
-		//checkSavedCredentials = loginService.checkSavedCredentials();
-		
 		this.setOnMousePressed(evt -> {
 			this.requestFocus();
 		});
-		
-		if (checkSavedCredentials) {
-			this.getApplication().showLayer("loading");
-		}
 				
         this.setOnShown(evt -> {
-    		loginService.loginStatusProperty().addListener(this);        	
+    		loginService.loginStatusProperty().addListener(this);
+    		checkSavedCredentials = loginService.checkSavedCredentials();
+    		if (checkSavedCredentials) {
+    			this.requestFocus();//Close the on-screen keyboard
+    		}
         });
         
         this.setOnHidden(evt -> {
@@ -143,61 +140,59 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 	 */
 	@Override
 	public void changed(ObservableValue<? extends LoginStatus> observable, LoginStatus oldValue, LoginStatus newValue) {
-		Platform.runLater(() -> {
-			if (newValue != null) {
-				LOG.log(Level.INFO, "New login status: "+newValue);
-				if (checkSavedCredentials) {
-					switch (newValue) {
-					case INVALID_CREDENTIALS:
-						checkSavedCredentials = false;
-						this.getApplication().hideLayer("loading");
-						passwordField.clear();
-						showResponse("Please enter your email address & password again to continue.");
-						break;
-					case LOGGED_IN:
-						checkSavedCredentials = false;
-						this.getApplication().hideLayer("loading");
-						getApplication().switchView(TraplineListView.NAME);
-						break;
-					case PENDING_LOGIN:
-						this.getApplication().showLayer("loading");
-						break;
-					case SERVER_UNAVAILABLE:
-						checkSavedCredentials = false;
-						this.getApplication().hideLayer("loading");
-						getApplication().switchView(TraplineListView.NAME);
-						showResponse("The server is currently unavailable, so the traplines listed may be out of date.\n"
-								+ "To update the traplines listed, please turn on your internet and refresh this page using the buttom above.");
-						break;
-					default:
-						break;
-					}
-				} else {
-					switch (newValue) {
-					case INVALID_CREDENTIALS:
-						this.getApplication().hideLayer("loading");
-						passwordField.clear();
-						showResponse("The email address and password you entered is incorrect.");
-						break;
-					case LOGGED_IN:
-						this.getApplication().hideLayer("loading");
-						getApplication().switchView(TraplineListView.NAME);
-						break;
-					case PENDING_LOGIN:
-						this.getApplication().showLayer("loading");
-						break;
-					case SERVER_UNAVAILABLE:
-						this.getApplication().hideLayer("loading");
-						passwordField.clear();
-						showResponse("We can't reach the Nest NZ server at the moment. \n"
-								+ "Make sure your internet connection is available and try again later.");				
-						break;
-					default:
-						break;
-					}
+		if (newValue != null) {
+			LOG.log(Level.INFO, "New login status: "+newValue);
+			if (checkSavedCredentials) {
+				switch (newValue) {
+				case INVALID_CREDENTIALS:
+					checkSavedCredentials = false;
+					this.getApplication().hideLayer("loading");
+					passwordField.clear();
+					showResponse("Please enter your email address & password again to continue.");
+					break;
+				case LOGGED_IN:
+					checkSavedCredentials = false;
+					this.getApplication().hideLayer("loading");
+					getApplication().switchView(TraplineListView.NAME);
+					break;
+				case PENDING_LOGIN:
+					this.getApplication().showLayer("loading");
+					break;
+				case SERVER_UNAVAILABLE:
+					checkSavedCredentials = false;
+					this.getApplication().hideLayer("loading");
+					getApplication().switchView(TraplineListView.NAME);
+					showResponse("The server is currently unavailable, so the traplines listed may be out of date.\n"
+							+ "To update the traplines listed, please turn on your internet and refresh this page using the buttom above.");
+					break;
+				default:
+					break;
+				}
+			} else {
+				switch (newValue) {
+				case INVALID_CREDENTIALS:
+					this.getApplication().hideLayer("loading");
+					passwordField.clear();
+					showResponse("The email address and password you entered is incorrect.");
+					break;
+				case LOGGED_IN:
+					this.getApplication().hideLayer("loading");
+					getApplication().switchView(TraplineListView.NAME);
+					break;
+				case PENDING_LOGIN:
+					this.getApplication().showLayer("loading");
+					break;
+				case SERVER_UNAVAILABLE:
+					this.getApplication().hideLayer("loading");
+					passwordField.clear();
+					showResponse("We can't reach the Nest NZ server at the moment. \n"
+							+ "Make sure your internet connection is available and try again later.");				
+					break;
+				default:
+					break;
 				}
 			}
-		});
+		}
 	}
 	
 	/**

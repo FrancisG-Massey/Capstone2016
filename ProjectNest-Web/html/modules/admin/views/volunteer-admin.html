@@ -1,10 +1,9 @@
-
 <div class="page-header">
 <h1 class="text-center" style="margin-top: -50px; ">Volunteer Admin</h1>
 </div>
-<a ng-click="addNew()" id="addButton" ><span class="glyphicon glyphicon-plus"></span> Add Volunteer</a>  
  <div class="row"> 
     <div class="col-sm-7">  
+      <a ng-click="addNew()" id="addButton" ><span class="glyphicon glyphicon-plus"></span> Add Volunteer</a>  
       <table class="table table-condensed table-hover admin">
         <thead>
           <tr>
@@ -12,6 +11,7 @@
             <th>Full Name</th>
             <th>Email</th>
             <th>Start Date</th>
+            <th>Permission</th>
           </tr>
         </thead>
         <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
@@ -20,6 +20,7 @@
             <td>{{volunteer.firstNames + ' ' + volunteer.lastName}}</td>
             <td>{{volunteer.email}}</td>
             <td>{{volunteer.startDate |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
+            <td>{{volunteer.permission}}</td>
           </tr>    
         </tbody>
       </table>
@@ -41,22 +42,25 @@
 	          </li>
 		  </ul>
 		</nav>
+		<!--  <button ng-click="goBack()" type="button" class="btn btn-default">
+			<span class="glyphicon glyphicon-arrow-left"></span> Back
+		</button> -->
     </div>
 
     <div class="col-sm-5"> 
       <div class="well">
-        <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'New Volunteer'}}</h3>
-        <p>First Volunteered: <strong>{{selected.startDate  |  date:"dd/MM/yyyy"}}</strong></p>
+        <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'Add New Volunteer'}}</h3>
+        <p>{{selected.id ? 'First Volunteered:' + (selected.startDate  |  date:"dd MMMM yyyy") : " "}}</p>
         <div class="row">
           <div class="col-md-6 form-group">
             <label>First Name</label>
-            <div class="input-group">
+            <div>
               <input type="text" class="form-control" value ="{{selected.firstNames}}">
             </div>
           </div>
           <div class="col-md-6 form-group">  
             <label>Last Name</label>
-            <div class="input-group">
+            <div>
               <input type="text" class="form-control" value ="{{selected.lastName}}">
             </div>
           </div>
@@ -64,23 +68,26 @@
         <div class="row">
           <div class="col-md-6 form-group">
             <label>Phone</label>
-            <div class="input-group">
+            <div>
               <input type="text" class="form-control" value ="{{selected.phone}}">
             </div>
           </div>
           <div class="col-md-6 form-group">  
             <label>Email</label>
-            <div class="input-group">
+            <div>
               <input type="text" class="form-control" value ="{{selected.email}}">
             </div>
           </div>
         </div>
         
-    
-		<div style="margin-top: 10px;">
-        <button class="btn btn-success" type="button">Save</button>
+    	<div class="clearfix">
+		<div class="pull-right" style="margin-top: 10px;">
+        <button class="btn btn-success" type="button" ng-if="!selected">Save</button>
+        <div ng-if="selected">
+        <button class="btn btn-success" type="button">Edit</button>
         <button class="btn btn-danger" type="button">Delete</button>
-        
+        </div>
+      </div>
       </div>
 	</div>
 </div>

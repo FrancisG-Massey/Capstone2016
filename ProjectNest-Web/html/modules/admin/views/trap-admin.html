@@ -46,9 +46,17 @@
 	</div>
 
 	<div class="col-sm-5">
+	<!--  <div class="clearfix" style="margin-bottom: 40px;">
+	 	<div class="pull-right">
+			<button  ng-click="goBack()" type="button" class="btn btn-default">
+				<span class="glyphicon glyphicon-arrow-left"></span> Back
+		</button>
+		</div>
+		</div>
+		-->
 		<div class="well clearfix">
 			<h3 style="margin-top: 0; margin-bottom: 25px">
-				{{selected.id ? 'Trap ID: ' + selected.id : 'New Trap'}}
+				{{selected.id ? 'Trap ID: ' + selected.id : 'Add New Trap'}}
 				<div class="btn-group pull-right" data-toggle="buttons">
 					<label
 						ng-class="{ 'btn btn-default': true, 'active': selected.status == 'active' }">
@@ -99,10 +107,10 @@
 				</div>
 			</div>
 			
-	<div style="margin-top:8px; margin-bottom: 10px">
+	<div class="clearfix" style="margin-top:8px; margin-bottom: 30px">
 	  <div>
-	  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#damage-history" >View History Of Damage</button>
-	  <button type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#catch-history" >View History Of Catch</button>
+	  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#damage-history" >View Damage History </button>
+	  <button type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#catch-history" >View Catch History</button>
 	  <div class="modal fade" id="damage-history" tabindex="-1" role="dialog">
 	    <div class="modal-dialog" role="document">
 	      <div class="modal-content">
@@ -110,7 +118,7 @@
 	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 	            <span aria-hidden="true">&times;</span>
 	          </button>
-	          <h4 class="modal-title">Histroy Of Damage</h4>
+	          <h4 class="modal-title">View Damage History</h4>
 	        </div>
 	        <div class="modal-body">
 	        </div>
@@ -129,13 +137,13 @@
 	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 	            <span aria-hidden="true">&times;</span>
 	          </button>
-	          <h4 class="modal-title">Histroy Of Catch Type</h4>
+	          <h4 class="modal-title">View Catch History</h4>
 	        </div>
 	        <div class="modal-body">
 	        </div>
 	        <div class="modal-footer">
 	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-	          <button type="button" class="btn btn-primary">Save</button>
+	          <button type="button" class="btn btn-primary">Export</button>
 	        </div>
 	      </div>
 	    </div>
@@ -144,9 +152,14 @@
 
 	<div id="mapid"></div>
 
+	<div class="clearfix">
 	<div class = "pull-right" style="margin-top: 10px;">
-		<button class="btn btn-success" type="button">Save</button>
+		<button class="btn btn-success" type="button"  ng-if="!selected" >Save</button>
+		<div ng-if="selected">
+		<button class="btn btn-success" type="button" >Edit</button>
 		<button class="btn btn-danger" type="button">Delete</button>
+		</div>
+		</div>
 	</div>
 	</div>
 	</div>
