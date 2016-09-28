@@ -17,3 +17,8 @@
 	-fx-font-size: 1.3em;
 	-fx-alignment: center;
 }
+
+.text-field:error {
+  -fx-text-box-border: red;
+  -fx-focus-color: red;
+}
