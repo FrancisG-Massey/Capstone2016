@@ -239,6 +239,15 @@ CREATE INDEX s_suid_idx
   (session_userid);
 
 
+-- Index: public.s_suid_idx
+-- DROP INDEX public.s_suid_idx;
+
+CREATE INDEX s_sst_idx
+  ON public.session
+  USING btree
+  (session_token);
+
+
 -- Table: public.bait
 -- DROP TABLE public.bait;
 
