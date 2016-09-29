@@ -190,9 +190,10 @@ angular.module('Admin')
     	
     }])
 
-.controller('AdminVolunteerController', ['$scope','$rootScope','trapline_users','users',function ($scope, $rootScope,trapline_users,users) {
+.controller('AdminVolunteerController', ['$scope','$rootScope','trapline_users','users','$route',function ($scope, $rootScope,trapline_users,users,$route) {
 	//var traplineId = $routeParams.traplineId;
 	$rootScope.wrapClass = undefined;
+	$scope.trapline_id = $route.current.params.traplineId;
     $scope.trapline_users = trapline_users;
     console.log($scope.trapline_users);
     $scope.users = users.data;
