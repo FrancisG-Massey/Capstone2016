@@ -3,7 +3,6 @@
 angular.module('Admin')
 .controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline',function ($scope,$rootScope,$http,region,trapline) {
 	$rootScope.wrapClass = undefined;
-	
     $scope.regions = region.data;
     console.log($scope.region);
     $scope.traplines = trapline.data;
@@ -55,17 +54,20 @@ angular.module('Admin')
 	
     $scope.setSelected = function(item){
     	$scope.selected = this.trapline;
+    	$rootScope.region_selected = $scope.selected;
     };
 
     $scope.addNew = function() {  	
     	$scope.selected = false;
+    	$rootScope.region_selected = undefined;
     };
     
 			
 }])
-.controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type',function ($scope, $rootScope,traps,baits,trap_type) {
+.controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route',function ($scope, $rootScope,traps,baits,trap_type,$route) {
 		//var traplineId = $routeParams.traplineId;
 		$rootScope.wrapClass = undefined;
+		$scope.trapline_id = $route.current.params.traplineId;
 		$scope.traps = traps;
 		console.log(traps)
 		$scope.baits = baits;
@@ -182,6 +184,9 @@ angular.module('Admin')
         $scope.currentPage = this.n;
     };
     
+    $scope.$back = function() { 
+        window.history.back();
+      };
     	
     }])
 
@@ -438,5 +443,8 @@ angular.module('Admin')
     	console.log(this.n);
         $scope.currentPage = this.n;
     };
+    $scope.$back = function() { 
+        window.history.back();
+      };
 
 }]);
