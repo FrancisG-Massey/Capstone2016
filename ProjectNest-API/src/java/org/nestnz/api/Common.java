@@ -187,7 +187,7 @@ public class Common {
                             st.setNull(i, java.sql.Types.DOUBLE);
                             continue;
                         }
-                        st.setDouble(1, Double.parseDouble(nextParamValue));
+                        st.setDouble(i, Double.parseDouble(nextParamValue));
                         break;
                     case "float":
                         if (nextParamValue == null) {
