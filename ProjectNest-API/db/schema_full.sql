@@ -19,9 +19,9 @@
 
 */
 
---DROP SCHEMA IF EXISTS public CASCADE;
---CREATE SCHEMA public;
---ALTER SCHEMA public OWNER TO nestnz;
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+ALTER SCHEMA public OWNER TO nestnz;
 
 
 -- First create the sequences for the auto-incrememting primary keys
