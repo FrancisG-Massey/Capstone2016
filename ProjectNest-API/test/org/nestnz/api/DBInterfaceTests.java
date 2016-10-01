@@ -418,6 +418,106 @@ public class DBInterfaceTests {
 
     /**
      * Test of bindDynamicParameters method, of class Common.
+     * Ensure that the nvarchar datatype is supported by dataset syntax
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test
+    public void BindDynamicParametersSupportsNVarChar() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ?, ?, ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("some-nvarchar", "Well hi there");
+            datasetParams.put("some-empty", "");
+            datasetParams.put("some-null", null);
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#nvarchar:some-nvarchar#");
+            datasetParamOrder.add("#nvarchar:some-empty#");
+            datasetParamOrder.add("#nvarchar:some-null#");
+
+            // Test the method
+            // This fails in postgres with SQLFeatureNotSupportedException.
+            // This is because postgres implicitely treats normal text columns like nvarchars
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            String expResult = "SELECT 'Well hi there', '', NULL AS test";
+            String result = st.toString();
+
+            assertEquals(expResult, result);
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that the nvarchar datatype is supported by dataset syntax
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test
+    public void BindDynamicParametersSupportsTimestamp() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ?, ?, ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("some-timestamp-withT", "2016-09-28T03:46:14.123");
+            datasetParams.put("some-timestamp-withoutT", "2016-09-28 03:46:14.123");
+            datasetParams.put("some-null", null);
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#timestamp:some-timestamp-withT#");
+            datasetParamOrder.add("#timestamp:some-timestamp-withoutT#");
+            datasetParamOrder.add("#timestamp:some-null#");
+
+            // Test the method
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            // JDBC adds timezone to timestamps. DB should handle this fine though.
+            String expResult = "SELECT '2016-09-28 03:46:14.123000+13', '2016-09-28 03:46:14.123000+13', NULL AS test";
+            String result = st.toString();
+
+            assertEquals(expResult, result);
+        }
+    }
+
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that types unsupported by dataset syntax throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=TypeNotPresentException.class)
+    public void BindDynamicParametersUnknownTypesThrowEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("some-fruit", "banana");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#banana:some-fruit#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("TypeNotPresentException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
      * @throws java.sql.SQLException
      * @throws java.text.ParseException
      * @throws java.lang.NumberFormatException
@@ -430,8 +530,8 @@ public class DBInterfaceTests {
         try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
             // Prepare the parameter map
             Map<String, String> datasetParams = new HashMap<>();
-            datasetParams.put("fruit", "apple");
             datasetParams.put("quantity", "42");
+            datasetParams.put("fruit", "apple");
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
