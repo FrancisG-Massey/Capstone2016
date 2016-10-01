@@ -7,10 +7,16 @@
  **********************************************************/
 package org.nestnz.api;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.MalformedJsonException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.junit.After;
@@ -119,5 +125,32 @@ public class ConfigFileTests {
             File f = new File((AllTests.getServletContextPath() + "/web" + e.getValue().toString().replace("/", File.separator)));
             assertTrue(f.exists());
         }
+    }
+
+    @Test
+    /**
+     * Test that any mapped dataset files are parsable JSON strings.
+     * @throws IOException if the dataset mappings, or any datasets are unaccessible
+     * @throws MalformedJsonException if a dataset cannot be parsed into JSON
+     */
+    public void MappedDatasetTargetsAreJSON() throws IOException, MalformedJsonException {
+        Properties prop = new Properties();
+        try (InputStream input = new FileInputStream(datasetsPath)) {
+            prop.load(input);
+        }
+        for(Entry<Object, Object> e : prop.entrySet()) {
+            File f = new File((AllTests.getServletContextPath() + "/web" + e.getValue().toString().replace("/", File.separator)));
+            assertTrue(f.exists());
+
+            // Get the dataset json string from file
+            final String datasetPath = f.toString();
+            byte[] encoded = Files.readAllBytes(Paths.get(datasetPath));
+            final String datasetJSON = new String(encoded, StandardCharsets.UTF_8);
+
+            // An exception will be thrown here if the dataset cannot be parsed as JSON.
+            JsonObject jObject = new JsonParser().parse(datasetJSON).getAsJsonObject();
+        }
+        // All mapped datasets have been resolved by the JSON parser.
+        assertTrue(true);
     }
 }
