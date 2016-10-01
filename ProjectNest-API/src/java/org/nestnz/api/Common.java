@@ -137,7 +137,9 @@ public class Common {
                 final String paramType = nextParam.substring(1, nextParam.indexOf(":"));
                 final String paramName = nextParam.substring(nextParam.indexOf(":") + 1, nextParam.length()-1);
                 nextParamValue = datasetParams.get(paramName);
-                nextParamValue = ((nextParamValue==null) || (nextParamValue.length()==0)) ? null : nextParamValue;
+                // Check for null (with special handling for null-length but valid strings)
+                nextParamValue = ((nextParamValue==null) || ((nextParamValue.length()==0)) && !paramType.equals("string")) 
+                        ? null : nextParamValue;
 
                 // Use this to test that parameters are parsed correctly
                 //response.setHeader("Param-" + i, nextParam + ", " + nextParamValue + ", " + paramType + ", " + paramName);
