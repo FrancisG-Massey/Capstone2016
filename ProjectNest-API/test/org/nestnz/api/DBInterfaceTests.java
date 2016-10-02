@@ -487,6 +487,38 @@ public class DBInterfaceTests {
         }
     }
 
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that the date datatype is supported by dataset syntax
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test
+    public void BindDynamicParametersSupportsDate() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ?, ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("some-date", "28-09-2016");
+            datasetParams.put("some-null", null);
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#date:some-date#");
+            datasetParamOrder.add("#date:some-null#");
+
+            // Test the method
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            // JDBC adds timezone to dates and changes date-part order to ISO. DB should handle this fine though.
+            String expResult = "SELECT '2016-09-28 +13', NULL AS test";
+            String result = st.toString();
+
+            assertEquals(expResult, result);
+        }
+    }
 
     /**
      * Test of bindDynamicParameters method, of class Common.

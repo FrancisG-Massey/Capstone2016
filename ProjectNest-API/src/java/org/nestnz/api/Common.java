@@ -130,6 +130,7 @@ public class Common {
         String nextParamValue = null;
 
         SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+        SimpleDateFormat NZSIMPLEDATEFORMAT = new SimpleDateFormat("dd-MM-yyyy");
 
         try {
             for (int i=1; i<=datasetParamOrder.size(); i++) {
@@ -220,7 +221,7 @@ public class Common {
                                 st.setNull(i, java.sql.Types.DATE);
                                 continue;
                             }
-                            java.util.Date dt1 = ISO8601DATEFORMAT.parse(nextParamValue.trim().replaceAll(" ", "T"));
+                            java.util.Date dt1 = NZSIMPLEDATEFORMAT.parse(nextParamValue.trim());
                             st.setDate(i, new java.sql.Date(dt1.getTime()));
                             break;
                         case "timestamp":
