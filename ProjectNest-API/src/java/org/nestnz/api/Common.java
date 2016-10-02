@@ -102,9 +102,6 @@ public class Common {
                     case java.sql.Types.DOUBLE:
                         jsonObj.addProperty(column_name, rsh.getDouble(i));
                         break;
-                    case java.sql.Types.FLOAT:
-                        jsonObj.addProperty(column_name, rsh.getFloat(i));
-                        break;
                     case java.sql.Types.INTEGER:
                         jsonObj.addProperty(column_name, rsh.getInt(i));
                         break;
@@ -194,13 +191,6 @@ public class Common {
                             }
                             st.setDouble(i, Double.parseDouble(nextParamValue));
                             break;
-                        case "float":
-                            if (nextParamValue == null) {
-                                st.setNull(i, java.sql.Types.FLOAT);
-                                continue;
-                            }
-                            st.setFloat(i, Float.parseFloat(nextParamValue));
-                            break;
                         case "integer":
                             if (nextParamValue == null) {
                                 st.setNull(i, java.sql.Types.INTEGER);
@@ -265,7 +255,7 @@ public class Common {
     }
 
     public static String BufferedReaderToString(BufferedReader in) throws IOException {
-        String line = null;
+        String line;
         StringBuilder rslt = new StringBuilder();
         while ((line = in.readLine()) != null) {
             rslt.append(line);

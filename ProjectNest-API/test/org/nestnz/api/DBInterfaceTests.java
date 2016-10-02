@@ -7,6 +7,9 @@
  **********************************************************/
 package org.nestnz.api;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -92,18 +95,51 @@ public class DBInterfaceTests {
      * @throws java.sql.SQLException
      */
     @Test
-    public void ResultSetAsJSONWorks() throws SQLException {
+    public void ResultSetAsJsonReturnsJsonArray() throws SQLException {
         
-        try {
-            Statement st = conn.createStatement();
-            ResultSet rsh = st.executeQuery("SELECT 1 AS test");
-            String expResult = "[{\"test\":1}]";
-            String result = Common.resultSetAsJSON(rsh);
-            assertEquals(expResult, result);
-        } catch (Exception ex) {
-            System.out.println(ex.toString());
-            fail();
-        }
+        Statement st = conn.createStatement();
+        ResultSet rsh = st.executeQuery("SELECT 1 AS test");
+        
+        // Call the method
+        String result = Common.resultSetAsJSON(rsh);
+
+        // An exception will be thrown here if the dataset cannot be parsed as JSON.
+        JsonArray jArray = new JsonParser().parse(result).getAsJsonArray();
+        
+        assertTrue(true);
+    }
+
+    /**
+     * Test of resultSetAsJSON method, of class Common.
+     * @throws java.sql.SQLException
+     */
+    @Test
+    public void ResultSetAsJsonReturnsNumbers() throws SQLException {
+
+        Statement st = conn.createStatement();
+        String testQuery = ""
+                + "SELECT "
+                + "     cast(1 AS integer)              AS some_int,"
+                + "     cast(-2 AS bigint)              AS some_bigint,"
+                + "     cast(3.0 AS numeric)            AS some_numeric,"
+                + "     cast(-4.0 AS decimal)           AS some_decimal,"
+                + "     cast(5.0 AS double precision)   AS some_double,"
+                + "     NULL                            AS some_null"
+                + ";";
+        // Get the result set from the db
+        ResultSet rsh = st.executeQuery(testQuery);
+
+        // Call the method
+        String result = Common.resultSetAsJSON(rsh);
+
+        // Check the result
+        JsonObject values = new JsonParser().parse(result).getAsJsonArray().get(0).getAsJsonObject();
+        assertTrue(values.get("some_int").toString().equals("1"));
+        assertTrue(values.get("some_bigint").toString().equals("-2"));
+        assertTrue(values.get("some_numeric").toString().equals("3.0"));
+        assertTrue(values.get("some_decimal").toString().equals("-4.0"));
+        assertTrue(values.get("some_double").toString().equals("5.0"));
+        assertTrue(values.get("some_null").toString().equals("null"));
     }
 
     /**
@@ -304,40 +340,6 @@ public class DBInterfaceTests {
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
 
             String expResult = "SELECT '-3.1415654', '3.1415654', NULL AS test";
-            String result = st.toString();
-
-            assertEquals(expResult, result);
-        }
-    }
-
-    /**
-     * Test of bindDynamicParameters method, of class Common.
-     * Ensure that the float datatype is supported by dataset syntax
-     * @throws SQLException 
-     * @throws java.text.ParseException 
-     * @throws java.lang.NumberFormatException
-     */
-    @Test
-    public void BindDynamicParametersSupportsFloat() throws SQLException, NumberFormatException, ParseException {
-        String sqlQuery = "SELECT ?, ?, ? AS test";
-        // Prepare the parameter map
-        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
-            // Prepare the parameter map
-            Map<String, String> datasetParams = new HashMap<>();
-            datasetParams.put("some-negative", "-3.1416");
-            datasetParams.put("some-float", "3.1416");
-            datasetParams.put("some-null", null);
-
-            // Prepare the parameter order store
-            List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#float:some-negative#");
-            datasetParamOrder.add("#float:some-float#");
-            datasetParamOrder.add("#float:some-null#");
-
-            // Test the method
-            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
-
-            String expResult = "SELECT -3.1416, 3.1416, NULL AS test";
             String result = st.toString();
 
             assertEquals(expResult, result);
