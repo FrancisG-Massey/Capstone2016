@@ -149,27 +149,25 @@ public class DBInterfaceTests {
     */
     @Test
     public void BindDynamicParametersSupportsBit() throws SQLException, NumberFormatException, ParseException {
-        String sqlQuery = "SELECT ?, ?, ?, ? AS test";
+        String sqlQuery = "SELECT ?, ?, ? AS test";
         // Prepare the parameter map
         try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
             // Prepare the parameter map
             Map<String, String> datasetParams = new HashMap<>();
             datasetParams.put("hungry", "1");
             datasetParams.put("thirsty", "0");
-            datasetParams.put("tired", "banana");
             datasetParams.put("happy", null);
             
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
             datasetParamOrder.add("#bit:hungry#");
             datasetParamOrder.add("#bit:thirsty#");
-            datasetParamOrder.add("#bit:tired#");
             datasetParamOrder.add("#bit:happy#");
             
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
             
-            String expResult = "SELECT '1', '0', NULL, NULL AS test";
+            String expResult = "SELECT '1', '0', NULL AS test";
             String result = st.toString();
             
             assertEquals(expResult, result);
@@ -185,27 +183,25 @@ public class DBInterfaceTests {
     */
     @Test
     public void BindDynamicParametersSupportsBoolean() throws SQLException, NumberFormatException, ParseException {
-        String sqlQuery = "SELECT ?, ?, ?, ? AS test";
+        String sqlQuery = "SELECT ?, ?, ? AS test";
         // Prepare the parameter map
         try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
             // Prepare the parameter map
             Map<String, String> datasetParams = new HashMap<>();
             datasetParams.put("hungry", "TrUe");
             datasetParams.put("thirsty", "0");
-            datasetParams.put("tired", "banana");
             datasetParams.put("happy", null);
             
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
             datasetParamOrder.add("#boolean:hungry#");
             datasetParamOrder.add("#boolean:thirsty#");
-            datasetParamOrder.add("#boolean:tired#");
             datasetParamOrder.add("#boolean:happy#");
             
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
             
-            String expResult = "SELECT '1', '0', NULL, NULL AS test";
+            String expResult = "SELECT '1', '0', NULL AS test";
             String result = st.toString();
             
             assertEquals(expResult, result);
@@ -545,6 +541,230 @@ public class DBInterfaceTests {
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
 
             fail("TypeNotPresentException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that non-bits in bit fields throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=ParseException.class)
+    public void BindDynamicParametersBadBitsThrowEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("not-a-bit", "yep, not a bit");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#bit:not-a-bit#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("ParseException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that non-booleans in boolean fields throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=ParseException.class)
+    public void BindDynamicParametersBadBoolsThrowEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("not-a-boolean", "yep, not a boolean");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#boolean:not-a-boolean#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("ParseException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that non-integers in integer fields throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=NumberFormatException.class)
+    public void BindDynamicParametersBadIntsThrowEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("not-an-integer", "yep, not a integer");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#integer:not-an-integer#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("NumberFormatException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that non-numerics in numeric fields throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=NumberFormatException.class)
+    public void BindDynamicParametersBadNumericsThrowEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("not-a-numeric", "yep, not a numeric");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#numeric:not-a-numeric#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("NumberFormatException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that non-decimals in decimal fields throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=NumberFormatException.class)
+    public void BindDynamicParametersBadDecimalsThrowEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("not-a-decimal", "yep, not a decimal");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#decimal:not-a-decimal#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("NumberFormatException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that non-bigints in bigint fields throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=NumberFormatException.class)
+    public void BindDynamicParametersBadBigintsThrowEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("not-a-bigint", "yep, not a bigint");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#bigint:not-a-bigint#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("NumberFormatException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that non-timestamps in timestamp fields throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=ParseException.class)
+    public void BindDynamicParametersBadTimestampsThrowsParseEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("not-a-timestamp", "yep, not a timestamp");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#timestamp:not-a-timestamp#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("TypeNotPresentException not thrown!");
+        }
+    }
+
+    /**
+     * Test of bindDynamicParameters method, of class Common.
+     * Ensure that non-dates in date fields throw an exception.
+     * @throws SQLException
+     * @throws java.text.ParseException
+     * @throws java.lang.NumberFormatException
+     */
+    @Test(expected=ParseException.class)
+    public void BindDynamicParametersBadDatesThrowsParseEx() throws SQLException, NumberFormatException, ParseException {
+        String sqlQuery = "SELECT ? AS test";
+        // Prepare the parameter map
+        try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
+            // Prepare the parameter map
+            Map<String, String> datasetParams = new HashMap<>();
+            datasetParams.put("not-a-date", "yep, not a date");
+
+            // Prepare the parameter order store
+            List<String> datasetParamOrder = new ArrayList<>();
+            datasetParamOrder.add("#date:not-a-date#");
+
+            // Test the method
+            // This should throw an exception
+            Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+
+            fail("ParseException not thrown!");
         }
     }
 
