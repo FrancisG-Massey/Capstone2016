@@ -61,25 +61,15 @@ public class DBConnectTests {
     public void tearDown() {
     }
 
-    private DataSource getDS(String dbConfigPath) throws IOException {
-        Properties prop = new Properties();
-        try (InputStream input = new FileInputStream(dbConfigPath)) {
-            prop.load(input);
-        }
-        PoolProperties p = new PoolProperties();
-
-        p.setDriverClassName(  prop.getProperty("driver")  );
-        p.setUsername(         prop.getProperty("user")    );
-        p.setPassword(         prop.getProperty("password"));
-        p.setUrl(              prop.getProperty("url")     );
-
-        return new DataSource(p);
-    }
-
+    /**
+     * Test that the handler can connect to the test db server using the Common method
+     * @throws IOException
+     * @throws SQLException 
+     */
     @Test
     public void TestDatabaseConnects() throws IOException, SQLException {
         // Load the db config properties
-        DataSource dsProd = getDS(dbConfigPathTest);
+        DataSource dsProd = Common.getNestDS(dbConfigPathTest);
         Connection conn = dsProd.getConnection();
         Statement st = conn.createStatement();
         ResultSet rsh = st.executeQuery("SELECT 1;");
@@ -91,10 +81,15 @@ public class DBConnectTests {
         dsProd.close();
     }
 
+    /**
+     * Test that the handler can connect to the prod db server using the Common method
+     * @throws IOException
+     * @throws SQLException 
+     */
     @Test
     public void ProdDatabaseConnects() throws IOException, SQLException {
         // Load the db config properties
-        DataSource dsProd = getDS(dbConfigPathProd);
+        DataSource dsProd = Common.getNestDS(dbConfigPathProd);
         Connection conn = dsProd.getConnection();
         Statement st = conn.createStatement();
         ResultSet rsh = st.executeQuery("SELECT 1;");
