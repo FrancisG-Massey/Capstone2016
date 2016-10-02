@@ -133,8 +133,8 @@ public class Common {
             for (int i=1; i<=datasetParamOrder.size(); i++) {
                 // Depending on the specified type, cast and bind
                 nextParam = datasetParamOrder.get(i-1);
-                final String paramType = nextParam.substring(1, nextParam.indexOf(":"));
-                final String paramName = nextParam.substring(nextParam.indexOf(":") + 1, nextParam.length()-1);
+                final String paramType = nextParam.substring(0, nextParam.indexOf(":"));
+                final String paramName = nextParam.substring(nextParam.indexOf(":") + 1);
                 nextParamValue = datasetParams.get(paramName);
                 // Check for null (with special handling for null-length but valid strings)
                 nextParamValue = ((nextParamValue==null) || ((nextParamValue.length()==0)) &&

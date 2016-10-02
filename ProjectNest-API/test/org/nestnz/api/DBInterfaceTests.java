@@ -171,9 +171,9 @@ public class DBInterfaceTests {
             
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#bigint:some-value#");
-            datasetParamOrder.add("#bigint:some-negative#");
-            datasetParamOrder.add("#bigint:some-null#");
+            datasetParamOrder.add("bigint:some-value");
+            datasetParamOrder.add("bigint:some-negative");
+            datasetParamOrder.add("bigint:some-null");
             
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -205,9 +205,9 @@ public class DBInterfaceTests {
             
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#bit:hungry#");
-            datasetParamOrder.add("#bit:thirsty#");
-            datasetParamOrder.add("#bit:happy#");
+            datasetParamOrder.add("bit:hungry");
+            datasetParamOrder.add("bit:thirsty");
+            datasetParamOrder.add("bit:happy");
             
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -239,9 +239,9 @@ public class DBInterfaceTests {
             
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#boolean:hungry#");
-            datasetParamOrder.add("#boolean:thirsty#");
-            datasetParamOrder.add("#boolean:happy#");
+            datasetParamOrder.add("boolean:hungry");
+            datasetParamOrder.add("boolean:thirsty");
+            datasetParamOrder.add("boolean:happy");
             
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -273,9 +273,9 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#string:some-string#");
-            datasetParamOrder.add("#string:some-empty#");
-            datasetParamOrder.add("#string:some-null#");
+            datasetParamOrder.add("string:some-string");
+            datasetParamOrder.add("string:some-empty");
+            datasetParamOrder.add("string:some-null");
 
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -307,9 +307,9 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#numeric:some-numeric#");
-            datasetParamOrder.add("#numeric:some-negative#");
-            datasetParamOrder.add("#numeric:some-null#");
+            datasetParamOrder.add("numeric:some-numeric");
+            datasetParamOrder.add("numeric:some-negative");
+            datasetParamOrder.add("numeric:some-null");
 
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -341,9 +341,9 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#decimal:some-decimal#");
-            datasetParamOrder.add("#decimal:some-negative#");
-            datasetParamOrder.add("#decimal:some-null#");
+            datasetParamOrder.add("decimal:some-decimal");
+            datasetParamOrder.add("decimal:some-negative");
+            datasetParamOrder.add("decimal:some-null");
 
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -375,9 +375,9 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#double:some-negative#");
-            datasetParamOrder.add("#double:some-double#");
-            datasetParamOrder.add("#double:some-null#");
+            datasetParamOrder.add("double:some-negative");
+            datasetParamOrder.add("double:some-double");
+            datasetParamOrder.add("double:some-null");
 
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -409,9 +409,9 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#integer:some-value#");
-            datasetParamOrder.add("#integer:some-negative#");
-            datasetParamOrder.add("#integer:some-null#");
+            datasetParamOrder.add("integer:some-value");
+            datasetParamOrder.add("integer:some-negative");
+            datasetParamOrder.add("integer:some-null");
 
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -443,9 +443,9 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#nvarchar:some-nvarchar#");
-            datasetParamOrder.add("#nvarchar:some-empty#");
-            datasetParamOrder.add("#nvarchar:some-null#");
+            datasetParamOrder.add("nvarchar:some-nvarchar");
+            datasetParamOrder.add("nvarchar:some-empty");
+            datasetParamOrder.add("nvarchar:some-null");
 
             // Test the method
             // This fails in postgres with SQLFeatureNotSupportedException.
@@ -479,9 +479,9 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#timestamp:some-timestamp-withT#");
-            datasetParamOrder.add("#timestamp:some-timestamp-withoutT#");
-            datasetParamOrder.add("#timestamp:some-null#");
+            datasetParamOrder.add("timestamp:some-timestamp-withT");
+            datasetParamOrder.add("timestamp:some-timestamp-withoutT");
+            datasetParamOrder.add("timestamp:some-null");
 
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -513,8 +513,8 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#date:some-date#");
-            datasetParamOrder.add("#date:some-null#");
+            datasetParamOrder.add("date:some-date");
+            datasetParamOrder.add("date:some-null");
 
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
@@ -545,7 +545,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#banana:some-fruit#");
+            datasetParamOrder.add("banana:some-fruit");
 
             // Test the method
             // This should throw an exception
@@ -573,7 +573,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#bit:not-a-bit#");
+            datasetParamOrder.add("bit:not-a-bit");
 
             // Test the method
             // This should throw an exception
@@ -601,7 +601,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#boolean:not-a-boolean#");
+            datasetParamOrder.add("boolean:not-a-boolean");
 
             // Test the method
             // This should throw an exception
@@ -629,7 +629,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#integer:not-an-integer#");
+            datasetParamOrder.add("integer:not-an-integer");
 
             // Test the method
             // This should throw an exception
@@ -657,7 +657,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#numeric:not-a-numeric#");
+            datasetParamOrder.add("numeric:not-a-numeric");
 
             // Test the method
             // This should throw an exception
@@ -685,7 +685,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#decimal:not-a-decimal#");
+            datasetParamOrder.add("decimal:not-a-decimal");
 
             // Test the method
             // This should throw an exception
@@ -713,7 +713,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#bigint:not-a-bigint#");
+            datasetParamOrder.add("bigint:not-a-bigint");
 
             // Test the method
             // This should throw an exception
@@ -741,7 +741,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#timestamp:not-a-timestamp#");
+            datasetParamOrder.add("timestamp:not-a-timestamp");
 
             // Test the method
             // This should throw an exception
@@ -769,7 +769,7 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#date:not-a-date#");
+            datasetParamOrder.add("date:not-a-date");
 
             // Test the method
             // This should throw an exception
@@ -798,9 +798,9 @@ public class DBInterfaceTests {
 
             // Prepare the parameter order store
             List<String> datasetParamOrder = new ArrayList<>();
-            datasetParamOrder.add("#string:fruit#");
-            datasetParamOrder.add("#string:quantity#");
-            datasetParamOrder.add("#bigint:quantity#");
+            datasetParamOrder.add("string:fruit");
+            datasetParamOrder.add("string:quantity");
+            datasetParamOrder.add("bigint:quantity");
 
             // Test the method
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);

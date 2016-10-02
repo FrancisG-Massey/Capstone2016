@@ -148,7 +148,7 @@ public class RequestServlet extends HttpServlet {
             final String param = m.group();
             // Discard the datatype in the parameter value map but not in the order list
             // This means we support casting the same value to different types in different places in the dataset if required
-            datasetParamOrder.add(param);
+            datasetParamOrder.add(param.substring(1, param.length()-1));
             datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
         }
         
