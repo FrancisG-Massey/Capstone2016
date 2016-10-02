@@ -20,8 +20,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     org.nestnz.api.ConfigFileTests.class,
     org.nestnz.api.SimpleTests.class,
-    org.nestnz.api.DBInterfaceTests.class,
-    org.nestnz.api.DBConnectTests.class
+    //org.nestnz.api.DBConnectTests.class,
+    org.nestnz.api.DBInterfaceTests.class
 })
 public class AllTests {
     // Run the test suite to impose a bit nicer execution order on test classes
