@@ -19,10 +19,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.Properties;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -36,30 +32,13 @@ import org.junit.runners.MethodSorters;
 public class ConfigFileTests {
 
     // Store the paths of config files to test
-    private static String dbConfigPath;
-    private static String datasetsPath;
+    private static final String SEP = File.separator;
+    private static final String SERVLET_CONTEXT_PATH = AllTests.getServletContextPath();
+    private static final String DBCONFIG_PATH = SERVLET_CONTEXT_PATH + "/web/WEB-INF/dbconfig.properties".replace("/", SEP);
+    private static final String DATASETS_PATH = SERVLET_CONTEXT_PATH + "/web/WEB-INF/datasets.properties".replace("/", SEP);
+    private static final String DBCREATESCRIPT_PATH = (new File(SERVLET_CONTEXT_PATH)).getParent() + "/db/schema_full.sql".replace("/", SEP);
 
     public ConfigFileTests() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-        final String servletContextPath = AllTests.getServletContextPath();
-        final String sep = File.separator;
-        datasetsPath = servletContextPath + "/web/WEB-INF/datasets.properties".replace("/", sep);
-        dbConfigPath = servletContextPath + "/web/WEB-INF/dbconfig.properties".replace("/", sep);
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
@@ -70,7 +49,7 @@ public class ConfigFileTests {
         // Return null if unable to find the API /build directory in the 
         // project root directory. By default the tests are executed from: 
         //      projectroot/build/test/classes
-        File f = new File(AllTests.getServletContextPath());
+        File f = new File(SERVLET_CONTEXT_PATH + "/web".replace("/", SEP));
         assertTrue(f.exists() && f.isDirectory());
     }
 
@@ -79,8 +58,7 @@ public class ConfigFileTests {
      */
     @Test
     public void DatasetMapExists() {
-        
-        File f = new File(datasetsPath);
+        File f = new File(DATASETS_PATH);
         assertTrue(f.exists() && !f.isDirectory());
     }
 
@@ -88,9 +66,18 @@ public class ConfigFileTests {
      * Test that the dbconfig.properties file exists in the expected location
      */
     @Test
-    public void DBConfigExists() {
-        
-        File f = new File(dbConfigPath);
+    public void DbConfigExists() {
+        File f = new File(DBCONFIG_PATH);
+        assertTrue(f.exists() && !f.isDirectory());
+    }
+
+    /**
+     * Test that the schema_full.sql file exists in the expected location 
+     * (this is only used for black box unit testing, not by the actual handler)
+     */
+    @Test
+    public void DbSchemaExists() {
+        File f = new File(DBCREATESCRIPT_PATH);
         assertTrue(f.exists() && !f.isDirectory());
     }
 
@@ -101,7 +88,7 @@ public class ConfigFileTests {
     @Test
     public void DBConfigHasRequiredProperties() throws IOException {
         Properties prop = new Properties();
-        try (InputStream input = new FileInputStream(dbConfigPath)) {
+        try (InputStream input = new FileInputStream(DBCONFIG_PATH)) {
             prop.load(input);
         }
         assertTrue(prop.getProperty("driver") != null);
@@ -118,11 +105,11 @@ public class ConfigFileTests {
     @Test
     public void MappedDatasetsExist() throws IOException {
         Properties prop = new Properties();
-        try (InputStream input = new FileInputStream(datasetsPath)) {
+        try (InputStream input = new FileInputStream(DATASETS_PATH)) {
             prop.load(input);
         }
         for(Entry<Object, Object> e : prop.entrySet()) {
-            File f = new File((AllTests.getServletContextPath() + "/web" + e.getValue().toString().replace("/", File.separator)));
+            File f = new File((SERVLET_CONTEXT_PATH + "/web" + e.getValue().toString().replace("/", SEP)));
             assertTrue(f.exists());
         }
     }
@@ -135,11 +122,11 @@ public class ConfigFileTests {
      */
     public void MappedDatasetTargetsAreJSON() throws IOException, MalformedJsonException {
         Properties prop = new Properties();
-        try (InputStream input = new FileInputStream(datasetsPath)) {
+        try (InputStream input = new FileInputStream(DATASETS_PATH)) {
             prop.load(input);
         }
         for(Entry<Object, Object> e : prop.entrySet()) {
-            File f = new File((AllTests.getServletContextPath() + "/web" + e.getValue().toString().replace("/", File.separator)));
+            File f = new File((SERVLET_CONTEXT_PATH + "/web" + e.getValue().toString().replace("/", SEP)));
             assertTrue(f.exists());
 
             // Get the dataset json string from file
