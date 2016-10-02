@@ -42,4 +42,32 @@ public class SimpleTests {
         String result = Common.BufferedReaderToString(in);
         assertEquals(expResult, result);
     }
+    
+    public final static String URLENTITY_REGEX = "\\/([\\w-]*)";
+    public final static String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+    public final static String DATASETPARAM_REGEX = "#([a-z]+:[a-z-_][\\w-]*)#";
+    
+    /**
+     * Test the regex uses to parse injectable parameters and their types out of the datasets.
+     */
+    @Test
+    public void RegexDatasetParamsMatch() {
+        fail("Test not implemented yet");
+    }
+    
+    /**
+     * Test the regex uses to validation the format of UUIDs used as session tokens.
+     */
+    @Test
+    public void RegexUuidMatches() {
+        fail("Test not implemented yet");
+    }
+    
+    /**
+     * Test the regex uses to match the entity name and ID in urls requested to the handler.
+     */
+    @Test
+    public void RegexUrlEntityMatches() {
+        fail("Test not implemented yet");
+    }
 }
