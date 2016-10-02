@@ -114,7 +114,7 @@ public class DBInterfaceTests {
      * @throws java.sql.SQLException
      */
     @Test
-    public void ResultSetAsJsonReturnsNumbers() throws SQLException {
+    public void ResultSetAsJsonReturnsCorrectFormats() throws SQLException {
 
         Statement st = conn.createStatement();
         String testQuery = ""
@@ -124,6 +124,11 @@ public class DBInterfaceTests {
                 + "     cast(3.0 AS numeric)            AS some_numeric,"
                 + "     cast(-4.0 AS decimal)           AS some_decimal,"
                 + "     cast(5.0 AS double precision)   AS some_double,"
+                + "     cast(true AS boolean)              AS some_boolean,"
+                + "     cast('2016-09-28' AS date)      AS some_date,"
+                + "     cast('2016-09-28 03:46:14.123' "
+                + "         AS timestamp)               AS some_timestamp,"
+                + "     cast('Strings for days' AS text)AS some_string,"
                 + "     NULL                            AS some_null"
                 + ";";
         // Get the result set from the db
@@ -134,12 +139,16 @@ public class DBInterfaceTests {
 
         // Check the result
         JsonObject values = new JsonParser().parse(result).getAsJsonArray().get(0).getAsJsonObject();
-        assertTrue(values.get("some_int").toString().equals("1"));
-        assertTrue(values.get("some_bigint").toString().equals("-2"));
-        assertTrue(values.get("some_numeric").toString().equals("3.0"));
-        assertTrue(values.get("some_decimal").toString().equals("-4.0"));
-        assertTrue(values.get("some_double").toString().equals("5.0"));
-        assertTrue(values.get("some_null").toString().equals("null"));
+        assertEquals("1", values.get("some_int").toString());
+        assertEquals("-2", values.get("some_bigint").toString());
+        assertEquals("3.0", values.get("some_numeric").toString());
+        assertEquals("-4.0", values.get("some_decimal").toString());
+        assertEquals("5.0", values.get("some_double").toString());
+        assertEquals("true", values.get("some_boolean").toString());
+        assertEquals("\"2016-09-28\"", values.get("some_date").toString());
+        assertEquals("\"2016-09-28 03:46:14.123\"", values.get("some_timestamp").toString());
+        assertEquals("\"Strings for days\"", values.get("some_string").toString());
+        assertEquals("null", values.get("some_null").toString());
     }
 
     /**
