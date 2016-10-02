@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.postgresql.util.PSQLException;
 
 /**
@@ -76,6 +78,26 @@ public class Common {
         if (nestDS != null) {
             nestDS.close();
             nestDS = null;
+        }
+    }
+    
+    /**
+     * Build a map of typed parameters which appear in the retrieved query 
+     * i.e. regex matches for #string:session-token# etc.
+     * ParamOrder maintains insert positions as we dynamically bind our parameters later from the unordered map
+     * @param dirtySQL
+     * @param datasetParams
+     * @param datasetParamOrder 
+     */
+    public static void parseDatasetParameters(String dirtySQL, Map<String, String> datasetParams, List<String> datasetParamOrder) {
+        // Find all parameters including their datatypes
+        Matcher m = Pattern.compile(Common.DATASETPARAM_REGEX).matcher(dirtySQL.toLowerCase());
+        while (m.find()) {
+            final String param = m.group();
+            // Discard the datatype in the parameter value map but not in the order list
+            // This means we support casting the same value to different types in different places in the dataset if required
+            datasetParamOrder.add(param.substring(1, param.length()-1));
+            datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
         }
     }
     

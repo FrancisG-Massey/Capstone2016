@@ -139,15 +139,7 @@ public class RequestServlet extends HttpServlet {
         // ParamOrder maintains insert positions as we dynamically bind our parameters later from the unordered map. 
         Map<String, String> datasetParams = new HashMap<>();
         List<String> datasetParamOrder = new ArrayList<>();
-        // Find all parameters including their datatypes
-        m = Pattern.compile(Common.DATASETPARAM_REGEX).matcher(dirtySQL.toLowerCase());
-        while (m.find()) {
-            final String param = m.group();
-            // Discard the datatype in the parameter value map but not in the order list
-            // This means we support casting the same value to different types in different places in the dataset if required
-            datasetParamOrder.add(param.substring(1, param.length()-1));
-            datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
-        }
+        Common.parseDatasetParameters(dirtySQL, datasetParams, datasetParamOrder);
 
         // Fill the datasetParams map with values if they are provided in the request
         // Note if a query string parameter has multiple mappings, its undefined behaviour as to which one will be used.
@@ -261,15 +253,7 @@ public class RequestServlet extends HttpServlet {
         // ParamOrder maintains insert positions as we dynamically bind our parameters later from the unordered map. 
         Map<String, String> datasetParams = new HashMap<>();
         List<String> datasetParamOrder = new ArrayList<>();
-        // Find all parameters including their datatypes
-        m = Pattern.compile(Common.DATASETPARAM_REGEX).matcher(dirtySQL.toLowerCase());
-        while (m.find()) {
-            final String param = m.group();
-            // Discard the datatype in the parameter value map but not in the order list
-            // This means we support casting the same value to different types in different places in the dataset if required
-            datasetParamOrder.add(param);
-            datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
-        }
+        Common.parseDatasetParameters(dirtySQL, datasetParams, datasetParamOrder);
 
         // If the json object provided by the request is unparsable, a 400 bad request is returned.
         String requestJSON = null;
@@ -400,6 +384,7 @@ public class RequestServlet extends HttpServlet {
         // Decode from JSON clean enclosing quotes and newlines then return
         JsonObject jObject = new JsonParser().parse(datasetJSON).getAsJsonObject();
         String dirtyJSON = jObject.get(method).toString();
+        // Remove the returned quotes as the SQL is a string.
         dirtyJSON = dirtyJSON.substring(1, dirtyJSON.length()-1);
         final String cleanJSON = dirtyJSON.replace("\\r\\n", "\n").replace("\\n", "\n");
         return cleanJSON;
