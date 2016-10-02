@@ -172,8 +172,7 @@ public class Common {
                                     st.setBoolean(i, false);
                                     break;
                                 default:
-                                    st.setNull(i, java.sql.Types.BOOLEAN);
-                                    break;
+                                    throw new ParseException("Value cannot be parsed to bit/boolean: " + nextParamValue, i);
                             }
                             break;
                         case "decimal":
