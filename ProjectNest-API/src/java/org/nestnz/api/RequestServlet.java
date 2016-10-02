@@ -103,12 +103,11 @@ public class RequestServlet extends HttpServlet {
         
         // Parse out the requested entity type and id from the request URL
         // Seems the java regex matcher isn't fully PCRE compliant? We'll have to strip slashes manually
-        
-        //Matcher m = Pattern.compile("/^\\/(?>([a-z][a-z-_]*))(?>\\/(\\d+))?/i").matcher(request.getPathInfo());
-        Matcher m = Pattern.compile("\\/([\\w-]*)").matcher(request.getPathInfo().toLowerCase());
+
+        Matcher m = Pattern.compile(Common.URLENTITY_REGEX).matcher(request.getPathInfo().toLowerCase());
         String requestEntity = m.find() ? m.group().substring(1) : "";
         String requestEntityID = m.find() ? m.group().substring(1) : "";
-        
+
         // Retrieve the SQL query string mapped to the requested entity's GET method
         try {
             dirtySQL = getSQLQuery(requestEntity, "GET");
@@ -118,7 +117,7 @@ public class RequestServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
-        
+
         // Check that the request target is mapped and valid
         if (dirtySQL == null) {
             LOG.log(Level.INFO, "Unable to locate requested dataset: {0}", requestEntity);
@@ -128,22 +127,20 @@ public class RequestServlet extends HttpServlet {
        
         // Check for a "Session-Token" header with regex validation
         final String sessionToken = request.getHeader("Session-Token");
-        final String uuidRegex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
         if (sessionToken == null) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
-        } else if (!sessionToken.matches(uuidRegex)) {
+        } else if (!sessionToken.matches(Common.UUID_REGEX)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
+
         // Build a map of typed parameters which appear in the retrieved query i.e. regex matches for #string:session-token# etc.
         // ParamOrder maintains insert positions as we dynamically bind our parameters later from the unordered map. 
         Map<String, String> datasetParams = new HashMap<>();
         List<String> datasetParamOrder = new ArrayList<>();
         // Find all parameters including their datatypes
-        String paramRegex = "#([a-z]+:[a-z-_][\\w-]*)#";
-        m = Pattern.compile(paramRegex).matcher(dirtySQL.toLowerCase());
+        m = Pattern.compile(Common.DATASETPARAM_REGEX).matcher(dirtySQL.toLowerCase());
         while (m.find()) {
             final String param = m.group();
             // Discard the datatype in the parameter value map but not in the order list
@@ -151,7 +148,7 @@ public class RequestServlet extends HttpServlet {
             datasetParamOrder.add(param.substring(1, param.length()-1));
             datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
         }
-        
+
         // Fill the datasetParams map with values if they are provided in the request
         // Note if a query string parameter has multiple mappings, its undefined behaviour as to which one will be used.
         Enumeration<String> parameterNames = request.getParameterNames();
@@ -167,10 +164,10 @@ public class RequestServlet extends HttpServlet {
         if (!requestEntityID.isEmpty()) {
             datasetParams.put("id", requestEntityID);
         }
-        
+
         // Replace the placeholders in the retrieved SQL with the values supplied by the request
-        final String cleanSQL = dirtySQL.replaceAll(paramRegex, "?");
-        
+        final String cleanSQL = dirtySQL.replaceAll(Common.DATASETPARAM_REGEX, "?");
+
         // Get the DB response and convert it to JSON
         String jsonArray;
         try (
@@ -199,7 +196,7 @@ public class RequestServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
-                
+
         // Return the JSON array to the user
         response.setContentType("application/json");
         try (PrintWriter out = response.getWriter()) {
@@ -219,22 +216,21 @@ public class RequestServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String dirtySQL;
-        
+
         // Parse out the requested entity type and id from the request URL
         // Seems the java regex matcher isn't fully PCRE compliant? We'll have to strip slashes manually
-        
-        //Matcher m = Pattern.compile("/^\\/(?>([a-z][a-z-_]*))(?>\\/(\\d+))?/i").matcher(request.getPathInfo());
-        Matcher m = Pattern.compile("\\/([\\w-]*)").matcher(request.getPathInfo().toLowerCase());
+
+        Matcher m = Pattern.compile(Common.URLENTITY_REGEX).matcher(request.getPathInfo().toLowerCase());
         String requestEntity = m.find() ? m.group().substring(1) : "";
         String requestEntityID = m.find() ? m.group().substring(1) : "";
-        
+
         // Check that an entity id has not been supplied
         if (!requestEntityID.equals("")) {
             LOG.log(Level.INFO, "Bad request syntax: Entity id supplied to POST request: {0}", requestEntityID);        
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
+
         // Retrieve the SQL query string mapped to the requested entity's GET method
         try {
             dirtySQL = getSQLQuery(requestEntity, "POST");
@@ -243,32 +239,30 @@ public class RequestServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
-        
+
         // Check that the request target is mapped and valid
         if (dirtySQL == null) {
             LOG.log(Level.INFO, "Unable to locate requested dataset: {0}", requestEntity);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-       
+
         // Check for a "Session-Token" header with regex validation
         final String sessionToken = request.getHeader("Session-Token");
-        final String uuidRegex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
         if (sessionToken == null) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
-        } else if (!sessionToken.matches(uuidRegex)) {
+        } else if (!sessionToken.matches(Common.UUID_REGEX)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
+
         // Build a map of typed parameters which appear in the retrieved query i.e. regex matches for #string:session-token# etc.
         // ParamOrder maintains insert positions as we dynamically bind our parameters later from the unordered map. 
         Map<String, String> datasetParams = new HashMap<>();
         List<String> datasetParamOrder = new ArrayList<>();
         // Find all parameters including their datatypes
-        String paramRegex = "#([a-z]+:[a-z-_][\\w-]*)#";
-        m = Pattern.compile(paramRegex).matcher(dirtySQL.toLowerCase());
+        m = Pattern.compile(Common.DATASETPARAM_REGEX).matcher(dirtySQL.toLowerCase());
         while (m.find()) {
             final String param = m.group();
             // Discard the datatype in the parameter value map but not in the order list
@@ -276,7 +270,7 @@ public class RequestServlet extends HttpServlet {
             datasetParamOrder.add(param);
             datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
         }
-        
+
         // If the json object provided by the request is unparsable, a 400 bad request is returned.
         String requestJSON = null;
         Map<String,String> requestObjectParams = null;
@@ -295,8 +289,8 @@ public class RequestServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        
-        
+
+
         // Fill the datasetParams map with values if they are provided in the request
         for (Map.Entry<String, String> requestParam : requestObjectParams.entrySet()) {
             final String paramName = requestParam.getKey();
@@ -304,13 +298,13 @@ public class RequestServlet extends HttpServlet {
                 datasetParams.put(paramName, requestParam.getValue());
             }
         }
-        
+
         // Add the session token as a parameter (we've already validated it above)
         datasetParams.put("session-token", sessionToken);
-                
+
         // Replace the placeholders in the retrieved SQL with the values supplied by the request
-        final String cleanSQL = dirtySQL.replaceAll(paramRegex, "?");
-        
+        final String cleanSQL = dirtySQL.replaceAll(Common.DATASETPARAM_REGEX, "?");
+
         // Get the DB response (new record id) and convert it to a location header to output
         String jsonArray;
         try (
@@ -359,7 +353,7 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
     
@@ -374,10 +368,10 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
-    
+
     /**
      * Gets the SQL query for a named method in a named dataset.
      * @param dataset The name of the dataset in the config file
@@ -402,7 +396,7 @@ public class RequestServlet extends HttpServlet {
         final String datasetPath = this.getServletContext().getRealPath(prop.getProperty(dataset));
         byte[] encoded = Files.readAllBytes(Paths.get(datasetPath));
         final String datasetJSON = new String(encoded, StandardCharsets.UTF_8);
-        
+
         // Decode from JSON clean enclosing quotes and newlines then return
         JsonObject jObject = new JsonParser().parse(datasetJSON).getAsJsonObject();
         String dirtyJSON = jObject.get(method).toString();
@@ -410,8 +404,8 @@ public class RequestServlet extends HttpServlet {
         final String cleanJSON = dirtyJSON.replace("\\r\\n", "\n").replace("\\n", "\n");
         return cleanJSON;
     }
-    
-    
+
+
     /**
      * Returns a short description of the servlet.
      *
@@ -421,5 +415,4 @@ public class RequestServlet extends HttpServlet {
     public String getServletInfo() {
         return "Dynamic request handler servlet for the Nest API";
     }// </editor-fold>
-
 }
