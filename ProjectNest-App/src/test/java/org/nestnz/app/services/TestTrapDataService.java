@@ -76,6 +76,8 @@ public class TestTrapDataService {
 	public void setUp() throws Exception {
 		cachePath = Files.createTempDirectory("trapDataCache");
 		dataService = new TrapDataService(cachePath.toFile(), null);
+		
+		cachePath = cachePath.resolve("traplines");
 	}
 
 	@After
@@ -104,7 +106,7 @@ public class TestTrapDataService {
 		LOG.log(Level.INFO, String.format("Moved test resource from %s to %s", testData.toString(), cachePath.resolve("20.json").toString()));
 		
 		dataService.getTraplines().clear();
-		dataService.loadTraplines();
+		dataService.fetchTraplines();
 		
 		//Since traplines are loaded asynchronosly, we need to add a listener & wait for them to load
 		CompletableFuture<Trapline> future = new CompletableFuture<Trapline>();
@@ -145,7 +147,7 @@ public class TestTrapDataService {
     	assumeTrue(Files.exists(cachePath.resolve("20.json")));
     	
     	dataService.getTraplines().clear();
-		dataService.loadTraplines();
+		dataService.fetchTraplines();
 		
 		//Since traplines are loaded asynchronosly, we need to add a listener & wait for them to load
 		CompletableFuture<Trapline> future = new CompletableFuture<Trapline>();
@@ -171,7 +173,7 @@ public class TestTrapDataService {
 	
 	private void updateAndBlock (Trapline trapline) throws Exception {
 		final CountDownLatch latch = new CountDownLatch(1);
-		GluonObservableObject<ParserTrapline> results = dataService.updateTrapline(trapline);
+		GluonObservableObject<ParserTrapline> results = dataService.storeTrapline(trapline);
 		results.addListener(obs -> {
 			if (results.get() != null) {	
     			latch.countDown();
