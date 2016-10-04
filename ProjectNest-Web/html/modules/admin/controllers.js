@@ -4,21 +4,12 @@ angular.module('Admin')
 .controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline',function ($scope,$rootScope,$http,region,trapline) {
 	$rootScope.wrapClass = undefined;
     $scope.regions = region.data;
-    console.log($scope.region);
     $scope.traplines = trapline.data;
-	
-    var users = $http.get('https://www.nestnz.org/api/user')
+    /*var users = $http.get('https://www.nestnz.org/api/region')
     .then(function(response) {
         $scope.trapline = response.data;
         console.log($scope.trapline);
-    });
-	
-	var trapline_users = $http.get('https://www.nestnz.org/api/trapline-user')
-    .then(function(response) {
-        $scope.user =  response.data;
-    	console.log($scope.user);
-    });
-
+    });*/
 
 	/*$scope.traplines = [
 	                    {
@@ -54,24 +45,11 @@ angular.module('Admin')
 	    }
 	};
 	
-	var user, trapline_user;
-	$scope.users =[];
-	for (var i = 0; i < trapline_users.length; i++) {
-	    trapline_user = trapline_users[i];
-	    //region.traplines = [];
-	    if(trapline_user.trapline_id==$scope.selected.id){
-	    	for(var x=0; x <$users.length; x++){
-	    		user = users[x];
-	    		if(trapline_user.user_id ==user.id){
-	    			users.push[user.name];
-	    		}
-	    	}
-	    }
-	};
 	
-    $scope.setSelected = function(item){
+    $scope.setSelected = function(region_selected){
     	$scope.selected = this.trapline;
-    	$rootScope.region_selected = $scope.selected;
+    	$scope.selected.region = region_selected;
+    	$rootScope.line_selected = $scope.selected;
     };
 
     $scope.addNew = function() {  	

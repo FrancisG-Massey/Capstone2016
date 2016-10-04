@@ -7,11 +7,11 @@
     <div style="padding-bottom: 20px;">
     <a ng-click="addNew()" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap Line</a>  
 	</div>
-	<div ng-repeat="region in regions">
+	<div ng-repeat="region in regions" ng-init="parentIndex = region">
       <table style="table-layout:fixed" class="table table-condensed table-hover admin" >
       	<caption class="text-left"><strong>{{region.name}}</strong></caption>
 		<tbody data-ng-repeat="trapline in region.traplines">
-          <tr data-ng-click="setSelected();" class="{{trapline == selected ? 'success' : ''}}">
+          <tr data-ng-click="setSelected(parentIndex)" class="{{trapline == selected ? 'success' : ''}}">
             <td scope="row">{{trapline.name}}</td>
             <td><a href="#/trap-admin/{{trapline.id}}">View Traps</a></td>
             <td><a href="#/volunteer-admin/{{trapline.id}}">View Volunteers</a></td>
@@ -32,13 +32,14 @@
               <input type="text" class="form-control" value ="{{selected.name}}">
             </div>
           </div>
-          <div class="col-md-6 form-group">  
-            <label>Coordinator</label>
-            <div>
-              <input type="text" class="form-control" value ="{{users[0]}}">
-            </div>
-          </div>
-        </div>
+		  <div class="col-md-6 form-group">
+			<label>Region</label>
+			<select class="form-control">
+			<option data-ng-selected="region.name == selected.region.name"
+			value="{{region.name}}" data-ng-repeat="region in regions">{{region.name}}</option>
+			</select>
+		</div>
+		</div>
         <div class="row">
           <div class="col-md-6 form-group">
             <label>Start</label>
