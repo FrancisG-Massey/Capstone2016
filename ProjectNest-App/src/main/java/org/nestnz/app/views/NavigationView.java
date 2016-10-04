@@ -43,6 +43,7 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -96,6 +97,8 @@ public class NavigationView extends View {
     final List<Trap> orderedTraps = new ArrayList<>();
     
     int currentPointer = 0;
+    
+    final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
     
     final ObjectProperty<Trap> trapProperty = new SimpleObjectProperty<>();
     
@@ -248,37 +251,47 @@ public class NavigationView extends View {
         column2.setPercentWidth(50);
         controls.getColumnConstraints().addAll(column1, column2);
     	
-        CatchType emptyCatch = new CatchType(-1, "Empty", null);
-    	Button empty = makeOptionButton(emptyCatch, 0);
-    	
-    	CatchType op2 = new CatchType(2, "Option 2", null);
-    	Button option2 = makeOptionButton(op2, 1);
+    	Button empty = makeOptionButton(0);    	
+    	Button option2 = makeOptionButton(1);
     	
     	Button other = new Button("Other");
     	other.setMaxSize(1000, 1000);
     	other.getStyleClass().add("large-button");
     	GridPane.setConstraints(other, 0, 1, 2, 1);//Set as center cell (spans both rows)
 
-    	CatchType op3 = new CatchType(3, "Option 3", null);
-    	Button option3 = makeOptionButton(op3, 2);
-
-    	CatchType op4 = new CatchType(4, "Option 4", null);
-    	Button option4 = makeOptionButton(op4, 3);
+    	Button option3 = makeOptionButton(2);
+    	Button option4 = makeOptionButton(3);
     	
     	controls.getChildren().addAll(empty, option2, option3, option4, other);
     	return dialog;
     }
     
-    private Button makeOptionButton (CatchType catchType, int place) {
-    	Button button = new Button(catchType.getName());
+    private Button makeOptionButton (int place) {
+    	ObjectBinding<CatchType> catchType;
+    	if (place == 0) {
+    		catchType = Bindings.createObjectBinding(() -> CatchType.EMPTY);
+    	} else {
+    		catchType = Bindings.createObjectBinding(() -> {
+    			if (traplineProperty.get() == null) {
+    				return CatchType.EMPTY;
+    			} else if (traplineProperty.get().getCatchTypes().size() < place) {
+    	    		LOG.log(Level.WARNING, "Trapline lacks a catch type entry at place "+place+" (only "+traplineProperty.get().getCatchTypes().size()+" available)");
+    				return CatchType.EMPTY;//TODO: Currently puts another 'empty' entry down if nothing is specified. Should something else be put instead?
+    			} else {
+    				return traplineProperty.get().getCatchTypes().get(place-1);
+    			}
+    		}, traplineProperty);
+    	}
+    	Button button = new Button();
+    	button.textProperty().bind(Bindings.createStringBinding(() -> catchType.get().getName(), catchType));
     	button.setMaxSize(1000, 1000);
     	//button.getStyleClass().add("large-button");
     	GridPane.setConstraints(button, place % 2, place > 1 ? 2 : 0);
     	GridPane.setHgrow(button, Priority.ALWAYS);
     	GridPane.setVgrow(button, Priority.ALWAYS);
     	button.setOnAction(evt -> {
-    		LOG.log(Level.FINE, "Selected catch: "+catchType);
-    		catchSelectDialog.setResult(catchType);
+    		LOG.log(Level.FINE, "Selected catch: "+catchType.get());
+    		catchSelectDialog.setResult(catchType.get());
     		catchSelectDialog.hide();
     	});
     	return button;
@@ -333,6 +346,7 @@ public class NavigationView extends View {
      */
     public final void setTrapline (Trapline trapline) {
     	Objects.requireNonNull(trapline);
+    	traplineProperty.set(trapline);
     	
     	//Since Android/iOS don't support Java 8 streams, we have to do it the old way (adding the elements to another list & using Collections.sort()).
     	orderedTraps.clear();

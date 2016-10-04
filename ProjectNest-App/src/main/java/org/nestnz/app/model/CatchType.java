@@ -23,6 +23,8 @@ import javafx.beans.property.StringProperty;
 
 public class CatchType {
 	
+	public static final CatchType EMPTY = new CatchType(-1, "Empty", null);
+	
 	/**
 	 * The internal server ID of the catch type
 	 */
