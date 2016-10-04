@@ -88,7 +88,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final ReadOnlyBooleanWrapper loadingProperty = new ReadOnlyBooleanWrapper(false);
     
-    private final Cacheable<Map<Integer, CatchType>> catchTypes = new Cacheable<>();
+    private final Cacheable<Map<Integer, CatchType>> catchTypes = new Cacheable<>();    
     
     /**
      * A latch used to make sure all required resources (only catch types at this stage) have loaded before fetching traplines from the cache
@@ -175,6 +175,10 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 					pTrap.getCoordLat(), pTrap.getCoordLong(), 
 					status, created, reset);
 			t.getTraps().add(trap);
+		}
+		for (int catchTypeId : pLine.getCatchTypes()) {
+			CatchType cType = catchTypes.getData().get(catchTypeId);
+			t.getCatchTypes().add(cType);
 		}
 		addTrapline(t);
     }
