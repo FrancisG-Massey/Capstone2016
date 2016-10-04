@@ -43,7 +43,11 @@ public class Common {
     //public final static String URLENTITY_REGEX = "/^\\/(?>([a-z][a-z-_]*))(?>\\/(\\d+))?/i";
     public final static String URLENTITY_REGEX = "\\/([\\w-]*)";
     public final static String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
-    public final static String DATASETPARAM_REGEX = "#([a-z]+:[a-z-_][\\w-]*)#";
+    public final static String DATASETPARAM_REGEX = "(#[\\w-]+:[\\w-]+#)";
+
+    // This is a better regex which captures only strictly typed dataset parameters
+    // except we can't test for invalid uncaptured params easily and these will go straight to the db...
+    //public final static String DATASETPARAM_REGEX "(#(?:\\binteger\\b|\\bstring\\b|\\bboolean\\b|\\bbit\\b|\\bnumeric\\b|\\bvarchar\\b|\\btimestamp\\b|\\bdate\\b|\\bbigint\\b|\\bdecimal\\b):[a-z][a-z0-9-_]*#)";
 
     /**
      * Attempt a fresh connection to the specified DB and get a handle to it.
@@ -169,8 +173,7 @@ public class Common {
                         ? null : nextParamValue;
 
                 // Use this to test that parameters are parsed correctly
-                //response.setHeader("Param-" + i, nextParam + ", " + nextParamValue + ", " + paramType + ", " + paramName);
-
+                //System.out.println("paramType: "+paramType+", paramName: "+paramName+", nextParamValue=\""+nextParamValue+"\", isNull: "+String.valueOf(nextParamValue==null));
                 try {
                     switch (paramType) {
                         case "bigint":
