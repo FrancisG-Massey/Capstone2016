@@ -1,33 +1,26 @@
 'use strict';
  
 angular.module('Admin')
-.controller('AdminTraplineController',['$scope', '$rootScope','$http',function ($scope,$rootScope,$http) {
+.controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline',function ($scope,$rootScope,$http,region,trapline) {
 	$rootScope.wrapClass = undefined;
+    $scope.regions = region.data;
+    console.log($scope.region);
+    $scope.traplines = trapline.data;
 	
-	/*$http.get('https://www.nestnz.org/api/region')
-    .then(function(response) {
-        $scope.regions = response.data;
-        console.log($scope.regions);
-    });
-	$http.get('https://www.nestnz.org/api/trapline')
+    var users = $http.get('https://www.nestnz.org/api/user')
     .then(function(response) {
         $scope.trapline = response.data;
         console.log($scope.trapline);
-    });*/
+    });
 	
-    $scope.regions = [
-		              {
-		            	  "id" : 1,
-		            	  "name" : "Manawatu"
-		              },
-		              {
-		            	  "id":2,
-		            	  "name" : "Wellington"
-		              }
-		              ];
-		
-		//console.log($scope.regions);
-	$scope.traplines = [
+	var trapline_users = $http.get('https://www.nestnz.org/api/trapline-user')
+    .then(function(response) {
+        $scope.user =  response.data;
+    	console.log($scope.user);
+    });
+
+
+	/*$scope.traplines = [
 	                    {
 	                    	"end_tag":"Woodville",
 	                    	"id": 1,
@@ -44,7 +37,7 @@ angular.module('Admin')
 	                    	"start_tag":"Front",
 	                    	"region_id":2
 	                    }
-	                   ];
+	                   ];*/
 
 	//console.log($rootScope.traps);
 	
@@ -61,143 +54,46 @@ angular.module('Admin')
 	    }
 	};
 	
+	var user, trapline_user;
+	$scope.users =[];
+	for (var i = 0; i < trapline_users.length; i++) {
+	    trapline_user = trapline_users[i];
+	    //region.traplines = [];
+	    if(trapline_user.trapline_id==$scope.selected.id){
+	    	for(var x=0; x <$users.length; x++){
+	    		user = users[x];
+	    		if(trapline_user.user_id ==user.id){
+	    			users.push[user.name];
+	    		}
+	    	}
+	    }
+	};
+	
     $scope.setSelected = function(item){
     	$scope.selected = this.trapline;
+    	$rootScope.region_selected = $scope.selected;
     };
 
     $scope.addNew = function() {  	
     	$scope.selected = false;
+    	$rootScope.region_selected = undefined;
     };
     
 			
 }])
-.controller('AdminTrapController',['$scope', '$rootScope','$http', '$routeParams',function ($scope,$rootScope,$http, $routeParams) {
-		var traplineId = $routeParams.traplineId;
+.controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route',function ($scope, $rootScope,traps,baits,trap_type,$route) {
+		//var traplineId = $routeParams.traplineId;
 		$rootScope.wrapClass = undefined;
-		    	
-		var traps = [
-	        			{
-	        			      "id" : 123,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.314206,
-	        			      "coord_long" : 175.779946,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:26:07",
-	        			      "last_reset" : "2016-08-16T10:28:07",
-	        			      "bait_id" : 123456789101111,
-	        			      "number" : 1
-	        			},
-	        			{
-	        			      "id" : 254,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.311086,
-	        			      "coord_long" : 175.775306,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "inactive",
-	        			      "created" : "2016-04-16T10:30:07",
-	        			      "last_reset" : "2016-08-16T10:30:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 2
-	        			},
-	        			{
-	        			      "id" : 388,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.311821,
-	        			      "coord_long" : 175.775993,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:35:07",
-	        			      "last_reset" : "2016-08-16T10:35:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 3
-	        			},
-	        			{
-	        			      "id" : 367,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.311821,
-	        			      "coord_long" : 175.775993,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "inactive",
-	        			      "created" : "2016-04-16T10:36:07",
-	        			      "last_reset" : "2016-08-16T10:36:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 4
-	        			},
-	        			{
-	        			      "id" : 433,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.312105,
-	        			      "coord_long" : 175.778328,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:37:07",
-	        			      "last_reset" : "2016-08-16T10:37:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 5
-	        			},
-	        			{
-	        			      "id" : 587,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.312119,
-	        			      "coord_long" : 175.777347,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "inactive",
-	        			      "created" : "2016-04-16T10:40:07",
-	        			      "last_reset" : "2016-08-16T10:40:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 6
-	        			},
-	        			{
-	        			      "id" : 635,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.309037,
-	        			      "coord_long" : 175.772448,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:44:07",
-	        			      "last_reset" : "2016-08-16T10:44:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 7
-	        			},
-	        			{
-	        			      "id" : 754,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.309705,
-	        			      "coord_long" : 175.772583,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "inactive",
-	        			      "created" : "2016-04-16T10:47:07",
-	        			      "last_reset" : "2016-08-16T10:47:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 8
-	        			},
-	        			{
-	        			      "id" : 867,
-	        			      "line_id" : 1,
-	        			      "coord_lat" : -40.310519,
-	        			      "coord_long" : 175.774827,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:55:07",
-	        			      "last_reset" : "2016-08-16T10:55:57",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 9
-	        			},
-	        			{
-	        			      "id" : 967,
-	        			      "line_id" : 2,
-	        			      "coord_lat" : -40.309849,
-	        			      "coord_long" : 175.773379,
-	        			      "type_id" : 1234567891011,
-	        			      "status" : "active",
-	        			      "created" : "2016-04-16T10:57:07",
-	        			      "last_reset" : "2016-08-16T10:57:07",
-	        			      "bait_id" : 123456789101112,
-	        			      "number" : 10
-	        		}];
+		$scope.trapline_id = $route.current.params.traplineId;
+		$scope.traps = traps;
+		console.log(traps)
+		$scope.baits = baits;
+		console.log($scope.baits);
+		$scope.trap_type = trap_type;
+		console.log($scope.trap_type);
+
 	        	    
-	    $scope.baits =[
+	   /* $scope.baits =[
 		    {
 				"id" : 123456789101112,
 				"name" : "egg"
@@ -210,12 +106,9 @@ angular.module('Admin')
 				"id" : 49506062,
 				"name" : "poisonA"
 			}
-		];
+		];*/
 
-	    // traps matching its trapline
-	    traps = traps.filter(function(trap) {
-			return trap.line_id == traplineId;
-		});
+
 	    
 	    var pageLength = 10,
 	    	numTraps = traps.length,
@@ -308,15 +201,21 @@ angular.module('Admin')
         $scope.currentPage = this.n;
     };
     
+    $scope.$back = function() { 
+        window.history.back();
+      };
     	
     }])
 
-.controller('AdminVolunteerController', ['$scope', '$rootScope', '$http', '$routeParams',function ($scope,$rootScope, $http, $routeParams) {
-	var traplineId = $routeParams.traplineId;
-
+.controller('AdminVolunteerController', ['$scope','$rootScope','trapline_users','users','$route',function ($scope, $rootScope,trapline_users,users,$route) {
+	//var traplineId = $routeParams.traplineId;
 	$rootScope.wrapClass = undefined;
-	
-	$scope.volunteers = [
+	$scope.trapline_id = $route.current.params.traplineId;
+    $scope.trapline_users = trapline_users;
+    console.log($scope.trapline_users);
+    $scope.users = users.data;
+    console.log($scope.users);
+	/*$scope.volunteers = [
 	                 		{
 	                 			id: 1,
 	                 			firstNames : 'John',
@@ -475,8 +374,19 @@ angular.module('Admin')
 				traplineId : 1,
 				roles:"none"
 			}	                       
-	];
-	var usersForTrapLine = [], trapLineUser, volunteer;
+	];*/
+    
+	var usersForTrapLine = [], trapLineUser, user;
+	for(var i = 0; i< $scope.trapline_users.length; i++){
+		trapLineUser = $scope.trapline_users[i];
+		for(var x = 0; x < $scope.users.length; x++){
+			user = $scope.users[x];
+			if(user.id == trapLineUser.user_id){
+				usersForTrapLine.push(user);
+			}
+		}
+	};
+	/*var usersForTrapLine = [], trapLineUser, volunteer;
 	for (var i = 0; i < $scope.traplineUsers.length; i++) {
 		trapLineUser = $scope.traplineUsers[i];
 		if (trapLineUser.traplineId ==  traplineId) {
@@ -487,7 +397,7 @@ angular.module('Admin')
 				}
 			}
 		}
-	};
+	};*/
 
     $scope.addNew = function() {
     	$scope.selected = false;
@@ -551,5 +461,8 @@ angular.module('Admin')
     	console.log(this.n);
         $scope.currentPage = this.n;
     };
+    $scope.$back = function() { 
+        window.history.back();
+      };
 
 }]);

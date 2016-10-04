@@ -1,9 +1,15 @@
 <div class="page-header">
 <h1 class="text-center" style="margin-top: -50px; ">Volunteer Admin</h1>
 </div>
+<ol class="breadcrumb">
+  <li><a href="" ng-click="$back()" return false>{{region_selected.name}}</a></li>
+  <li class="active">Trapline id: {{trapline_id}}</li>
+</ol>
  <div class="row"> 
     <div class="col-sm-7">  
+    <div style="padding-bottom: 20px;">
       <a ng-click="addNew()" id="addButton" ><span class="glyphicon glyphicon-plus"></span> Add Volunteer</a>  
+      </div>
       <table class="table table-condensed table-hover admin">
         <thead>
           <tr>
@@ -17,10 +23,10 @@
         <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
           <tr data-ng-click="setSelected();" class="{{volunteer == selected ? 'success' : ''}}">
             <td scope="row">{{volunteer.id}}</td>
-            <td>{{volunteer.firstNames + ' ' + volunteer.lastName}}</td>
+            <td>{{volunteer.name}}</td>
             <td>{{volunteer.email}}</td>
-            <td>{{volunteer.startDate |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
-            <td>{{volunteer.permission}}</td>
+            <td>{{volunteer.created_timestamp |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
+            <td>{{volunteer.admin?"Admin":"Volunteer"}}</td>
           </tr>    
         </tbody>
       </table>
@@ -50,12 +56,12 @@
     <div class="col-sm-5"> 
       <div class="well">
         <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'Add New Volunteer'}}</h3>
-        <p>{{selected.id ? 'First Volunteered:' + (selected.startDate  |  date:"dd MMMM yyyy") : " "}}</p>
+        <p>{{selected.id ? 'First Volunteered:' + (selected.created_timestamp  |  date:"dd MMMM yyyy") : " "}}</p>
         <div class="row">
           <div class="col-md-6 form-group">
             <label>First Name</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.firstNames}}">
+              <input type="text" class="form-control" value ="{{selected.name}}">
             </div>
           </div>
           <div class="col-md-6 form-group">  

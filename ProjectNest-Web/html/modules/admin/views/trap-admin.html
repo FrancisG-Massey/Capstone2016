@@ -2,14 +2,20 @@
 <div class="page-header">
 	<h1 class="text-center" style="margin-top: -50px;">Trap Admin</h1>
 </div>
+<ol class="breadcrumb">
+  <li><a href="" ng-click="$back()" return false>{{region_selected.name}}</a></li>
+  <li class="active">Trapline id: {{trapline_id}}</li>  
+</ol>
 <div class="row">
 	<div class="col-sm-7">
+	<div style="padding-bottom: 20px;">
 		<a ng-click="addNew()" id="addButton"><span
 			class="glyphicon glyphicon-plus"></span> Add Trap</a>
+			</div>
 		<table class="table table-condensed table-hover admin">
 			<thead>
 				<tr>
-					<th>Trap ID</th>
+					<th>Trap Number</th>
 					<th>Location</th>
 					<th>Status</th>
 					<th>Last Reset</th>
@@ -19,10 +25,10 @@
 			<tbody data-ng-repeat="trap in traps[currentPage]">
 				<tr data-ng-click="setSelected();"
 					class="{{trap == selected ? 'success' : ''}}">
-					<td scope="row">{{trap.id}}</td>
+					<td scope="row">{{trap.number}}</td>
 					<td>{{trap.coord_lat + ' '}}<b>S</b>{{' ' + trap.coord_long +
 						' '}}<b>E</b></td>
-					<td>{{trap.status}}</td>
+					<td>{{trap.status? "active":"inactive"}}</td>
 					<td>{{trap.created | date:"dd/MM/yyyy 'at' h:mma"}}</td>
 					<td>{{trap.last_reset| date:"dd/MM/yyyy 'at' h:mma"}}</td>
 				</tr>
@@ -56,14 +62,14 @@
 		-->
 		<div class="well clearfix">
 			<h3 style="margin-top: 0; margin-bottom: 25px">
-				{{selected.id ? 'Trap ID: ' + selected.id : 'Add New Trap'}}
+				{{selected.id ? 'Trap Number: ' + selected.number : 'Add New Trap'}}
 				<div class="btn-group pull-right" data-toggle="buttons">
 					<label
-						ng-class="{ 'btn btn-default': true, 'active': selected.status == 'active' }">
+						ng-class="{ 'btn btn-default': true, 'active': selected.status == 1 }">
 						<input type="radio" id="option2" autocomplete="off"
 						ng-checked="selected.status == 'active'">Active
 					</label> <label
-						ng-class="{ 'btn btn-default': true, 'active': selected.status == 'inactive' }">
+						ng-class="{ 'btn btn-default': true, 'active': selected.status == 0 }">
 						<input type="radio" id="option3" autocomplete="off"
 						ng-checked="selected.status == 'inactive'">Inactive
 					</label>
@@ -99,10 +105,10 @@
 					</select>
 				</div>
 				<div class="col-md-6 form-group">
-					<label>Catch type</label>
+					<label>Trap type</label>
 					<select class="form-control">
-						<option data-ng-selected="bait.id == selected.bait_id"
-							value="{{bait.id}}" data-ng-repeat="bait in baits">Stoat</option>
+						<option data-ng-selected="type.id == selected.traptype_id"
+							value="{{type.id}}" data-ng-repeat="type in trap_type">{{type.name}}</option>
 					</select>
 				</div>
 			</div>
