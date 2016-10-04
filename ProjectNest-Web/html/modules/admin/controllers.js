@@ -5,7 +5,7 @@ angular.module('Admin')
 	$rootScope.wrapClass = undefined;
     $scope.regions = region.data;
     $scope.traplines = trapline.data;
-    /*var users = $http.get('https://www.nestnz.org/api/region')
+    /*$http.get('https://www.nestnz.org/api/damage')
     .then(function(response) {
         $scope.trapline = response.data;
         console.log($scope.trapline);
@@ -167,7 +167,11 @@ angular.module('Admin')
         	console.log($scope.catches);
         });
     };
-	
+    
+    $scope.formatDate = function(date){
+        var dateOut = new Date(date);
+        return dateOut;
+    };
     
     $scope.addNew = function() {
     	if ($scope.selected) {
