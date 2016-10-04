@@ -146,6 +146,13 @@ angular.module('Admin')
             $scope.catches = response.data;
             console.log($scope.catches);
         });
+    	// get all catch types
+    	$http.get('https://www.nestnz.org/api//catch-type')
+        .then(function(response) {
+            $scope.catch_types = response.data;
+            console.log($scope.catch_types);
+            
+        });
     };
 	
     
