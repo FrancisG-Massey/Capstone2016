@@ -250,6 +250,13 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         					regions.put(regionId, region);
         				}
         				trapline.setRegion(region);
+        				CatchType ct;
+        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_1"));
+        				trapline.getCatchTypes().add(ct);
+        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_2"));
+        				trapline.getCatchTypes().add(ct);
+        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_3"));
+        				trapline.getCatchTypes().add(ct);
         			}
     				loadingProperty.set(false);
     			});
