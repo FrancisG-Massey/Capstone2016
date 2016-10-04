@@ -145,8 +145,26 @@
 	          </button>
 	          <h4 class="modal-title">View Catch History</h4>
 	        </div>
-	        <div class="modal-body">
-	        </div>
+        <div class="modal-body">
+		  <h5 class="text-center"><strong>{{line_selected.name}}</strong><br><br>Trapline number:{{trapline_id}}</h5>
+          <table class="table table-striped" id="tblGrid">
+            <thead id="tblHead">
+              <tr>
+                <th>Name</th>
+                <th>Notes</th>
+                <th>Date </th>
+                <th>Image</th>
+              </tr>
+            </thead>
+            <tbody data-ng-repeat="catch in catches">
+              <tr>
+              	<td>{{catch.catch_type.name}}</td>
+                <td>{{catch.note}}</td>
+                <td>{{catch.logged | date:"dd/MM/yyyy 'at' h:mma"}}</td>
+                <td><a href=/#/catch.img_filename>View Image</td>
+              </tr>
+            </tbody>
+          </table>
 	        <div class="modal-footer">
 	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 	          <button type="button" class="btn btn-primary">Export</button>

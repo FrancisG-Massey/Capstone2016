@@ -147,11 +147,24 @@ angular.module('Admin')
             console.log($scope.catches);
         });
     	// get all catch types
-    	$http.get('https://www.nestnz.org/api//catch-type')
+    	$http.get('https://www.nestnz.org/api/catch-type')
         .then(function(response) {
             $scope.catch_types = response.data;
             console.log($scope.catch_types);
             
+            // attach catch history to relavnt catch types
+            var cat, catch_type;
+        	for (var i = 0; i < $scope.catches.length; i++) {
+        	    cat = $scope.catches[i];
+        	    cat.catch_type = [];
+        	    for (var x = 0; x < $scope.catch_types.length; x++) {
+        	        catch_type = $scope.catch_types[x];
+        	        if (catch_type.id == cat.catchtype_id) {
+        	            cat.catch_type = catch_type;
+        	        }
+        	    }
+        	};
+        	console.log($scope.catches);
         });
     };
 	
