@@ -7,7 +7,7 @@ myApp.controller('HomeController', ['$scope', '$rootScope', function($scope, $ro
   	{  
     	header: 'Mobile Application',
   		name: 'WoodPigeon',
-  		photo: 'img/WoodPigeon.jpg',
+  		photo: 'img/WoodPigeonOriginal.jpg',
   		description:'We will describe our mobile app here and give information on how to download it.',
   		link:'/#/mobile'
   	}, 
