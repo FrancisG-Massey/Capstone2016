@@ -59,7 +59,7 @@ angular.module('Admin')
     
 			
 }])
-.controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route',function ($scope, $rootScope,traps,baits,trap_type,$route) {
+.controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route','$http',function ($scope, $rootScope,traps,baits,trap_type,$route,$http) {
 		//var traplineId = $routeParams.traplineId;
 		$rootScope.wrapClass = undefined;
 		$scope.trapline_id = $route.current.params.traplineId;
@@ -128,12 +128,26 @@ angular.module('Admin')
 	    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
 		}
    
-    $scope.setSelected = function(item){
+	    
+    	
+    	
+    	$scope.setSelected = function(item){
+    		
     	$scope.selected = this.trap;
 		$scope.selected.popup.openPopup();
     	mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
     	
+    	$scope.catches=[];
+    	$scope.catch_types = [];
+    	
+    	// get catch by passing trap id
+    	$http.get('https://www.nestnz.org/api/catch?trap-id='+$scope.selected.id)
+        .then(function(response) {
+            $scope.catches = response.data;
+            console.log($scope.catches);
+        });
     };
+	
     
     $scope.addNew = function() {
     	if ($scope.selected) {
@@ -181,8 +195,7 @@ angular.module('Admin')
     
     $scope.$back = function() { 
         window.history.back();
-      };
-    	
+      };    	
     }])
 
 .controller('AdminVolunteerController', ['$scope','$rootScope','trapline_users','users','$route',function ($scope, $rootScope,trapline_users,users,$route) {
