@@ -34,7 +34,7 @@ public final class ParserTrapline {
 	private String end;	
 	private ParserRegion region;
 	
-	private List<Integer> catchTypes;
+	private List<Long> catchTypes;
 	
 	public ParserTrapline (Trapline trapline) {
 		this.name = trapline.getName();
@@ -52,7 +52,7 @@ public final class ParserTrapline {
 		}
 		this.catchTypes = new ArrayList<>();
 		for (CatchType t : trapline.getCatchTypes()) {
-			this.catchTypes.add(t.getId());
+			this.catchTypes.add(Long.valueOf(t.getId()));
 		}
 	}
 	
@@ -110,11 +110,11 @@ public final class ParserTrapline {
 	}
 	
 	@XmlElement(name="catch_type_ids")	
-	public List<Integer> getCatchTypes() {
+	public List<Long> getCatchTypes() {
 		return catchTypes;
 	}
 
-	public void setCatchTypes(List<Integer> catchTypes) {
+	public void setCatchTypes(List<Long> catchTypes) {
 		this.catchTypes = catchTypes;
 	}
 
