@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,6 +95,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
      * A latch used to make sure all required resources (only catch types at this stage) have loaded before fetching traplines from the cache
      */
     private final CountDownLatch cacheResourceLoading = new CountDownLatch(1);
+    
+    /**
+     * A semaphore used to ensure regions & catch types have been loaded from the server before setting up traplines
+     */
+    private final Semaphore appDataLoading = new Semaphore(0);
     
     public TrapDataService (File trapCachePath, LoginService loginService) throws IOException {
     	Objects.requireNonNull(trapCachePath);
@@ -176,7 +182,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 					status, created, reset);
 			t.getTraps().add(trap);
 		}
-		for (int catchTypeId : pLine.getCatchTypes()) {
+		for (long catchTypeId : pLine.getCatchTypes()) {
 			CatchType cType = catchTypes.getData().get(catchTypeId);
 			t.getCatchTypes().add(cType);
 		}
@@ -231,6 +237,12 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
     			JsonArray array = reader.readArray();
     			LOG.log(Level.INFO, "Response: "+array.toString());
+    			try {
+					//Wait for regions & catch types to load
+    				appDataLoading.acquire(2);
+				} catch (InterruptedException e) {
+					//Silently ignore the interrupt
+				}
     			Platform.runLater(() -> {
     				for (JsonValue value : array) {
         				JsonObject traplineJson = (JsonObject) value;
@@ -340,14 +352,12 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         				}
         				region.setName(regionJson.getString("name"));
         			}
-    				for (Trapline t : traplines) {
-    					Region r = t.getRegion();
-    					t.setRegion(null);
-    					t.setRegion(r);//Forcefully update all the regions
-    				}
     			});
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting regions. Response: "+dataSource.getResponseMessage(), ex);
+			} finally {
+				//Signal region data has been fetched
+				appDataLoading.release();
 			}
     	});
     }
@@ -382,6 +392,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     			});
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting catch types. Response: "+dataSource.getResponseMessage(), ex);
+			} finally {
+				//Signal catch type data has been fetched
+				appDataLoading.release();
 			}
     	});
     }
