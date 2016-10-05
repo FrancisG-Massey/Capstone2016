@@ -42,7 +42,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.postgresql.util.PSQLException;
 
 /**
  *
@@ -310,11 +309,6 @@ public class RequestServlet extends HttpServlet {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                 }
             }
-        }
-        catch (PSQLException ex) {
-            // Null in non-nullable column etc
-            LOG.log(Level.WARNING, "DB constraint violation etc:", ex);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
         catch (ParseException | NumberFormatException ex){
             // Error is written to log lower down the stack so parameter values can be logged.
