@@ -28,7 +28,16 @@
         ORDER BY
             b.bait_id
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO bait
+            (bait_name, bait_imagefilename, bait_note)
+        SELECT
+            #string:name#, #string:img_filename#, #string:note#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            bait_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

@@ -28,7 +28,16 @@
         ORDER BY
             tt.traptype_id
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO traptype
+            (traptype_name, traptype_model, traptype_note)
+        SELECT
+            #string:name#, #string:model#, #string:note#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            traptype_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

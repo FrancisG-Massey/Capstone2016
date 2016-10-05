@@ -31,7 +31,16 @@
         ORDER BY
             tlu.traplineuser_id
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO traplineuser
+            (traplineuser_userid, traplineuser_traplineid, traplineuser_isadmin)
+        SELECT
+            #bigint:user_id#, #bigint:trapline_id#, #boolean:admin#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            traplineuser_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

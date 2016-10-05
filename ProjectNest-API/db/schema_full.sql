@@ -19,9 +19,9 @@
 
 */
 
---DROP SCHEMA IF EXISTS public CASCADE;
---CREATE SCHEMA public;
---ALTER SCHEMA public OWNER TO nestnz;
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+ALTER SCHEMA public OWNER TO nestnz;
 
 
 -- First create the sequences for the auto-incrememting primary keys
@@ -237,6 +237,15 @@ CREATE INDEX s_suid_idx
   ON public.session
   USING btree
   (session_userid);
+
+
+-- Index: public.s_suid_idx
+-- DROP INDEX public.s_suid_idx;
+
+CREATE INDEX s_sst_idx
+  ON public.session
+  USING btree
+  (session_token);
 
 
 -- Table: public.bait

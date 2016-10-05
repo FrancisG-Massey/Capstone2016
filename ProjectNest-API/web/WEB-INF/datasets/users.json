@@ -13,7 +13,10 @@
 
         SELECT
             u.user_id as id, 
-            u.user_name as name, 
+            u.user_name as username,
+            u.user_contactfullname as fullname,
+            u.user_contactemail as email,
+            u.user_contactphone as phone,
             u.user_createdtimestamp as created_timestamp, 
             u.user_createduserid as created_user_id, 
             u.user_isadmin as admin, 
@@ -34,7 +37,16 @@
         ORDER BY
             u.user_id
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO users
+            (user_name, user_password, user_contactfullname, user_contactphone, user_contactemail, user_createdtimestamp, user_createduserid, user_isadmin, user_isinactive)
+        SELECT
+            #string:name#, #string:password#, #string:fullname#, #string:phone#, #string:email#, now()::timestamp, 1, #boolean:admin#, #boolean:inactive#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            user_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }
