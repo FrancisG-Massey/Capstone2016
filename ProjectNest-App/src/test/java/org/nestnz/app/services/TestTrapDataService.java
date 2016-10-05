@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +41,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
@@ -77,6 +79,10 @@ public class TestTrapDataService {
 		cachePath = Files.createTempDirectory("trapDataCache");
 		dataService = new TrapDataService(cachePath.toFile(), null);
 		
+		Path testData = Paths.get(TestTrapDataService.class.getResource("catchTypes.json").toURI());
+		Files.copy(testData, cachePath.resolve("catchTypes.json"), StandardCopyOption.REPLACE_EXISTING);
+		LOG.log(Level.INFO, String.format("Copied sample catch types from %s to %s", testData.toString(), cachePath.resolve("catchTypes.json").toString()));
+		
 		cachePath = cachePath.resolve("traplines");
 	}
 
@@ -106,6 +112,7 @@ public class TestTrapDataService {
 		LOG.log(Level.INFO, String.format("Moved test resource from %s to %s", testData.toString(), cachePath.resolve("20.json").toString()));
 		
 		dataService.getTraplines().clear();
+		dataService.fetchCatchTypes();
 		dataService.fetchTraplines();
 		
 		//Since traplines are loaded asynchronosly, we need to add a listener & wait for them to load
@@ -147,6 +154,7 @@ public class TestTrapDataService {
     	assumeTrue(Files.exists(cachePath.resolve("20.json")));
     	
     	dataService.getTraplines().clear();
+		dataService.fetchCatchTypes();
 		dataService.fetchTraplines();
 		
 		//Since traplines are loaded asynchronosly, we need to add a listener & wait for them to load
@@ -169,6 +177,33 @@ public class TestTrapDataService {
 		assertEquals(trap1, trapline.getTraps().get(0));//Make sure trap #1 is saved & loaded corr
 		
 		assertEquals(trap2, trapline.getTraps().get(1));//Make sure trap #2 is saved & loaded correctlyectly
+	}
+	
+	@Test
+	public void testLoadCatchTypes () throws Exception {
+		CompletableFuture<Map<Integer, CatchType>> future = new CompletableFuture<>();
+		
+		GluonObservableObject<Map<Integer, CatchType>> res = dataService.fetchCatchTypes();
+		
+		res.initializedProperty().addListener((obs, oldVal, newVal) -> {
+			future.complete(res.get());
+		});
+		
+		Map<Integer, CatchType> catchTypes;
+		
+		if (res.isInitialized()) {//If the data is fetched before the listener gets registered, get the results immediately
+			catchTypes = res.get();
+		} else {//Otherwise, wait at least two seconds before giving up
+			catchTypes = future.get(2, TimeUnit.SECONDS);
+		}
+		
+		assertEquals(3, catchTypes.size());//Make sure 3 distinct catch types were fetched
+		
+		assertTrue(catchTypes.containsKey(2));
+		
+		CatchType oracle = new CatchType(2, "stoat", null);
+		
+		assertEquals(oracle, catchTypes.get(2));//Check one of the catch types to ensure it was fetched successfully
 	}
 	
 	private void updateAndBlock (Trapline trapline) throws Exception {

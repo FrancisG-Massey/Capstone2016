@@ -51,6 +51,7 @@ import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
 import org.nestnz.app.util.BackgroundTasks;
 
+import com.gluonhq.connect.ConnectState;
 import com.gluonhq.connect.GluonObservableObject;
 import com.gluonhq.connect.converter.InputStreamInputConverter;
 import com.gluonhq.connect.converter.JsonInputConverter;
@@ -66,6 +67,7 @@ import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -491,17 +493,19 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	return result;
 	}
 	
-	public void fetchCatchTypes () {
+	protected GluonObservableObject<Map<Integer, CatchType>> fetchCatchTypes () {
 		File savedFile = new File(cachePath, "catchTypes.json");
 		
 		if (!savedFile.exists()) {
-			return;//No cached data exists
+			return null;//No cached data exists
 		}
 		 
 		FileClient fileClient = FileClient.create(savedFile);
 		
 		InputStreamInputConverter<ParserCatchTypeList> converter = new JsonInputConverter<>(ParserCatchTypeList.class);
-
+		
+		GluonObservableObject<Map<Integer, CatchType>> results = new GluonObservableObject<>();
+		
 		GluonObservableObject<ParserCatchTypeList> cTypes = DataProvider.retrieveObject(fileClient.createObjectDataReader(converter));
 		cTypes.initializedProperty().addListener((obs, oldValue, newValue) -> {
 			if (newValue) {
@@ -517,14 +521,20 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 							}
 							catchTypes.getData().put(c.getId(), c);
 						}
+						results.setValue(catchTypes.getData());
+						results.setState(ConnectState.SUCCEEDED);
 					}
 				} catch (RuntimeException | MalformedURLException ex) {
+					results.setException(ex);
+					results.setState(ConnectState.FAILED);
 					LOG.log(Level.WARNING, "Failed to load data from saved catch types file "+savedFile, ex);
 					savedFile.delete();//This error means the cache file must be corrupted, so delete it (we can always get the data back from the server when needed)
 				} finally {
+                    ((SimpleBooleanProperty) results.initializedProperty()).set(true);
 					cacheResourceLoading.countDown();//Signal the resource loaded regardless of whether an error occurred or not, otherwise the trapline loading process will wait forever
 				}
 			}
 		});
+		return results;
 	}
 }

@@ -31,4 +31,6 @@
       	"last_reset" : "2016-08-16T10:36:07",
       	"bait_id" : "123456789101112"
 	}],
-"name":"Test trapline","start":"Test Start","end":null,"id":20,"region":{"id":20,"name":"Test Region"}}
+"name":"Test trapline","start":"Test Start","end":null,"id":20,
+"region":{"id":20,"name":"Test Region"},
+"catch_type_ids":[]}
