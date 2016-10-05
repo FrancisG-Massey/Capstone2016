@@ -75,7 +75,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final ObservableList<Trapline> traplines = FXCollections.observableArrayList(trapline -> {
     	return new Observable[] { trapline.nameProperty(), trapline.regionProperty(), trapline.getTraps(),
-    			trapline.endProperty(), trapline.startProperty() };
+    			trapline.endProperty(), trapline.startProperty(), trapline.getCatchTypes() };
     });
     
     private final Map<Integer, Region> regions = new HashMap<>();
@@ -252,11 +252,17 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         				trapline.setRegion(region);
         				CatchType ct;
         				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_1"));
-        				trapline.getCatchTypes().add(ct);
+        				if (ct != null) {
+        					trapline.getCatchTypes().add(ct);
+        				}
         				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_2"));
-        				trapline.getCatchTypes().add(ct);
+        				if (ct != null) {
+        					trapline.getCatchTypes().add(ct);
+        				}
         				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_3"));
-        				trapline.getCatchTypes().add(ct);
+        				if (ct != null) {
+        					trapline.getCatchTypes().add(ct);
+        				}
         			}
     				loadingProperty.set(false);
     			});
@@ -478,7 +484,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 		if (!savedFile.exists()) {
 			return;//No cached data exists
 		}
-		
+		 
 		FileClient fileClient = FileClient.create(savedFile);
 		
 		InputStreamInputConverter<ParserCatchTypeList> converter = new JsonInputConverter<>(ParserCatchTypeList.class);
