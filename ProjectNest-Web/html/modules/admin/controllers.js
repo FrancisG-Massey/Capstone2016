@@ -5,6 +5,7 @@ angular.module('Admin')
 	$rootScope.wrapClass = undefined;
     $scope.regions = region.data;
     $scope.traplines = trapline.data;
+    console.log($scope.traplines);
     /*$http.get('https://www.nestnz.org/api/damage')
     .then(function(response) {
         $scope.trapline = response.data;
@@ -191,12 +192,12 @@ angular.module('Admin')
             end = size;
             start = size-$scope.gap;
             start = start < 0 ? 0 : start;
-            console.log(start);
+            //console.log(start);
         }
         for (var i = start; i < end; i++) {
             ret.push(i);
         }        
-         console.log(ret);        
+         //console.log(ret);        
         return ret;
     };
     
@@ -213,7 +214,7 @@ angular.module('Admin')
     };
     
     $scope.setPage = function () {
-    	console.log(this.n);
+    	//console.log(this.n);
         $scope.currentPage = this.n;
     };
     
@@ -401,6 +402,10 @@ angular.module('Admin')
 			}
 		}
 	};
+    $scope.formatDate = function(date){
+        var dateOut = new Date(date);
+        return dateOut;
+    };
 	/*var usersForTrapLine = [], trapLineUser, volunteer;
 	for (var i = 0; i < $scope.traplineUsers.length; i++) {
 		trapLineUser = $scope.traplineUsers[i];
@@ -451,12 +456,12 @@ angular.module('Admin')
             end = size;
             start = size-$scope.gap;
             start = start < 0 ? 0 : start;
-            console.log(start);
+            //console.log(start);
         }
         for (var i = start; i < end; i++) {
             ret.push(i);
         }        
-         console.log(ret);        
+         //console.log(ret);        
         return ret;
     };
     
@@ -473,7 +478,7 @@ angular.module('Admin')
     };
     
     $scope.setPage = function () {
-    	console.log(this.n);
+    	//console.log(this.n);
         $scope.currentPage = this.n;
     };
     $scope.$back = function() { 

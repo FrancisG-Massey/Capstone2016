@@ -25,7 +25,7 @@
             <td scope="row">{{volunteer.id}}</td>
             <td>{{volunteer.name}}</td>
             <td>{{volunteer.email}}</td>
-            <td>{{volunteer.created_timestamp |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
+            <td>{{formatDate(volunteer.created_timestamp) |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
             <td>{{volunteer.admin?"Admin":"Volunteer"}}</td>
           </tr>    
         </tbody>
@@ -56,7 +56,7 @@
     <div class="col-sm-5"> 
       <div class="well">
         <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'Add New Volunteer'}}</h3>
-        <p>{{selected.id ? 'First Volunteered:' + (selected.created_timestamp  |  date:"dd MMMM yyyy") : " "}}</p>
+        <p>{{selected.id ? 'First Volunteered: ' + (formatDate(selected.created_timestamp)  |  date:"dd MMMM yyyy") : " "}}</p>
         <div class="row">
           <div class="col-md-6 form-group">
             <label>First Name</label>
