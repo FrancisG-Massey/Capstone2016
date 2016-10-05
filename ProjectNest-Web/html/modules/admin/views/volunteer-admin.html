@@ -14,7 +14,7 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Full Name</th>
+            <th>User Name</th>
             <th>Email</th>
             <th>Start Date</th>
             <th>Permission</th>
@@ -23,7 +23,7 @@
         <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
           <tr data-ng-click="setSelected();" class="{{volunteer == selected ? 'success' : ''}}">
             <td scope="row">{{volunteer.id}}</td>
-            <td>{{volunteer.name}}</td>
+            <td>{{volunteer.username}}</td>
             <td>{{volunteer.email}}</td>
             <td>{{formatDate(volunteer.created_timestamp) |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
             <td>{{volunteer.admin?"Admin":"Volunteer"}}</td>
@@ -59,15 +59,15 @@
         <p>{{selected.id ? 'First Volunteered: ' + (formatDate(selected.created_timestamp)  |  date:"dd MMMM yyyy") : " "}}</p>
         <div class="row">
           <div class="col-md-6 form-group">
-            <label>First Name</label>
+            <label>Full Name</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.name}}">
+              <input type="text" class="form-control" value ="{{selected.username}}">
             </div>
           </div>
           <div class="col-md-6 form-group">  
-            <label>Last Name</label>
+            <label>User Name</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.lastName}}">
+              <input type="text" class="form-control" value ="{{selected.fullname}}">
             </div>
           </div>
         </div>

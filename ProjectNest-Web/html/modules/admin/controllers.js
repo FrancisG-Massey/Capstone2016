@@ -6,30 +6,6 @@ angular.module('Admin')
     $scope.regions = region.data;
     $scope.traplines = trapline.data;
     console.log($scope.traplines);
-    /*$http.get('https://www.nestnz.org/api/damage')
-    .then(function(response) {
-        $scope.trapline = response.data;
-        console.log($scope.trapline);
-    });*/
-
-	/*$scope.traplines = [
-	                    {
-	                    	"end_tag":"Woodville",
-	                    	"id": 1,
-	                    	"img_filename":"manawatu_gorge.png",
-	                    	"name":"Manawatu Gorge Tawa",
-	                    	"start_tag":"Ashhurst",
-	                    	"region_id":1	
-	                    },
-	                    {
-	                    	"end_tag":"Back",
-	                    	"id": 2,
-	                    	"img_filename":"johnsonville_river.png",
-	                    	"name":"Johnsonville River",
-	                    	"start_tag":"Front",
-	                    	"region_id":2
-	                    }
-	                   ];*/
 
 	//console.log($rootScope.traps);
 	
@@ -71,24 +47,8 @@ angular.module('Admin')
 		$scope.trap_type = trap_type;
 		console.log($scope.trap_type);
 
-	        	    
-	   /* $scope.baits =[
-		    {
-				"id" : 123456789101112,
-				"name" : "egg"
-			},
-			{
-				"id" : 123456789101111,
-				"name" : "rabbit"
-			},
-			{
-				"id" : 49506062,
-				"name" : "poisonA"
-			}
-		];*/
 
-
-	    
+		// pagination
 	    var pageLength = 10,
 	    	numTraps = traps.length,
 	    	trapPages = [],
@@ -231,167 +191,7 @@ angular.module('Admin')
     console.log($scope.trapline_users);
     $scope.users = users.data;
     console.log($scope.users);
-	/*$scope.volunteers = [
-	                 		{
-	                 			id: 1,
-	                 			firstNames : 'John',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},	
-	                 		{
-	                 			id: 2,
-	                 			firstNames : 'John1',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 3,
-	                 			firstNames : 'John2',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 4,
-	                 			firstNames : 'John3',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 5,
-	                 			firstNames : 'John4',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 6,
-	                 			firstNames : 'John5',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 7,
-	                 			firstNames : 'John6',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 8,
-	                 			firstNames : 'John7',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 9,
-	                 			firstNames : 'John8',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 10,
-	                 			firstNames : 'John9',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		},
-	                 		{
-	                 			id: 11,
-	                 			firstNames : 'John10',
-	                 			lastName: 'Smith',
-	                 			email: 'johnsmith@yahoo.com',
-	                 			startDate: '2016-04-16T10:26:07',
-	                 			permission: 'none'
-	                 			
-	                 		}
-	                 		
-	                 		];
-	
-	$scope.traplineUsers = [
-		    {
-				userId: 1,
-				traplineId : 1,
-				roles:"none"
-			},	
-		    {
-				userId: 2,
-				traplineId : 2,
-				roles:"none"
-			},	
-		    {
-				userId: 3,
-				traplineId : 1,
-				roles:"none"
-			},	
-		    {
-				userId: 4,
-				traplineId : 2,
-				roles:"none"
-			},	
-		    {
-				userId: 5,
-				traplineId : 1,
-				roles:"none"
-			},	
-		    {
-				userId: 6,
-				traplineId : 2,
-				roles:"none"
-			},	
-		    {
-				userId: 7,
-				traplineId : 1,
-				roles:"none"
-			},	
-		    {
-				userId: 8,
-				traplineId : 2,
-				roles:"none"
-			},	
-		    {
-				userId: 9,
-				traplineId : 1,
-				roles:"none"
-			},	
-		    {
-				userId: 10,
-				traplineId : 2,
-				roles:"none"
-			},	
-		    {
-				userId: 11,
-				traplineId : 1,
-				roles:"none"
-			}	                       
-	];*/
-    
+   
 	var usersForTrapLine = [], trapLineUser, user;
 	for(var i = 0; i< $scope.trapline_users.length; i++){
 		trapLineUser = $scope.trapline_users[i];
@@ -402,27 +202,15 @@ angular.module('Admin')
 			}
 		}
 	};
+	
     $scope.formatDate = function(date){
         var dateOut = new Date(date);
         return dateOut;
     };
-	/*var usersForTrapLine = [], trapLineUser, volunteer;
-	for (var i = 0; i < $scope.traplineUsers.length; i++) {
-		trapLineUser = $scope.traplineUsers[i];
-		if (trapLineUser.traplineId ==  traplineId) {
-			for (var x = 0; x < $scope.volunteers.length; x++) {
-				volunteer = $scope.volunteers[x];
-				if (volunteer.id == trapLineUser.userId) {
-					usersForTrapLine.push(volunteer);
-				}
-			}
-		}
-	};*/
 
     $scope.addNew = function() {
     	$scope.selected = false;
     };
-	
 	
 	var pageLength = 10,
 		numVolunteers = usersForTrapLine.length,
