@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.postgresql.util.PSQLException;
 
 /**
  * Assists with connecting to the Nest DB via JDBC:
@@ -264,7 +263,7 @@ public class Common {
                             throw new java.lang.TypeNotPresentException(paramType, null);
                     }
                 }
-                catch (SQLFeatureNotSupportedException | PSQLException ex) {
+                catch (SQLFeatureNotSupportedException ex) {
                     // Attempt to parse as string if the db driver does not support a particular datatype
                     // The db may be able to implicitely case it to the correct type if it needs to.
                     if (nextParamValue == null) {
