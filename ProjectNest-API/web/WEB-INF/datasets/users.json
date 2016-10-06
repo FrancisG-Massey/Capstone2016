@@ -43,7 +43,8 @@
         SELECT
             #string:name#, #string:password#, #string:fullname#, #string:phone#, #string:email#, now()::timestamp, 1, #boolean:admin#, #boolean:inactive#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND 
+            (#string:name# IS NOT NULL) AND (#string:password# IS NOT NULL)
         RETURNING
             user_id
     ",

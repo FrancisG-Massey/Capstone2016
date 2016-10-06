@@ -38,7 +38,8 @@
         SELECT
             #string:name#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND
+            (#string:name# IS NOT NULL)
         RETURNING
             region_id
     ",

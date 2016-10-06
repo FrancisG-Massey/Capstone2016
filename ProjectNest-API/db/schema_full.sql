@@ -384,9 +384,9 @@ CREATE TABLE public.trap
 (
   trap_id bigint NOT NULL DEFAULT nextval('trap_trap_id_seq'::regclass),
   trap_traplineid bigint NOT NULL,
-  trap_number bigint NOT NULL,
-  trap_coordx numeric NOT NULL,
-  trap_coordy numeric NOT NULL,
+  trap_number bigint,
+  trap_coordx numeric,
+  trap_coordy numeric,
   trap_traptypeid bigint NOT NULL,
   trap_status integer NOT NULL DEFAULT 1,
   trap_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
@@ -401,7 +401,14 @@ CREATE TABLE public.trap
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT trap_traptype_id_fkey FOREIGN KEY (trap_traptypeid)
       REFERENCES public.traptype (traptype_id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE RESTRICT
+      ON UPDATE CASCADE ON DELETE RESTRICT,
+  -- Enforce that neither coord must be null, or they must both be.
+  -- This is due to traps possibly being created in the web ui before being synced to coords.
+  -- In this case they will probably be created with nulls ((0, 0) doesn't make sense).
+  -- Having one axis be a null while the other one isn't doesn't make sense either.
+  -- So we enforce that they must both be updated at once.
+  CONSTRAINT trap_coords_all_or_nothing CHECK 
+      (((trap_coordx IS NULL) AND (trap_coordy IS NULL)) OR ((trap_coordx IS NOT NULL) AND (trap_coordy IS NOT NULL)))
 )
 WITH (
   OIDS=FALSE

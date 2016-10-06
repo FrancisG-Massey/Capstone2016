@@ -48,7 +48,8 @@
         SELECT
             #bigint:trap_id#, #bigint:traptype_id#, 1, #bigint:catchtype_id#, #bigint:bait_id#, #string:note#, #timestamp:logged#, #string:img_filename#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND 
+            (#bigint:trap_id# IS NOT NULL) AND (#bigint:traptype_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL) AND (#bigint:bait_id# IS NOT NULL)
         RETURNING
             catch_id
     ",
