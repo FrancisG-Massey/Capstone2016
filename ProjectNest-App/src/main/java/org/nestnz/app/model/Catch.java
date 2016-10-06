@@ -42,8 +42,13 @@ public final class Catch {
 	
 
 	public Catch(CatchType catchType) {
+		this(catchType, LocalDateTime.now());
+	}
+	
+
+	public Catch(CatchType catchType, LocalDateTime timestamp) {
 		this.catchTypeProperty.set(catchType);
-		this.timestamp = LocalDateTime.now();
+		this.timestamp = timestamp;
 	}
 
 	public Optional<Integer> getId() {

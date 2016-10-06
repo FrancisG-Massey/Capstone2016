@@ -17,5 +17,43 @@
 package org.nestnz.app.parser;
 
 public final class ParserCatch {
+	
+	private int typeId;
+	
+	private String timestamp;
+	
+	private String note;
+	
+	public ParserCatch () {
+		
+	}
 
+	public int getTypeId() {
+		return typeId;
+	}
+
+	public void setTypeId(int typeId) {
+		this.typeId = typeId;
+	}
+
+	public String getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	@Override
+	public String toString() {
+		return "ParserCatch [typeId=" + typeId + ", timestamp=" + timestamp + ", note=" + note + "]";
+	}
 }

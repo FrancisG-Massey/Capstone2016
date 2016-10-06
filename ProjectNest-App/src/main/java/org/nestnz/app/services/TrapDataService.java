@@ -39,12 +39,14 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
 
+import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.Cacheable;
+import org.nestnz.app.parser.ParserCatch;
 import org.nestnz.app.parser.ParserCatchType;
 import org.nestnz.app.parser.ParserCatchTypeList;
 import org.nestnz.app.parser.ParserTrap;
@@ -184,6 +186,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			Trap trap = new Trap(pTrap.getId(), pTrap.getNumber(), 
 					pTrap.getCoordLat(), pTrap.getCoordLong(), 
 					status, created, reset);
+			for (ParserCatch pCatch : pTrap.getCatches()) {
+				CatchType cType = catchTypes.getData().get(pCatch.getTypeId());			
+				LocalDateTime timestamp = LocalDateTime.parse(pCatch.getTimestamp());
+				trap.getCatches().add(new Catch(cType, timestamp));
+			}
 			t.getTraps().add(trap);
 		}
 		for (long catchTypeId : pLine.getCatchTypes()) {
