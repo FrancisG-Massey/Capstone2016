@@ -356,9 +356,10 @@ public class NavigationView extends View {
     	Collections.sort(orderedTraps, (t1, t2) -> {
     		return t1.getNumber() - t2.getNumber();
     	});
-    	
-    	setTrap(orderedTraps.get(0));
+
+    	setTrap(null);
     	trapPositionLayer.getTraps().setAll(trapline.getTraps());
+    	setTrap(orderedTraps.get(0));
     }
 
     @Override
