@@ -554,7 +554,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION public.user_defaults()
-  OWNER TO postgres;
+  OWNER TO nestnz;
 
 -- And link to the events for the column change
 
@@ -587,7 +587,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION public.catch_defaults()
-  OWNER TO postgres;
+  OWNER TO nestnz;
 
 
 
@@ -623,7 +623,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION public.session_defaults()
-  OWNER TO postgres;
+  OWNER TO nestnz;
 
 -- And link to the events for the column change
 
@@ -662,7 +662,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION public.trap_defaults()
-  OWNER TO postgres;
+  OWNER TO nestnz;
 
 -- And link to the events for the column change
 
@@ -695,7 +695,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION public.traplineuser_defaults()
-  OWNER TO postgres;
+  OWNER TO nestnz;
 
 -- And link to the events for the column change
 
