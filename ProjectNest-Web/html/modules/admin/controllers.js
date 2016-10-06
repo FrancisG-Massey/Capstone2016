@@ -29,6 +29,16 @@ angular.module('Admin')
     	$scope.selected = this.trapline;
     	$scope.selected.region = region_selected;
     	$rootScope.line_selected = $scope.selected;
+    	
+    	// set textbox values as selected trapline values using ng-binds
+    	$scope.line_name = $scope.selected.name;
+    	$scope.region_id = $scope.selected.region.id;
+    	$scope.startTag = $scope.selected.start_tag;
+    	$scope.endTag = $scope.selected.end_tag;
+    	console.log($scope.line_name);
+    	console.log($scope.startTag);
+    	console.log($scope.endTag);
+    	console.log($scope.region_id);
     };
 
     $scope.addNew = function() {  	
@@ -36,7 +46,38 @@ angular.module('Admin')
     	$rootScope.region_selected = undefined;
     };
     
+    $scope.Save = function () {
 
+    	
+		var data = {
+				 "name": $scope.line_name,
+	             "region_id": parseInt($scope.region_id),
+	             "start_tag": $scope.startTag,
+	             "end_tag": $scope.endTag,
+	             "img_filename": "hello"
+
+		};	
+     
+     	$http.post('https://www.nestnz.org/api/trapline',data)
+        .then(function(data, status, header, config) {
+            $scope.ResponseDetails = "Data: " + data +
+            "<hr />status: " + status +
+            "<hr />headers: " + header +
+            "<hr />config: " + config;
+            console.log($scope.ResponseDetails);
+        });
+         
+       /*  $http.post('https://www.nestnz.org/api/trapline', data, config)
+         .success(function (data, status, headers, config) {
+             $scope.PostDataResponse = data;
+         })
+         .error(function (data, status, header, config) {
+             $scope.ResponseDetails = "Data: " + data +
+                 "<hr />status: " + status +
+                 "<hr />headers: " + header +
+                 "<hr />config: " + config;
+         });*/
+     };
 			
 }])
 .controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route','$http','catch_types',function ($scope, $rootScope,traps,baits,trap_type,$route,$http,catch_types) {

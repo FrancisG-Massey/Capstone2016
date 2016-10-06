@@ -28,14 +28,14 @@
           <div class="col-md-6 form-group">
             <label>Name</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.name}}">
+              <input type="text" class="form-control"  ng-model="line_name" >
             </div>
           </div>
 		  <div class="col-md-6 form-group">
 			<label>Region</label>
 			<select class="form-control">
-			<option data-ng-selected="region.name == selected.region.name"
-			value="{{region.name}}" data-ng-repeat="region in regions">{{region.name}}</option>
+			<option data-ng-selected="region.name == selected.region.name" 
+			ng-model="region_id" data-ng-repeat="region in regions">{{region.name}}</option>
 			</select>
 		</div>
 		</div>
@@ -43,13 +43,13 @@
           <div class="col-md-6 form-group">
             <label>Start</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.start_tag}}">
+              <input type="text" class="form-control"  ng-model ="startTag">
             </div>
           </div>
           <div class="col-md-6 form-group">  
             <label>End</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.end_tag}}">
+              <input type="text" class="form-control"  ng-model= "endTag">
             </div>
           </div>
         </div>
