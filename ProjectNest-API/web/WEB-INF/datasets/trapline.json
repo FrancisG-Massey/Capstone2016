@@ -13,6 +13,7 @@
 
         -- Common Catches
         -- This may get slow, but we can abstract to a view later if required
+        -- Likely can be better implemented with a window function, but time is of the essence...
         cc AS (
             SELECT
                 tl.trapline_id,
@@ -64,7 +65,8 @@
         SELECT
             #string:name#, #bigint:region_id#, #string:start_tag#, #string:end_tag#, #string:img_filename#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND
+            (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL)
         RETURNING
             trapline_id
     ",

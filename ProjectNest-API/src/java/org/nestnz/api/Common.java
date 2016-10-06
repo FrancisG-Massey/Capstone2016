@@ -274,6 +274,11 @@ public class Common {
                 }
             }
         } catch (
+            SQLException ex
+        ) {
+            LOG.log(Level.INFO, "An unexpected SQLException has occured. Unable to continue parsing: {0}", ex.getMessage());
+            throw ex;
+        } catch (
             ParseException | NumberFormatException ex
         ) {
             // Write log within inner catch block so we still have params

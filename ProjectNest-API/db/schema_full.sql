@@ -190,8 +190,8 @@ CREATE TABLE public.users
   user_contactemail text,
   user_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   user_createduserid bigint,
-  user_isadmin boolean NOT NULL DEFAULT false,
-  user_isinactive boolean NOT NULL DEFAULT false,
+  user_isadmin boolean NOT NULL DEFAULT FALSE,
+  user_isinactive boolean NOT NULL DEFAULT FALSE,
   CONSTRAINT users_pkey PRIMARY KEY (user_id),
   -- All usernames must be unique
   CONSTRAINT users_user_name_key UNIQUE (user_name),
@@ -245,7 +245,7 @@ CREATE INDEX s_suid_idx
 CREATE INDEX s_sst_idx
   ON public.session
   USING btree
-  (session_token);
+  (session_token COLLATE pg_catalog."default", session_userid);
 
 
 -- Table: public.bait
@@ -342,7 +342,7 @@ CREATE TABLE public.traplineuser
   traplineuser_id bigint NOT NULL DEFAULT nextval('traplineuser_traplineuser_id_seq'::regclass),
   traplineuser_userid bigint NOT NULL,
   traplineuser_traplineid bigint NOT NULL,
-  traplineuser_isadmin boolean NOT NULL,
+  traplineuser_isadmin boolean NOT NULL DEFAULT FALSE,
   CONSTRAINT traplineuser_pkey PRIMARY KEY (traplineuser_id),
   CONSTRAINT traplineuser_traplineuser_traplineid_fkey FOREIGN KEY (traplineuser_traplineid)
       REFERENCES public.trapline (trapline_id) MATCH SIMPLE
@@ -384,9 +384,9 @@ CREATE TABLE public.trap
 (
   trap_id bigint NOT NULL DEFAULT nextval('trap_trap_id_seq'::regclass),
   trap_traplineid bigint NOT NULL,
-  trap_number bigint NOT NULL,
-  trap_coordx numeric NOT NULL,
-  trap_coordy numeric NOT NULL,
+  trap_number bigint,
+  trap_coordx numeric,
+  trap_coordy numeric,
   trap_traptypeid bigint NOT NULL,
   trap_status integer NOT NULL DEFAULT 1,
   trap_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
@@ -401,7 +401,14 @@ CREATE TABLE public.trap
       ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT trap_traptype_id_fkey FOREIGN KEY (trap_traptypeid)
       REFERENCES public.traptype (traptype_id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE RESTRICT
+      ON UPDATE CASCADE ON DELETE RESTRICT,
+  -- Enforce that neither coord must be null, or they must both be.
+  -- This is due to traps possibly being created in the web ui before being synced to coords.
+  -- In this case they will probably be created with nulls ((0, 0) doesn't make sense).
+  -- Having one axis be a null while the other one isn't doesn't make sense either.
+  -- So we enforce that they must both be updated at once.
+  CONSTRAINT trap_coords_all_or_nothing CHECK 
+      (((trap_coordx IS NULL) AND (trap_coordy IS NULL)) OR ((trap_coordx IS NOT NULL) AND (trap_coordy IS NOT NULL)))
 )
 WITH (
   OIDS=FALSE
@@ -519,3 +526,191 @@ CREATE INDEX c_cbid_idx
   ON public.catch
   USING btree
   (catch_baitid);
+
+
+
+-- Trigger functions to enforce non-null values on tables with defaults
+-- the request handler uses SQL templates which may return nulls
+-- and this doesn't work well with columns set to not accept nulls
+-- so we can manually handle these here without too much work,
+-- or without remodelling the API.
+
+
+-- Set default values for columns in users
+
+-- Function: public.user_defaults()
+-- DROP FUNCTION public.user_defaults();
+
+CREATE OR REPLACE FUNCTION public.user_defaults()
+  RETURNS trigger AS
+$BODY$
+    BEGIN
+        -- Check that all user fields with defaults have values
+        IF NEW.user_createdtimestamp IS NULL THEN
+            NEW.user_createdtimestamp := now()::timestamp;
+        END IF;
+        IF NEW.user_isadmin IS NULL THEN
+            NEW.user_isadmin := FALSE;
+        END IF;
+        IF NEW.user_isinactive IS NULL THEN
+            NEW.user_isinactive := FALSE;
+        END IF;
+        RETURN NEW;
+    END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.user_defaults()
+  OWNER TO nestnz;
+
+-- And link to the events for the column change
+
+-- Trigger: user_defaults_trigger on public.users
+-- DROP TRIGGER user_defaults_trigger ON public.users;
+
+CREATE TRIGGER user_defaults_trigger
+  BEFORE INSERT OR UPDATE
+  ON public.users
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.user_defaults();
+
+
+-- Set default values for columns in catch
+
+-- Function: public.catch_defaults()
+-- DROP FUNCTION public.catch_defaults();
+
+CREATE OR REPLACE FUNCTION public.catch_defaults()
+  RETURNS trigger AS
+$BODY$
+    BEGIN
+        -- Check that all catch fields with defaults have values
+        IF NEW.catch_loggedtimestamp IS NULL THEN
+            NEW.catch_loggedtimestamp := now()::timestamp;
+        END IF;
+        RETURN NEW;
+    END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.catch_defaults()
+  OWNER TO nestnz;
+
+
+
+-- And link to the events for the column change
+
+-- Trigger: catch_defaults_trigger on public.catch
+-- DROP TRIGGER catch_defaults_trigger ON public.catch;
+
+CREATE TRIGGER catch_defaults_trigger
+  BEFORE INSERT OR UPDATE
+  ON public.catch
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.catch_defaults();
+
+
+
+-- Set default values for columns in session
+
+-- Function: public.session_defaults()
+-- DROP FUNCTION public.session_defaults();
+
+CREATE OR REPLACE FUNCTION public.session_defaults()
+  RETURNS trigger AS
+$BODY$
+    BEGIN
+        -- Check that all session fields with defaults have values
+        IF NEW.session_createdtimestamp IS NULL THEN
+            NEW.session_createdtimestamp := now()::timestamp;
+        END IF;
+        RETURN NEW;
+    END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.session_defaults()
+  OWNER TO nestnz;
+
+-- And link to the events for the column change
+
+-- Trigger: session_defaults_trigger on public.session
+-- DROP TRIGGER session_defaults_trigger ON public.session;
+
+CREATE TRIGGER session_defaults_trigger
+  BEFORE INSERT OR UPDATE
+  ON public.session
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.session_defaults();
+
+
+-- Set default values for columns in trap
+
+-- Function: public.trap_defaults()
+-- DROP FUNCTION public.trap_defaults();
+
+CREATE OR REPLACE FUNCTION public.trap_defaults()
+  RETURNS trigger AS
+$BODY$
+    BEGIN
+        -- Check that all trap fields with defaults have values
+        IF NEW.trap_createdtimestamp IS NULL THEN
+            NEW.trap_createdtimestamp := now()::timestamp;
+        END IF;
+        IF NEW.trap_lastresettimestamp IS NULL THEN
+            NEW.trap_lastresettimestamp := now()::timestamp;
+        END IF;
+        IF NEW.trap_status IS NULL THEN
+            NEW.trap_status := 1;
+        END IF;
+        RETURN NEW;
+    END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.trap_defaults()
+  OWNER TO nestnz;
+
+-- And link to the events for the column change
+
+-- Trigger: trap_defaults_trigger on public.trap
+-- DROP TRIGGER trap_defaults_trigger ON public.trap;
+
+CREATE TRIGGER trap_defaults_trigger
+  BEFORE INSERT OR UPDATE
+  ON public.trap
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.trap_defaults();
+
+
+-- Set default values for columns in trap
+
+-- Function: public.traplineuser_defaults()
+-- DROP FUNCTION public.traplineuser_defaults();
+
+CREATE OR REPLACE FUNCTION public.traplineuser_defaults()
+  RETURNS trigger AS
+$BODY$
+    BEGIN
+        -- Check that all traplineuser fields with defaults have values
+        IF NEW.traplineuser_isadmin IS NULL THEN
+            NEW.traplineuser_isadmin := FALSE;
+        END IF;
+        RETURN NEW;
+    END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.traplineuser_defaults()
+  OWNER TO nestnz;
+
+-- And link to the events for the column change
+
+-- Trigger: traplineuser_defaults_trigger on public.trap
+-- DROP TRIGGER traplineuser_defaults_trigger ON public.trap;
+
+CREATE TRIGGER traplineuser_defaults_trigger
+  BEFORE INSERT OR UPDATE
+  ON public.traplineuser
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.traplineuser_defaults();

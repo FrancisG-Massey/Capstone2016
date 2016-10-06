@@ -34,7 +34,8 @@
         SELECT
             #string:name#, #string:img_filename#, #string:note#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND 
+            (#string:name# IS NOT NULL)
         RETURNING
             bait_id
     ",

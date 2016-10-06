@@ -34,7 +34,8 @@
         SELECT
             #string:name#, #string:model#, #string:note#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND
+            (NOT (traptype_model IS NULL AND traptype_name IS NULL))
         RETURNING
             traptype_id
     ",
