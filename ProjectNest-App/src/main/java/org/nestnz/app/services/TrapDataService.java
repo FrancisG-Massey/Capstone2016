@@ -265,7 +265,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         					region = new Region(regionId);
         					regions.put(regionId, region);
         				}
-        				trapline.setRegion(region);
+        				trapline.setRegion(region);        				
+        				trapline.getCatchTypes().clear();
+        				
         				CatchType ct;
         				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_1"));
         				if (ct != null) {
