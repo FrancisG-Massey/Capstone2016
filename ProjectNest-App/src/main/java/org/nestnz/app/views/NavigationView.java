@@ -18,9 +18,6 @@ package org.nestnz.app.views;
 
 import static org.nestnz.app.util.NavigationTools.getDistance;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +45,8 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -94,7 +93,7 @@ public class NavigationView extends View {
     
     final Button next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
     
-    final List<Trap> orderedTraps = new ArrayList<>();
+    ObservableList<Trap> orderedTraps = FXCollections.observableArrayList();
     
     int currentPointer = 0;
     
@@ -139,9 +138,7 @@ public class NavigationView extends View {
     	topBox.setAlignment(Pos.CENTER);
     	
         Label distanceLabel = new Label("0.0");
-        distanceLabel.setMaxWidth(1000.0);
         distanceLabel.setId("distance-label");
-        distanceLabel.setAlignment(Pos.CENTER);
         
         distanceLabel.textProperty().bind(Bindings.format("%1.0f m", distanceToTrap));
         HBox.setHgrow(distanceLabel, Priority.ALWAYS);
@@ -164,7 +161,8 @@ public class NavigationView extends View {
         	logCatch();
         });
         setBottom(logCatch);
-        
+
+        trapPositionLayer.activeTrapProperty().bind(trapProperty);
 
 		map.setZoom(17);
 		map.addLayer(trapPositionLayer);
@@ -339,7 +337,6 @@ public class NavigationView extends View {
      */
     void setTrap (Trap trap) {
     	trapProperty.set(trap);
-    	trapPositionLayer.setActiveTrap(trap);
     }
     
     /**
@@ -350,14 +347,9 @@ public class NavigationView extends View {
     	Objects.requireNonNull(trapline);
     	traplineProperty.set(trapline);
     	
-    	//Since Android/iOS don't support Java 8 streams, we have to do it the old way (adding the elements to another list & using Collections.sort()).
-    	orderedTraps.clear();
-    	orderedTraps.addAll(trapline.getTraps());
-    	Collections.sort(orderedTraps, (t1, t2) -> {
-    		return t1.getNumber() - t2.getNumber();
-    	});
-
-    	setTrap(null);
+    	//Sort the traps by trap number
+    	orderedTraps = trapline.getTraps().sorted((t1, t2) -> t1.getNumber() - t2.getNumber());
+    	
     	trapPositionLayer.getTraps().setAll(trapline.getTraps());
     	setTrap(orderedTraps.get(0));
     }

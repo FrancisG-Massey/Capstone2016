@@ -29,12 +29,12 @@ public final class ParserTrapline {
 
 	private String name;
 	private int id;
-	private List<ParserTrap> traps;
+	private List<ParserTrap> traps = new ArrayList<>();
 	private String start;
 	private String end;	
 	private ParserRegion region;
 	
-	private List<Long> catchTypes;
+	private List<Long> catchTypes = new ArrayList<>();
 	
 	public ParserTrapline (Trapline trapline) {
 		this.name = trapline.getName();
