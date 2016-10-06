@@ -83,6 +83,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final Map<Integer, Region> regions = new HashMap<>();
     
+    private final TraplineUpdateService apiUpdateMonitor = new TraplineUpdateService();
+    
     private final File cachePath;
     
     private final File traplineCachePath;
@@ -438,10 +440,15 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			if (c.wasAdded()) {
 				for (Trapline t : c.getAddedSubList()) {
 					updatedTraplines.add(t);
+					t.getTraps().addListener(apiUpdateMonitor);
 				}
 			} else if (c.wasUpdated()) {
 				for (Trapline t : c.getList().subList(c.getFrom(), c.getTo())) {
 					updatedTraplines.add(t);
+				}
+			} else if (c.wasRemoved()) {
+				for (Trapline t : c.getRemoved()) {
+					t.getTraps().removeListener(apiUpdateMonitor);
 				}
 			}
 		}
