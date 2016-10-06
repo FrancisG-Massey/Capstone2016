@@ -245,7 +245,7 @@ CREATE INDEX s_suid_idx
 CREATE INDEX s_sst_idx
   ON public.session
   USING btree
-  (session_token);
+  (session_token, session_userid);
 
 
 -- Table: public.bait
