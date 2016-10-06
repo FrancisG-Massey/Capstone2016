@@ -137,6 +137,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			CatchType cType = catchTypes.getData().get(Integer.valueOf((int) catchTypeId));			
 			t.getCatchTypes().add(Objects.requireNonNull(cType, "Catch type "+catchTypeId+" for trapline "+t.getId()+" does not exist!"));
 		}
+		if (pLine.getLastUpdated() != null) {
+			t.setLastUpdated(LocalDateTime.parse(pLine.getLastUpdated()));
+		}
 		addTrapline(t);
     }
     
@@ -283,6 +286,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         					trap.setLastReset(lastReset);
         				}
         			}
+    				trapline.setLastUpdated(LocalDateTime.now());
     				loadingProperty.set(false);
     			});
     		} catch (IOException | RuntimeException ex) {

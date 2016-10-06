@@ -112,7 +112,8 @@ public class TestTrapDataService {
 				
 				List<Long> catchTypes = new ArrayList<>();
 				
-				callback.accept(new ParserTrapline(20, "Test trapline", traps, "Test Start", null, new ParserRegion(20, "Test Region"), catchTypes));
+				callback.accept(new ParserTrapline(20, "Test trapline", traps, "Test Start", null, 
+						new ParserRegion(20, "Test Region"), catchTypes, "2016-09-10T15:34:07"));
 				return null;
 			}			
 		}).when(cachingService).fetchTraplines(any());
@@ -136,6 +137,9 @@ public class TestTrapDataService {
 				
 		//Check if the trapline itself is equal to the expected trapline
 		assertEquals(oracle, trapline);
+		
+		//Check the last server update timestamp was set correctly
+		assertEquals(LocalDateTime.parse("2016-09-10T15:34:07"), trapline.getLastUpdated().get());
 		
 		//Make sure the trapline has 3 traps
 		assertEquals(3, trapline.getTraps().size());

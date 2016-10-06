@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.parser;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,8 @@ public final class ParserTrapline {
 	
 	private List<Long> catchTypes = new ArrayList<>();
 	
+	private String lastUpdated;
+	
 	public ParserTrapline (Trapline trapline) {
 		this.name = trapline.getName();
 		this.id = trapline.getId();
@@ -54,10 +57,12 @@ public final class ParserTrapline {
 		for (CatchType t : trapline.getCatchTypes()) {
 			this.catchTypes.add(Long.valueOf(t.getId()));
 		}
+		trapline.getLastUpdated().ifPresent(timestamp -> 
+			this.lastUpdated = timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 	}
 	
 	public ParserTrapline(int id, String name, List<ParserTrap> traps, String start, String end, ParserRegion region,
-			List<Long> catchTypes) {
+			List<Long> catchTypes, String lastUpdated) {
 		this.id = id;
 		this.name = name;
 		this.traps = traps;
@@ -65,6 +70,7 @@ public final class ParserTrapline {
 		this.end = end;
 		this.region = region;
 		this.catchTypes = catchTypes;
+		this.lastUpdated = lastUpdated;
 	}
 
 	public ParserTrapline () {
@@ -120,7 +126,7 @@ public final class ParserTrapline {
 		this.region = region;
 	}
 	
-	@XmlElement(name="catch_type_ids")	
+	@XmlElement(name="catch_type_ids")
 	public List<Long> getCatchTypes() {
 		return catchTypes;
 	}
@@ -129,10 +135,19 @@ public final class ParserTrapline {
 		this.catchTypes = catchTypes;
 	}
 
+	@XmlElement(name="last_updated")
+	public String getLastUpdated() {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated(String lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
+
 	@Override
 	public String toString() {
 		return "ParserTrapline [name=" + name + ", id=" + id + ", traps=" + traps + ", start=" + start + ", end=" + end
-				+ ", region=" + region + "]";
+				+ ", region=" + region + ", lastUpdated=" + lastUpdated + "]";
 	}
 
 	@Override
@@ -146,6 +161,7 @@ public final class ParserTrapline {
 		result = prime * result + ((region == null) ? 0 : region.hashCode());
 		result = prime * result + ((start == null) ? 0 : start.hashCode());
 		result = prime * result + ((traps == null) ? 0 : traps.hashCode());
+		result = prime * result + ((lastUpdated == null) ? 0 : lastUpdated.hashCode());
 		return result;
 	}
 
@@ -189,6 +205,11 @@ public final class ParserTrapline {
 			if (other.traps != null)
 				return false;
 		} else if (!traps.equals(other.traps))
+			return false;
+		if (lastUpdated == null) {
+			if (other.lastUpdated != null)
+				return false;
+		} else if (!lastUpdated.equals(other.lastUpdated))
 			return false;
 		return true;
 	}

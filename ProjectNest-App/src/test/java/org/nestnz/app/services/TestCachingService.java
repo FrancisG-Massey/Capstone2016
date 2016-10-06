@@ -131,7 +131,8 @@ public class TestCachingService {
 		
 		List<Long> catchTypes = new ArrayList<>();
 		
-		ParserTrapline oracle = new ParserTrapline(20, "Test trapline", traps, "Test Start", null, new ParserRegion(20, "Test Region"), catchTypes);
+		ParserTrapline oracle = new ParserTrapline(20, "Test trapline", traps, "Test Start", null, 
+				new ParserRegion(20, "Test Region"), catchTypes, "2016-09-10T15:34:07");
 				
 		//Check if the trapline itself is equal to the expected trapline
 		assertEquals(oracle, trapline); 	
