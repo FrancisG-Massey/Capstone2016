@@ -28,7 +28,7 @@ public final class Catch {
 	 * The internal server ID of the catch, if the catch has been posted to the server.
 	 * If the catch has not yet been posted to the server, this will be Optional.empty()
 	 */
-	private Optional<Integer> id;
+	private Optional<Integer> id = Optional.empty();
 	
 	/**
 	 * The date & time this catch was recorded
