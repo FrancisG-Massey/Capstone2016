@@ -2,15 +2,25 @@
 <html lang="en" data-ng-app="myApp">
 
 <head>
-<script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"   
+	integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   
+	crossorigin="anonymous"></script>
 
-<script src="js/bootstrap.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" 
+	integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" 
+	crossorigin="anonymous"></script>
+
 <meta charset="utf-8" />
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <title>NESTNZ</title>
-<link rel="stylesheet" href="/css/bootstrap.min.css" />
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
+integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
+crossorigin="anonymous">
+
 <link rel="stylesheet" href="/css/web.css" />
 
 <!-- Leaflet map -->
@@ -46,21 +56,22 @@
 				<div class="collapse navbar-collapse" id="navbar" bs-active-link>
 					<ul class="nav navbar-nav navbar-right" ng-cloak>
 						<li><a href="#/about">About</a></li>
+						<li><a href="#/mobile">Mobile App</a></li>
 						<li><a href="#/statistics">Statistics</a></li>
 						<li><a href="#/volunteer">Volunteer</a></li>
 						<li><a href="#/contact">Contact</a></li>
 
-						<li class="dropdown" ng-if="globals.currentUser">
-							<a href="javascript:void(0)" class="dropdown-toggle" id="admin-dropdown" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
-								Admin <span class="caret"></span>
+						<li ng-if="globals.currentUser">
+							<a href="#/trapline-admin">
+								Admin
 							</a>
-							<ul class="dropdown-menu" aria-labelledby="admin-dropdown">
+							<!--<ul class="dropdown-menu" aria-labelledby="admin-dropdown">
 								<li><a href="#/trap-admin">Trap</a></li>
 								<li><a href="#/volunteer-admin">Volunteer</a></li>
-							</ul>
+							</ul>-->
 						</li>
 						<li data-ng-controller="LoginController" ng-if="globals.currentUser">
-							<a href="#" ng-click="logout()"">Logout
+							<a href="#" ng-click="logout()">Logout
 								({{globals.currentUser.username}})
 							</a>
 						</li>
@@ -72,13 +83,13 @@
 
 		<!-- Image Background Page Header -->
 		<!-- Note: The background image is set within the business-casual.css file. -->
-		<header ng-if="!wrapClass" class="business-header">
+		<header data-ng-if="!wrapClass" class="business-header">
 			<div class="container">
 				<!-- <h1 class="tagline">Project Nest</h1>-->
 			</div>
 		</header>
 		<div class="container">
-		<div ng-view class="container main-content"></div>
+		<div data-ng-view class="container main-content"></div>
 		</div>
 	</div>
 	<footer>

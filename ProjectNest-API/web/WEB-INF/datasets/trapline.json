@@ -1,58 +1,73 @@
 {
     "GET" : "
+        WITH logged_user AS (
+            SELECT
+                user_id,
+                user_isadmin,
+                user_isinactive
+            FROM users u
+            JOIN session s ON u.user_id = s.session_userid
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
+            LIMIT 1
+        ),
+
+        -- Common Catches
+        -- This may get slow, but we can abstract to a view later if required
+        cc AS (
+            SELECT
+                tl.trapline_id,
+                c.catch_catchtypeid,
+                ct.catchtype_name,
+                COUNT (*) as catches_of_type
+            FROM
+                catch c
+                JOIN catchtype ct ON ct.catchtype_id = c.catch_catchtypeid
+                JOIN trap t ON t.trap_id = c.catch_trapid
+                JOIN trapline tl ON tl.trapline_id = t.trap_traplineid
+            GROUP BY
+                tl.trapline_id,
+                c.catch_catchtypeid,
+                ct.catchtype_name
+            ORDER BY
+                catches_of_type DESC
+        )
+
         SELECT
             tl.trapline_id AS id,
             tl.trapline_name AS name,
-            tl.trapline_region_id AS region_id,
-            tl.trapline_start_tag AS start_tag,
-            tl.trapline_end_tag AS end_tag,
-            tl.trapline_image_filename AS img_filename
-        FROM 
-            public.trapline tl
+            tl.trapline_regionid AS region_id,
+            tl.trapline_starttag AS start_tag,
+            tl.trapline_endtag AS end_tag,
+            tl.trapline_imagefilename AS img_filename,
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 0) AS common_ct_id_1,
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 1) AS common_ct_id_2,
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3
+        FROM
+            logged_user lu,
+            trapline tl
+            LEFT JOIN traplineuser tlu
+                ON tlu.traplineuser_traplineid = tl.trapline_id
+        WHERE
+            (lu.user_isinactive = false) AND
+            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (tl.trapline_id = #bigint:id#)) AND
+            ((#bigint:region-id# IS NULL) OR (tl.trapline_regionid = #bigint:region-id#)) AND
+            ((#string:name# IS NULL) OR (lower(tl.trapline_name) LIKE lower('%' || #string:name# || '%')))
+        GROUP BY
+            tl.trapline_id
+        ORDER BY
+            tl.trapline_id
     ",
-
-    "Finish this later":"
-        WITH nest_user AS (  
-                SELECT *
-                FROM public.users u 
-                JOIN public.session s ON u.user_id = s.session_user_id
-                WHERE (%session_token% IS NOT NULL) AND (s.session_token = %session_token%)
-                LIMIT 1
-            ), visible_traplines AS (
-                SELECT tl.* 
-                FROM public.trapline tl 
-                JOIN public.trapline_user tlu ON tl.trapline_id = tlu.trapline_user_trapline_id
-                JOIN nest_user nu ON tlu.trapline_user_user_id = nu.user_id
-            )
-        CASE WHEN nest_user.user_is_admin = TRUE THEN
-            SELECT 
-                tl.trapline_id AS id,
-                tl.trapline_name AS name,
-                tl.trapline_region_id AS region_id,
-                tl.trapline_start_tag AS start_tag,
-                tl.trapline_end_tag AS end_tag,
-                tl.trapline_image_filename AS img_filename
-            FROM 
-                public.trapline tl
-                JOIN public.region r ON tl.trapline_region_id = r.region_id
-            WHERE 
-                ((%id% IS NULL) OR (tl.trapline_id = %id%))
-
-        ELSE 
-            SELECT 
-                vtl.trapline_id AS id,
-                vtl.trapline_name AS name,
-                vtl.trapline_region_id AS region_id,
-                vtl.trapline_start_tag AS start_tag,
-                vtl.trapline_end_tag AS end_tag,
-                vtl.trapline_image_filename AS img_filename
-            FROM 
-                visible_traplines vtl
-            WHERE 
-                tl.trapline_id = %id% AND TRUE --Incomplete, finish this later",
-
-
-    "POST" : "", 
+    "POST" : "
+        INSERT INTO trapline
+            (trapline_name, trapline_regionid, trapline_starttag, trapline_endtag, trapline_imagefilename)
+        SELECT
+            #string:name#, #bigint:region_id#, #string:start_tag#, #string:end_tag#, #string:img_filename#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            trapline_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

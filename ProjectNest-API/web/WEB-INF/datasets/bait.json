@@ -1,14 +1,43 @@
 {
     "GET" : "
+        WITH logged_user AS (
+            SELECT
+                user_id,
+                user_isadmin,
+                user_isinactive
+            FROM users u
+            JOIN session s ON u.user_id = s.session_userid
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
+            LIMIT 1
+        )
+
         SELECT 
             b.bait_id as id,
             b.bait_name as name,
-            b.bait_image_filename as img_filename,
+            b.bait_imagefilename as img_filename,
             b.bait_note as note
-        FROM 
-            public.bait b
+        FROM
+            logged_user lu,
+            bait b
+        WHERE
+            (lu.user_isinactive = false) AND
+            ((#bigint:id# IS NULL) OR (b.bait_id = #bigint:id#)) AND
+            ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%')))
+        GROUP BY
+            b.bait_id
+        ORDER BY
+            b.bait_id
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO bait
+            (bait_name, bait_imagefilename, bait_note)
+        SELECT
+            #string:name#, #string:img_filename#, #string:note#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            bait_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

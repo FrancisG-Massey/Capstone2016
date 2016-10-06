@@ -1,19 +1,57 @@
 {
     "GET" : "
+        WITH logged_user AS (
+            SELECT
+                user_id,
+                user_isadmin,
+                user_isinactive
+            FROM users u
+            JOIN session s ON u.user_id = s.session_userid
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
+            LIMIT 1
+        )
+
         SELECT 
             c.catch_id as id,
-            c.catch_trap_id as trap_id,
-            c.catch_trap_type_id as trap_type_id,
-            c.catch_user_id as user_id,
-            c.catch_type_id as type_id,
-            c.catch_bait_id as bait_id,
+            c.catch_trapid as trap_id,
+            c.catch_traptypeid as traptype_id,
+            c.catch_userid as user_id,
+            c.catch_catchtypeid as catchtype_id,
+            c.catch_baitid as bait_id,
             c.catch_note as note,
-            c.catch_logged as logged,
-            c.catch_image_filename as img_filename
+            c.catch_loggedtimestamp as logged,
+            c.catch_imagefilename as img_filename
         FROM 
-            public.catch c
+            logged_user lu,
+            catch c
+            LEFT JOIN trap t
+                ON t.trap_id = c.catch_trapid
+            LEFT JOIN trapline tl
+                ON tl.trapline_id = t.trap_traplineid
+            LEFT JOIN traplineuser tlu
+                ON tlu.traplineuser_traplineid = tl.trapline_id
+        WHERE
+            (lu.user_isinactive = false) AND
+            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id) OR (c.catch_userid = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (c.catch_id = #bigint:id#)) AND
+            ((#bigint:trap-id# IS NULL) OR (t.trap_id = #bigint:trap-id#)) AND
+            ((#bigint:trap-number# IS NULL) OR (t.trap_number = #bigint:trap-number#)) AND
+            ((#bigint:trapline-id# IS NULL) OR (tl.trapline_id = #bigint:trapline-id#))
+        GROUP BY
+            c.catch_id
+        ORDER BY
+            c.catch_loggedtimestamp DESC
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO catch
+            (catch_trapid, catch_traptypeid, catch_userid, catch_catchtypeid, catch_baitid, catch_note, catch_loggedtimestamp, catch_imagefilename)
+        SELECT
+            #bigint:trap_id#, #bigint:traptype_id#, 1, #bigint:catchtype_id#, #bigint:bait_id#, #string:note#, #timestamp:logged#, #string:img_filename#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            catch_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

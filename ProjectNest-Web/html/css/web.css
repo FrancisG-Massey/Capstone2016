@@ -94,7 +94,7 @@ footer>.container {
 }
  
 .img-responsive{
-	width:360px;
+	width:340px;
 	height:480px;
 }
 
@@ -118,10 +118,16 @@ footer>.container {
 #addButton{
 	cursor: pointer;
 	padding-left: 5px;
-	color:brown;
+	color:0000EE;
 	
 }
 
 th, td{
 	text-align:center;
+}
+
+#404page{
+	background-image: url("deadrodent.jpg");
+    	background-repeat: no-repeat;
+    	background-position: left top;
 }

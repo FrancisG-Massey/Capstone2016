@@ -1,14 +1,46 @@
 {
     "GET" : "
+        WITH logged_user AS (
+            SELECT
+                user_id,
+                user_isadmin,
+                user_isinactive
+            FROM users u
+            JOIN session s ON u.user_id = s.session_userid
+            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
+            LIMIT 1
+        )
+
         SELECT 
-            tlu.trapline_user_id as id,
-            tlu.trapline_user_user_id as user_id,
-            tlu.trapline_user_trapline_id as trapline_id,
-            tlu.trapline_user_role_id as role_id
-        FROM 
-            public.trapline_user tlu
+            tlu.traplineuser_id as id,
+            tlu.traplineuser_userid as user_id,
+            tlu.traplineuser_traplineid as trapline_id,
+            tlu.traplineuser_isadmin as admin
+        FROM
+            logged_user lu,
+            traplineuser tlu
+        WHERE
+            (lu.user_isinactive = false) AND
+            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
+            ((#bigint:id# IS NULL) OR (tlu.traplineuser_id = #bigint:id#)) AND
+            ((#bigint:user-id# IS NULL) OR (tlu.traplineuser_userid = #bigint:user-id#)) AND
+            ((#bigint:trapline-id# IS NULL) OR (tlu.traplineuser_traplineid = #bigint:trapline-id#)) AND
+            ((#boolean:admin# IS NULL) OR (tlu.traplineuser_isadmin = #boolean:admin#))
+        GROUP BY
+            tlu.traplineuser_id
+        ORDER BY
+            tlu.traplineuser_id
     ",
-    "POST" : "",
+    "POST" : "
+        INSERT INTO traplineuser
+            (traplineuser_userid, traplineuser_traplineid, traplineuser_isadmin)
+        SELECT
+            #bigint:user_id#, #bigint:trapline_id#, #boolean:admin#
+        WHERE
+            (#bigint:id# IS NULL)
+        RETURNING
+            traplineuser_id
+    ",
     "PUT" : "",
     "DELETE" : ""
 }

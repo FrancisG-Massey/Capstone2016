@@ -7,9 +7,9 @@ myApp.controller('HomeController', ['$scope', '$rootScope', function($scope, $ro
   	{  
     	header: 'Mobile Application',
   		name: 'WoodPigeon',
-  		photo: 'img/WoodPigeon.jpg',
+  		photo: 'img/WoodPigeonOriginal.jpg',
   		description:'We will describe our mobile app here and give information on how to download it.',
-  		link:'/#'
+  		link:'/#/mobile'
   	}, 
   	{  
   		header:'Data',
@@ -19,10 +19,10 @@ myApp.controller('HomeController', ['$scope', '$rootScope', function($scope, $ro
   		link:'/#/statistics'
   	}, 
   	{
-  		header:'volunteers',
+  		header:'Volunteers',
   		name: 'Kea',
   		photo: 'img/Kea.jpg',
-  		description:'View profiles of hardworker DOC volunteers from around New Zealand.',
+  		description:'View information on how to sign up as a DOC volunteer.',
   		link:'/#/volunteer'
   	}
   ];
