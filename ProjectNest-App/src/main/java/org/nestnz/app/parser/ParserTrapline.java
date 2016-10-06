@@ -27,8 +27,8 @@ import org.nestnz.app.model.Trapline;
 
 public final class ParserTrapline {
 
-	private String name;
 	private int id;
+	private String name;
 	private List<ParserTrap> traps = new ArrayList<>();
 	private String start;
 	private String end;	
@@ -56,6 +56,17 @@ public final class ParserTrapline {
 		}
 	}
 	
+	public ParserTrapline(int id, String name, List<ParserTrap> traps, String start, String end, ParserRegion region,
+			List<Long> catchTypes) {
+		this.id = id;
+		this.name = name;
+		this.traps = traps;
+		this.start = start;
+		this.end = end;
+		this.region = region;
+		this.catchTypes = catchTypes;
+	}
+
 	public ParserTrapline () {
 		
 	}
@@ -122,5 +133,63 @@ public final class ParserTrapline {
 	public String toString() {
 		return "ParserTrapline [name=" + name + ", id=" + id + ", traps=" + traps + ", start=" + start + ", end=" + end
 				+ ", region=" + region + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((catchTypes == null) ? 0 : catchTypes.hashCode());
+		result = prime * result + ((end == null) ? 0 : end.hashCode());
+		result = prime * result + id;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((region == null) ? 0 : region.hashCode());
+		result = prime * result + ((start == null) ? 0 : start.hashCode());
+		result = prime * result + ((traps == null) ? 0 : traps.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ParserTrapline other = (ParserTrapline) obj;
+		if (catchTypes == null) {
+			if (other.catchTypes != null)
+				return false;
+		} else if (!catchTypes.equals(other.catchTypes))
+			return false;
+		if (end == null) {
+			if (other.end != null)
+				return false;
+		} else if (!end.equals(other.end))
+			return false;
+		if (id != other.id)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (region == null) {
+			if (other.region != null)
+				return false;
+		} else if (!region.equals(other.region))
+			return false;
+		if (start == null) {
+			if (other.start != null)
+				return false;
+		} else if (!start.equals(other.start))
+			return false;
+		if (traps == null) {
+			if (other.traps != null)
+				return false;
+		} else if (!traps.equals(other.traps))
+			return false;
+		return true;
 	}
 }

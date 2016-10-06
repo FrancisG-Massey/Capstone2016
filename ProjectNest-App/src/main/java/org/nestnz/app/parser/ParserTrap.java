@@ -43,6 +43,18 @@ public final class ParserTrap {
 	
 	private List<ParserCatch> catches;
 	
+	public ParserTrap(int id, int number, double coordLat, double coordLong, String status, String created,
+			String lastReset, List<ParserCatch> catches) {
+		this.id = id;
+		this.number = number;
+		this.coordLat = coordLat;
+		this.coordLong = coordLong;
+		this.status = status;
+		this.created = created;
+		this.lastReset = lastReset;
+		this.catches = catches;
+	}
+
 	public ParserTrap() {
 		
 	}
@@ -136,5 +148,63 @@ public final class ParserTrap {
 	public String toString() {
 		return "ParserTrap [id=" + id + ", number=" + number + ", coordLat=" + coordLat + ", coordLong=" + coordLong + ", created="
 				+ created + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((catches == null) ? 0 : catches.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(coordLat);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(coordLong);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((created == null) ? 0 : created.hashCode());
+		result = prime * result + id;
+		result = prime * result + ((lastReset == null) ? 0 : lastReset.hashCode());
+		result = prime * result + number;
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ParserTrap other = (ParserTrap) obj;
+		if (catches == null) {
+			if (other.catches != null)
+				return false;
+		} else if (!catches.equals(other.catches))
+			return false;
+		if (Double.doubleToLongBits(coordLat) != Double.doubleToLongBits(other.coordLat))
+			return false;
+		if (Double.doubleToLongBits(coordLong) != Double.doubleToLongBits(other.coordLong))
+			return false;
+		if (created == null) {
+			if (other.created != null)
+				return false;
+		} else if (!created.equals(other.created))
+			return false;
+		if (id != other.id)
+			return false;
+		if (lastReset == null) {
+			if (other.lastReset != null)
+				return false;
+		} else if (!lastReset.equals(other.lastReset))
+			return false;
+		if (number != other.number)
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		return true;
 	}
 }

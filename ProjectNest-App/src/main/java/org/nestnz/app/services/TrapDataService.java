@@ -16,19 +16,14 @@
  *******************************************************************************/
 package org.nestnz.app.services;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -47,20 +42,11 @@ import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.Cacheable;
 import org.nestnz.app.parser.ParserCatch;
-import org.nestnz.app.parser.ParserCatchType;
-import org.nestnz.app.parser.ParserCatchTypeList;
 import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
 import org.nestnz.app.util.BackgroundTasks;
 
-import com.gluonhq.connect.ConnectState;
 import com.gluonhq.connect.GluonObservableObject;
-import com.gluonhq.connect.converter.InputStreamInputConverter;
-import com.gluonhq.connect.converter.JsonInputConverter;
-import com.gluonhq.connect.converter.JsonOutputConverter;
-import com.gluonhq.connect.converter.OutputStreamOutputConverter;
-import com.gluonhq.connect.provider.DataProvider;
-import com.gluonhq.connect.provider.FileClient;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
 import com.gluonhq.impl.connect.converter.JsonUtil;
@@ -69,7 +55,6 @@ import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -77,7 +62,7 @@ import javafx.collections.ObservableList;
 public final class TrapDataService implements ListChangeListener<Trapline> {
 
     private static final Logger LOG = Logger.getLogger(TrapDataService.class.getName());
-    
+	
     private final ObservableList<Trapline> traplines = FXCollections.observableArrayList(trapline -> {
     	return new Observable[] { trapline.nameProperty(), trapline.regionProperty(), trapline.getTraps(),
     			trapline.endProperty(), trapline.startProperty(), trapline.getCatchTypes() };
@@ -87,86 +72,41 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final TraplineUpdateService apiUpdateMonitor = new TraplineUpdateService();
     
-    private final File cachePath;
-    
-    private final File traplineCachePath;
-    
     private final LoginService loginService;
+    
+    private final CachingService cachingService;
     
     private final ReadOnlyBooleanWrapper loadingProperty = new ReadOnlyBooleanWrapper(false);
     
-    private final Cacheable<Map<Integer, CatchType>> catchTypes = new Cacheable<>();    
-    
-    /**
-     * A latch used to make sure all required resources (only catch types at this stage) have loaded before fetching traplines from the cache
-     */
-    private final CountDownLatch cacheResourceLoading = new CountDownLatch(1);
+    private final Cacheable<Map<Integer, CatchType>> catchTypes = new Cacheable<>();
     
     /**
      * A semaphore used to ensure regions & catch types have been loaded from the server before setting up traplines
      */
     private final Semaphore appDataLoading = new Semaphore(0);
     
-    public TrapDataService (File trapCachePath, LoginService loginService) throws IOException {
-    	Objects.requireNonNull(trapCachePath);
-    	trapCachePath.mkdirs();
+    public TrapDataService (CachingService cachingService, LoginService loginService) throws IOException {
+    	this.cachingService = Objects.requireNonNull(cachingService);
+    	this.loginService = Objects.requireNonNull(loginService);
+    }
+    
+    public void initialise () {
+    	GluonObservableObject<Cacheable<Map<Integer, CatchType>>> results = cachingService.fetchCatchTypes();
     	
-    	catchTypes.setData(new HashMap<>());
-    	
-    	this.cachePath = trapCachePath;
-    	this.traplineCachePath = new File(cachePath, "traplines");
-    	if (!traplineCachePath.exists()) {
-    		traplineCachePath.mkdir();
+    	if (results.isInitialized()) {//This means no cached file was found
+    		this.catchTypes.setData(new HashMap<>());
     	}
-    	this.loginService = loginService;
-    	fetchCatchTypes();
-    	fetchTraplines();
-    	watchForChanges();
-    }
-    
-    public boolean isLoading () {
-    	return loadingProperty.get();
-    }
-    
-    public ReadOnlyBooleanProperty loadingProperty () {
-    	return loadingProperty.getReadOnlyProperty();
-    }
-    
-    protected void fetchTraplines () {
-    	int count = 0;
-    	for (File traplineFile : traplineCachePath.listFiles()) {
-        	LOG.log(Level.INFO, String.format("File: %s", traplineFile));
-        	
-        	if (traplineFile.toString().endsWith(".json")) {
-    			FileClient fileClient = FileClient.create(traplineFile);
-    			
-    			InputStreamInputConverter<ParserTrapline> converter = new JsonInputConverter<>(ParserTrapline.class);
-
-    			GluonObservableObject<ParserTrapline> pTrapline = DataProvider.retrieveObject(fileClient.createObjectDataReader(converter));
-    			pTrapline.initializedProperty().addListener((obs, oldValue, newValue) -> {
-    				if (newValue) {
-    			    	BackgroundTasks.runInBackground(() -> {
-							try {
-								//Don't block on the UI thread
-								cacheResourceLoading.await();
-							} catch (InterruptedException e) {
-								//Silently ignore the interrupt
-							}
-							Platform.runLater(() -> {
-								try {
-									addTrapline(pTrapline.get());
-			    				} catch (RuntimeException ex) {
-			    					LOG.log(Level.WARNING, "Failed to load data from trapline cache file "+traplineFile, ex);
-			    					traplineFile.delete();//This error means the cache file must be corrupted, so delete it (we can always get the data back from the server when needed)
-			    				}
-							});
-    			    	});
-    				}
-    			});
-    			count++;
+    	
+    	results.initializedProperty().addListener((obs, oldValue, newValue) -> {
+    		if (newValue) {
+    			this.catchTypes.setData(results.get().getData());
+    			this.catchTypes.setLastServerFetch(results.get().getLastServerFetch());
     		}
-    	}
-    	LOG.log(Level.INFO, String.format("Found data for %d traplines in file cache", count));
+    	});
+    	cachingService.fetchTraplines((pTrapline) -> {
+    		addTrapline(pTrapline);
+    	});
+    	watchForChanges();
     }
     
     private void addTrapline (ParserTrapline pLine) {
@@ -208,6 +148,14 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     		}
     	}
     	traplines.add(trapline);
+    }
+    
+    public boolean isLoading () {
+    	return loadingProperty.get();
+    }
+    
+    public ReadOnlyBooleanProperty loadingProperty () {
+    	return loadingProperty.getReadOnlyProperty();
     }
     
     /**
@@ -401,7 +349,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         				catchType.setName(regionJson.getString("name"));
         			}
     				catchTypes.setLastServerFetch(LocalDateTime.now());
-    				storeCatchTypes();
+    				cachingService.storeCatchTypes(catchTypes);
     			});
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting catch types. Response: "+dataSource.getResponseMessage(), ex);
@@ -432,7 +380,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	    		updatedTraplines.clear();
 	    		
 	    		for (Trapline t : updatesCopy) {
-	    			storeTrapline(t);
+	    			cachingService.storeTrapline(t);
 	    		}
 	    		LOG.log(Level.INFO, "Saved "+updatesCopy.size()+" traplines to file cache.");
     		}
@@ -461,97 +409,5 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				}
 			}
 		}
-	}
-	
-	/**
-	 * Updates the cached version of the trapline and flags the trapline as dirty
-	 * @param trapline The trapline to update
-	 * @return a {@link GluonObservableObject} which is set when the object is fully written
-	 */
-	public GluonObservableObject<ParserTrapline> storeTrapline (Trapline trapline) {
-		File savedFile = new File(traplineCachePath, Integer.toString(trapline.getId())+".json");
-		
-		
-		FileClient fileClient = FileClient.create(savedFile);
-		
-		OutputStreamOutputConverter<ParserTrapline> outputConverter = new JsonOutputConverter<>(ParserTrapline.class);
-
-		GluonObservableObject<ParserTrapline> result = DataProvider.storeObject(new ParserTrapline(trapline), fileClient.createObjectDataWriter(outputConverter));
-
-    	LOG.log(Level.INFO, String.format("Saved trapline data for %s to %s", trapline.getName(), savedFile));		
-    	return result;
-	}
-	
-	public GluonObservableObject<ParserCatchTypeList> storeCatchTypes () {
-		File savedFile = new File(cachePath, "catchTypes.json");
-		
-		ParserCatchTypeList storeObject = new ParserCatchTypeList();
-		
-		storeObject.setData(new ArrayList<>());
-		storeObject.setLastServerFetch(catchTypes.getLastServerFetch().toString());
-		for (CatchType c : catchTypes.getData().values()) {
-			ParserCatchType pct = new ParserCatchType();
-			pct.setId(c.getId());
-			pct.setName(c.getName());
-			if (c.getImage() != null) {
-				pct.setImageUrl(c.getImage().toExternalForm());
-			}
-			storeObject.getData().add(pct);
-		}		
-		
-		FileClient fileClient = FileClient.create(savedFile);
-		
-		OutputStreamOutputConverter<ParserCatchTypeList> outputConverter = new JsonOutputConverter<>(ParserCatchTypeList.class);
-
-		GluonObservableObject<ParserCatchTypeList> result = DataProvider.storeObject(storeObject, fileClient.createObjectDataWriter(outputConverter));
-
-    	LOG.log(Level.INFO, String.format("Saved catch type data to %s", savedFile));		
-    	return result;
-	}
-	
-	protected GluonObservableObject<Map<Integer, CatchType>> fetchCatchTypes () {
-		File savedFile = new File(cachePath, "catchTypes.json");
-		
-		if (!savedFile.exists()) {
-			return null;//No cached data exists
-		}
-		 
-		FileClient fileClient = FileClient.create(savedFile);
-		
-		InputStreamInputConverter<ParserCatchTypeList> converter = new JsonInputConverter<>(ParserCatchTypeList.class);
-		
-		GluonObservableObject<Map<Integer, CatchType>> results = new GluonObservableObject<>();
-		
-		GluonObservableObject<ParserCatchTypeList> cTypes = DataProvider.retrieveObject(fileClient.createObjectDataReader(converter));
-		cTypes.initializedProperty().addListener((obs, oldValue, newValue) -> {
-			if (newValue) {
-				try {
-					ParserCatchTypeList storedObject = cTypes.get();
-					catchTypes.setLastServerFetch(LocalDateTime.parse(storedObject.getLastServerFetch()));
-					if (storedObject.getData() != null) {
-						for (ParserCatchType pct : storedObject.getData()) {
-							CatchType c = new CatchType(pct.getId());
-							c.setName(pct.getName());
-							if (pct.getImageUrl() != null) {
-								c.setImage(new URL(pct.getImageUrl()));
-							}
-							catchTypes.getData().put(c.getId(), c);
-						}
-						results.setValue(catchTypes.getData());
-						results.setState(ConnectState.SUCCEEDED);
-						LOG.log(Level.INFO, "Fetched "+catchTypes.getData().size()+" catch types from disk cache.");
-					}
-				} catch (RuntimeException | MalformedURLException ex) {
-					results.setException(ex);
-					results.setState(ConnectState.FAILED);
-					LOG.log(Level.WARNING, "Failed to load data from saved catch types file "+savedFile, ex);
-					savedFile.delete();//This error means the cache file must be corrupted, so delete it (we can always get the data back from the server when needed)
-				} finally {
-                    ((SimpleBooleanProperty) results.initializedProperty()).set(true);
-					cacheResourceLoading.countDown();//Signal the resource loaded regardless of whether an error occurred or not, otherwise the trapline loading process will wait forever
-				}
-			}
-		});
-		return results;
 	}
 }
