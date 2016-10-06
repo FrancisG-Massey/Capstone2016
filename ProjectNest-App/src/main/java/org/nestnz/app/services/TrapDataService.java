@@ -187,8 +187,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			t.getTraps().add(trap);
 		}
 		for (long catchTypeId : pLine.getCatchTypes()) {
-			CatchType cType = catchTypes.getData().get(catchTypeId);
-			t.getCatchTypes().add(cType);
+			CatchType cType = catchTypes.getData().get(Integer.valueOf((int) catchTypeId));			
+			t.getCatchTypes().add(Objects.requireNonNull(cType, "Catch type "+catchTypeId+" for trapline "+t.getId()+" does not exist!"));
 		}
 		addTrapline(t);
     }
@@ -530,6 +530,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 						}
 						results.setValue(catchTypes.getData());
 						results.setState(ConnectState.SUCCEEDED);
+						LOG.log(Level.INFO, "Fetched "+catchTypes.getData().size()+" catch types from disk cache.");
 					}
 				} catch (RuntimeException | MalformedURLException ex) {
 					results.setException(ex);

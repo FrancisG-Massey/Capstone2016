@@ -272,14 +272,16 @@ public class NavigationView extends View {
     		catchType = Bindings.createObjectBinding(() -> CatchType.EMPTY);
     	} else {
     		catchType = Bindings.createObjectBinding(() -> {
+    			CatchType t;
     			if (traplineProperty.get() == null) {
-    				return CatchType.EMPTY;
+    				t =  CatchType.EMPTY;
     			} else if (traplineProperty.get().getCatchTypes().size() < place) {
     	    		LOG.log(Level.WARNING, "Trapline lacks a catch type entry at place "+place+" (only "+traplineProperty.get().getCatchTypes().size()+" available)");
-    				return CatchType.EMPTY;//TODO: Currently puts another 'empty' entry down if nothing is specified. Should something else be put instead?
+    				t = CatchType.EMPTY;//TODO: Currently puts another 'empty' entry down if nothing is specified. Should something else be put instead?
     			} else {
-    				return traplineProperty.get().getCatchTypes().get(place-1);
-    			}
+    				t = traplineProperty.get().getCatchTypes().get(place-1);
+    			}    			
+    			return Objects.requireNonNull(t, "Invalid catch type at "+place);//Make sure we don't have a 'null' catch type anywhere 
     		}, traplineProperty);
     	}
     	Button button = new Button();
