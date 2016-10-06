@@ -25,7 +25,7 @@
             <td scope="row">{{volunteer.id}}</td>
             <td>{{volunteer.username}}</td>
             <td>{{volunteer.email}}</td>
-            <td>{{formatDate(volunteer.created_timestamp) |  date:"dd/MM/yyyy 'at' h:mma"}}</td>
+            <td>{{formatDate(volunteer.created_timestamp) |  date:"dd MMMM yyyy"}}</td>
             <td>{{volunteer.admin?"Admin":"Volunteer"}}</td>
           </tr>    
         </tbody>

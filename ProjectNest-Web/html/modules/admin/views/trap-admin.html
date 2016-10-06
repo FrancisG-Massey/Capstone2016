@@ -29,8 +29,8 @@
 					<td>{{trap.coord_lat + ' '}}<b>S</b><br>{{trap.coord_long +
 						' '}}<b>E</b></td>
 					<td>{{trap.status? "active":"inactive"}}</td>
-					<td>{{formatDate(trap.created) | date:"dd/MM/yyyy 'at' h:mma"}}</td>
-					<td>{{formatDate(trap.last_reset)| date:"dd/MM/yyyy 'at' h:mma"}}</td>
+					<td>{{formatDate(trap.created) | date:"dd MMMM yyyy"}}</td>
+					<td>{{formatDate(trap.last_reset)| date:"dd MMMM yyyy"}}</td>
 				</tr>
 			</tbody>
 		</table>
@@ -141,7 +141,7 @@
               <tr>
               	<td>{{catch.catch_type.name}}</td>
                 <td>{{catch.note}}</td>
-                <td>{{formatDate(catch.logged) | date:"dd/MM/yyyy 'at' h:mma"}}</td>
+                <td>{{formatDate(catch.logged) | date:"dd MMMM yyyy"}}</td>
                 <td><a href=/#/catch.img_filename>View Image</td>
               </tr>
             </tbody>
