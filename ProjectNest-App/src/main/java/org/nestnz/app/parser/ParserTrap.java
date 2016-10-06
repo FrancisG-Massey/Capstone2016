@@ -17,9 +17,12 @@
 package org.nestnz.app.parser;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.Trap;
 
 public final class ParserTrap {
@@ -38,6 +41,8 @@ public final class ParserTrap {
 	
 	private String lastReset;
 	
+	private List<ParserCatch> catches;
+	
 	public ParserTrap() {
 		
 	}
@@ -50,6 +55,14 @@ public final class ParserTrap {
 		this.status = trap.getStatus().name();
 		this.created = trap.getCreated() == null ? null : trap.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		this.lastReset = trap.getLastReset() == null ? null : trap.getLastReset().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		
+		this.catches = new ArrayList<>();
+		for (Catch c : trap.getCatches()) {
+			ParserCatch pCatch = new ParserCatch();
+			pCatch.setTypeId(c.getCatchType().getId());
+			pCatch.setTimestamp(c.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+			this.catches.add(pCatch);
+		}
 	}
 
 	public int getId() {
@@ -109,6 +122,14 @@ public final class ParserTrap {
 
 	public void setLastReset(String lastReset) {
 		this.lastReset = lastReset;
+	}
+
+	public List<ParserCatch> getCatches() {
+		return catches;
+	}
+
+	public void setCatches(List<ParserCatch> catches) {
+		this.catches = catches;
 	}
 
 	@Override

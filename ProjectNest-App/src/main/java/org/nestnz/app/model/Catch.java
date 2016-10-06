@@ -19,13 +19,16 @@ package org.nestnz.app.model;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 public final class Catch {
 
 	/**
 	 * The internal server ID of the catch, if the catch has been posted to the server.
 	 * If the catch has not yet been posted to the server, this will be Optional.empty()
 	 */
-	private Optional<Integer> id;
+	private Optional<Integer> id = Optional.empty();
 	
 	/**
 	 * The date & time this catch was recorded
@@ -35,12 +38,17 @@ public final class Catch {
 	/**
 	 * The type of pest caught in the trap
 	 */
-	private CatchType catchType;	
+	private final ObjectProperty<CatchType> catchTypeProperty = new SimpleObjectProperty<>();	
 	
 
 	public Catch(CatchType catchType) {
-		this.catchType = catchType;
-		this.timestamp = LocalDateTime.now();
+		this(catchType, LocalDateTime.now());
+	}
+	
+
+	public Catch(CatchType catchType, LocalDateTime timestamp) {
+		this.catchTypeProperty.set(catchType);
+		this.timestamp = timestamp;
 	}
 
 	public Optional<Integer> getId() {
@@ -60,11 +68,15 @@ public final class Catch {
 	}
 
 	public CatchType getCatchType() {
-		return catchType;
+		return catchTypeProperty.get();
 	}
 
 	public void setCatchType(CatchType catchType) {
-		this.catchType = catchType;
+		this.catchTypeProperty.set(catchType);
+	}
+	
+	public ObjectProperty<CatchType> catchTypeProperty () {
+		return catchTypeProperty;
 	}
 	
 	

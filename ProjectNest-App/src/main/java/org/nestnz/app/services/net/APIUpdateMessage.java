@@ -14,34 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.services;
+package org.nestnz.app.services.net;
 
-import javafx.beans.property.ReadOnlyDoubleProperty;
+import javax.json.JsonObject;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * The CompassService provides details of the direction a device is currently pointing, relative to the earth's magnetic poles.
- * 
- * 
+ * Represents an update request to the NestNZ API.
  */
-public interface CompassService {
+public interface APIUpdateMessage {
 	
 	/**
-	 * Checks whether the devices has the sensors required to calculate heading
-	 * @return True if heading is available
-	 */
-	boolean isHeadingAvailable();
-	
-	/**
-	 * 
+	 * Gets the HTTP method used to send the request to the server (eg POST, PUT, DELETE, etc
 	 * @return
 	 */
-	ReadOnlyDoubleProperty headingProperty();
+	@XmlTransient
+	public String getMethod();
 	
 	/**
-	 * The current heading of the device, as a number of degrees between 0 and 360 relative to magnetic North.
-	 * If the heading was unable to be determined, returns a negative value
-	 * 
-	 * @return the current heading of the device
+	 * Gets the API path used to update the data on the server (eg /trap, /trapline, etc)
+	 * @return
 	 */
-	double getHeading();
+	@XmlTransient
+	public String getPath();
+	
+	/**
+	 * Called if & when the update is sent to & accepted by the server
+	 * @param response The Json response object received by the server
+	 */
+	public void onSuccessfulUpdate(JsonObject response);
 }

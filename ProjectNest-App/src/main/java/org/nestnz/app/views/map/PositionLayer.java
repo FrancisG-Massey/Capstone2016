@@ -17,6 +17,7 @@
 package org.nestnz.app.views.map;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,8 +68,16 @@ public class PositionLayer extends MapLayer {
     public final void setCurrentPosition (Position postition) {
     	currentPosition.set(postition);
     }
+    
+    public final ObjectProperty<Position> currentPositionProperty () {
+    	return currentPosition;    	
+    }
 
     public void addPoint(MapPoint p, Node icon) {
+    	//Make sure the point & icon aren't null, which will cause issues futher down the track
+    	Objects.requireNonNull(p);
+    	Objects.requireNonNull(icon);
+    	
     	LOG.log(Level.FINE, String.format("Point added at %f, %f (icon=%s)", p.getLatitude(), p.getLongitude(), icon));
         points.add(new Pair<MapPoint, Node>(p, icon));
         this.getChildren().add(icon);

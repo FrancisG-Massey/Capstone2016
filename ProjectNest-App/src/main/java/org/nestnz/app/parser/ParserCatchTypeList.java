@@ -14,8 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.services;
+package org.nestnz.app.parser;
 
-public abstract class NestNativePlatform {
+import java.util.List;
+
+/**
+ * This class is used by the Gluon Connect JSON Converter to store catch type data on the device's disk for future use when internet is unavailable
+ */
+public final class ParserCatchTypeList {
+
+	private List<ParserCatchType> data;
+	private String lastServerFetch;
+
+	public List<ParserCatchType> getData() {
+		return data;
+	}
+
+	public void setData(List<ParserCatchType> data) {
+		this.data = data;
+	}
+
+	public String getLastServerFetch() {
+		return lastServerFetch;
+	}
+
+	public void setLastServerFetch(String lastServerFetch) {
+		this.lastServerFetch = lastServerFetch;
+	}
 	
 }

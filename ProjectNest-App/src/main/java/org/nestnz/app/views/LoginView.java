@@ -86,7 +86,7 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 	}
 	
 	private void setupControls () {
-		getStylesheets().add(LoginView.class.getResource("login.css").toExternalForm());
+		getStylesheets().add(LoginView.class.getResource("styles.css").toExternalForm());
 		
 		VBox controls = new VBox(30);
 		controls.setAlignment(Pos.CENTER);
@@ -108,8 +108,7 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
         });
         
 		Button loginButton = new Button("Login");
-		loginButton.setMaxWidth(1000);
-		loginButton.setMaxHeight(1000);
+		loginButton.getStyleClass().add("large-button");
 		loginButton.setFocusTraversable(true);
 		
 		setCenter(controls);

@@ -65,6 +65,8 @@ public final class Trapline {
 	 */
 	private final StringProperty endProperty = new SimpleStringProperty();
 	
+	private final ObservableList<CatchType> catchTypes = FXCollections.observableArrayList();
+	
 	/**
 	 * Signals some of the data has changed since it was last synchronized with the server
 	 */
@@ -165,6 +167,10 @@ public final class Trapline {
 	
 	public BooleanProperty dirtyProperty () {
 		return dirtyProperty;
+	}
+	
+	public ObservableList<CatchType> getCatchTypes () {
+		return catchTypes;
 	}
 
 	@Override

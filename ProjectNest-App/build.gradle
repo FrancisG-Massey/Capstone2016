@@ -12,6 +12,17 @@ apply plugin: 'eclipse'
 apply plugin: 'pmd'
 apply plugin: 'jdepend'
 
+task jdependReport(dependsOn: jdependMain, group: 'verification', description: 'Generates a HTML report after executing jdepend checks.') << {
+   ant.xslt(
+      in: "$reporting.baseDir/jdepend/main.xml",
+      style: "$rootDir/conf/jdepend/jdepend-report.xslt",
+      out:"$reporting.baseDir/jdepend/main.html")
+}
+
+check {
+   dependsOn += ['jdependReport']
+}
+
 eclipse {
 	classpath {
 		downloadSources = true

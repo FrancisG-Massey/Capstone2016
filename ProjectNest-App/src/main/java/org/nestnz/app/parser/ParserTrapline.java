@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 
@@ -28,10 +29,12 @@ public final class ParserTrapline {
 
 	private String name;
 	private int id;
-	private List<ParserTrap> traps;
+	private List<ParserTrap> traps = new ArrayList<>();
 	private String start;
 	private String end;	
 	private ParserRegion region;
+	
+	private List<Long> catchTypes = new ArrayList<>();
 	
 	public ParserTrapline (Trapline trapline) {
 		this.name = trapline.getName();
@@ -46,6 +49,10 @@ public final class ParserTrapline {
 			this.region = new ParserRegion();
 			this.region.setId(trapline.getRegion().getId());
 			this.region.setName(trapline.getRegion().getName());
+		}
+		this.catchTypes = new ArrayList<>();
+		for (CatchType t : trapline.getCatchTypes()) {
+			this.catchTypes.add(Long.valueOf(t.getId()));
 		}
 	}
 	
@@ -102,6 +109,15 @@ public final class ParserTrapline {
 		this.region = region;
 	}
 	
+	@XmlElement(name="catch_type_ids")	
+	public List<Long> getCatchTypes() {
+		return catchTypes;
+	}
+
+	public void setCatchTypes(List<Long> catchTypes) {
+		this.catchTypes = catchTypes;
+	}
+
 	@Override
 	public String toString() {
 		return "ParserTrapline [name=" + name + ", id=" + id + ", traps=" + traps + ", start=" + start + ", end=" + end

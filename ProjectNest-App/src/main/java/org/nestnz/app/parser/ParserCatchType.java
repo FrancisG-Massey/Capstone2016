@@ -14,8 +14,53 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.services;
+package org.nestnz.app.parser;
 
-public abstract class NestNativePlatform {
+import javax.xml.bind.annotation.XmlElement;
+
+public class ParserCatchType {
 	
+	private int id;
+	private String name;
+	private String imageUrl;
+	
+	public ParserCatchType() {
+		
+	}
+
+	public ParserCatchType(int id, String name, String imageUrl) {
+		this.id = id;
+		this.name = name;
+		this.imageUrl = imageUrl;
+	}
+
+	public int getId() {
+		return id;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	@XmlElement(name="image_url")
+	public String getImageUrl() {
+		return imageUrl;
+	}
+	
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+	
+	@Override
+	public String toString() {
+		return "ParserCatchType [id=" + id + ", name=" + name + ", imageUrl=" + imageUrl + "]";
+	}
 }
