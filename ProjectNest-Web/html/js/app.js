@@ -49,7 +49,21 @@ var myApp = angular
                 region: ['$http', function($http) {
                     return $http.get('https://www.nestnz.org/api/region');}],
                 trapline:['$http', function($http) {
-                    return $http.get('https://www.nestnz.org/api/trapline');}]
+                    return $http.get('https://www.nestnz.org/api/trapline');}],
+                baits:function($http, $route){
+                        return $http
+                        .get('https://www.nestnz.org/api/bait')
+                        .then(function(response){
+                            return response.data;
+                    })
+                    },
+                trap_type:function($http, $route){
+                        return $http
+                        .get('https://www.nestnz.org/api/trap-type')
+                        .then(function(response){
+                            return response.data;
+                    })
+                    }
         }
         })
         .when('/trap-admin/:traplineId', {
@@ -76,6 +90,13 @@ var myApp = angular
                     .then(function(response){
                         return response.data;
                 })
+                },
+                catch_types:function($http,$route){
+                	return $http
+                	.get('https://www.nestnz.org/api/catch-type')
+                	.then(function(response){
+                		return response.data;
+                	})
                 }
             }
         })

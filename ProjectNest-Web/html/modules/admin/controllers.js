@@ -1,10 +1,12 @@
 'use strict';
  
 angular.module('Admin')
-.controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline',function ($scope,$rootScope,$http,region,trapline) {
+.controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline','baits','trap_type',function ($scope,$rootScope,$http,region,trapline,baits,trap_type) {
 	$rootScope.wrapClass = undefined;
     $scope.regions = region.data;
     $scope.traplines = trapline.data;
+    $scope.baits = baits;
+    $scope.trap_types = trap_type;
     console.log($scope.traplines);
 
 	//console.log($rootScope.traps);
@@ -34,9 +36,10 @@ angular.module('Admin')
     	$rootScope.region_selected = undefined;
     };
     
+
 			
 }])
-.controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route','$http',function ($scope, $rootScope,traps,baits,trap_type,$route,$http) {
+.controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route','$http','catch_types',function ($scope, $rootScope,traps,baits,trap_type,$route,$http,catch_types) {
 		//var traplineId = $routeParams.traplineId;
 		$rootScope.wrapClass = undefined;
 		$scope.trapline_id = $route.current.params.traplineId;
@@ -46,8 +49,18 @@ angular.module('Admin')
 		console.log($scope.baits);
 		$scope.trap_type = trap_type;
 		console.log($scope.trap_type);
+		
+		// get all catch types
+		$scope.catch_types = catch_types;
+		console.log($scope.catch_types);
 
-
+		/*$scope.catch_types = [];
+    	$http.get('https://www.nestnz.org/api/catch-type')
+        .then(function(response) {
+            $scope.catch_types = response.data;
+            console.log($scope.catch_types);
+        });*/
+    	
 		// pagination
 	    var pageLength = 10,
 	    	numTraps = traps.length,
@@ -98,21 +111,11 @@ angular.module('Admin')
 		$scope.selected.popup.openPopup();
     	mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
     	
-    	$scope.catches=[];
-    	$scope.catch_types = [];
-    	
     	// get catch by passing trap id
     	$http.get('https://www.nestnz.org/api/catch?trap-id='+$scope.selected.id)
         .then(function(response) {
             $scope.catches = response.data;
             console.log($scope.catches);
-        });
-    	// get all catch types
-    	$http.get('https://www.nestnz.org/api/catch-type')
-        .then(function(response) {
-            $scope.catch_types = response.data;
-            console.log($scope.catch_types);
-            
             // attach catch history to relavnt catch types
             var cat, catch_type;
         	for (var i = 0; i < $scope.catches.length; i++) {
@@ -125,8 +128,8 @@ angular.module('Admin')
         	        }
         	    }
         	};
-        	console.log($scope.catches);
         });
+
     };
     
     $scope.formatDate = function(date){

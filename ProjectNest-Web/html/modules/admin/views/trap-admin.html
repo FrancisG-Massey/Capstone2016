@@ -112,7 +112,7 @@
 					</select>
 				</div>
 			</div>
-			
+		
 	<div class="clearfix" style="margin-top:8px; margin-bottom: 20px">
 	  <div>
 	  <button type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#catch-history" >View Catch History</button>
@@ -124,16 +124,16 @@
 	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 	            <span aria-hidden="true">&times;</span>
 	          </button>
-	          <h4 class="modal-title">View Catch History</h4>
+	          <h4 class="modal-title">Catch History</h4>
 	        </div>
         <div class="modal-body">
-		  <h5 class="text-center"><strong>{{line_selected.name}}</strong><br><br>Trapline number:{{trapline_id}}</h5>
+		  <h5 class="text-center"><strong>{{line_selected.name}}</strong><br><br><i>Trapline number: {{trapline_id}}</i><br><i>Trap number: {{selected.id}}</i></h5>
           <table class="table table-striped" id="tblGrid">
             <thead id="tblHead">
               <tr>
                 <th>Name</th>
                 <th>Notes</th>
-                <th>Date </th>
+                <th>Date</th>
                 <th>Image</th>
               </tr>
             </thead>
@@ -167,3 +167,6 @@
 		</div>
 	</div>
 	</div>
+	</div>
+	</div>
+	

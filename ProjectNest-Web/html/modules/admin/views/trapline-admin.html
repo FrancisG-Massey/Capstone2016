@@ -29,14 +29,14 @@
           <div class="col-md-6 form-group">
             <label>Name</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.name}}">
+              <input type="text" class="form-control" name ="line-name" ng-model="line_name" value ="{{selected.name}}">
             </div>
           </div>
 		  <div class="col-md-6 form-group">
 			<label>Region</label>
-			<select class="form-control">
-			<option data-ng-selected="region.name == selected.region.name"
-			value="{{region.name}}" data-ng-repeat="region in regions">{{region.name}}</option>
+			<select class="form-control" ng-model="region_id">
+			<option data-ng-selected="region.name == selected.region.name" 
+			value="{{region.id}}" data-ng-repeat="region in regions">{{region.name}}</option>
 			</select>
 		</div>
 		</div>
@@ -44,20 +44,34 @@
           <div class="col-md-6 form-group">
             <label>Start</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.start_tag}}">
+              <input type="text" name="startTag" ng-model="startTag" class="form-control" value ="{{selected.start_tag}}">
             </div>
           </div>
           <div class="col-md-6 form-group">  
             <label>End</label>
             <div>
-              <input type="text" class="form-control" value ="{{selected.end_tag}}">
+              <input type="text" name ="endTag" ng-model="endTag" class="form-control" value ="{{selected.end_tag}}">
             </div>
           </div>
         </div>
+        <div class="row" ng-if="!selected">
+			<div class="col-md-6 form-group">
+				<label>Default Bait type</label>
+				<select class="form-control">
+				<option value="{{bait.id}}" data-ng-repeat="bait in baits">{{bait.name}}</option>
+				</select>
+			</div>
+			<div class="col-md-6 form-group">
+				<label>Default Trap type</label>
+				<select class="form-control">
+					<option value="{{type.id}}" data-ng-repeat="type in trap_types">{{type.name}}</option>
+				</select>
+				</div>
+			</div>
         
     	<div class="clearfix">
 		<div class="pull-right" style="margin-top: 10px;">
-        <button class="btn btn-success" type="button" ng-if="!selected">Save</button>
+        <button class="btn btn-success" type="button" ng-if="!selected" ng-click="Save()">Save</button>
         <div ng-if="selected">
         <button class="btn btn-success" type="button">Edit</button>
         <button class="btn btn-danger" type="button">Delete</button>
@@ -65,4 +79,5 @@
       </div>
       </div>
 	</div>
+</div>
 </div>
