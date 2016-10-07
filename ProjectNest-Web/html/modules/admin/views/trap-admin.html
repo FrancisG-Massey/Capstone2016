@@ -90,24 +90,30 @@
 			<div class="row">
 				<div class="col-md-6 form-group">
 					<label>Bait type</label>
-					<select class="form-control" ng-model="baitInput">
-						<option data-ng-selected="bait.id == baitInput" 
-							 data-ng-repeat="bait in baits">{{bait.name}}</option>
+					<select class="form-control" ng-model="baitId" >
+						<option data-ng-selected="bait.id == baitId" 
+							 data-ng-repeat="bait in baits" ng-value="{{bait.id}}">{{bait.name}}</option>
 					</select>
 				</div>
 				<div class="col-md-6 form-group">
 					<label>Trap type</label>
-					<select class="form-control" ng-model="typeInput" >
-						<option data-ng-selected="type.id == typeInput" 
-							 data-ng-repeat="type in trap_type">{{type.name}}</option>
-							
+					<select class="form-control" ng-model="typeId" >
+						<option data-ng-selected="type.id == typeId" 
+							 data-ng-repeat="type in trap_type" ng-value="{{type.id}}">{{type.name}}</option>	
 					</select>
 				</div>
 			</div>
-		
+	<div class="row">
+		<div  ng-if="!selected" class="col-md-6 form-group pull-right">
+            <label>Trap Number</label>
+            <div>
+              <input type="text" name ="trapNumber" class="form-control"  ng-model= "trapNumber">
+            </div>
+		</div>
+	</div>	
 	<div class="clearfix" style="margin-top:8px; margin-bottom: 20px">
 	  <div>
-	  <button type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#catch-history" >View Catch History</button>
+	  <button ng-if="selected" type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#catch-history" >View Catch History</button>
 	  </div>
 	  <div class="modal fade" id="catch-history" tabindex="-1" role="dialog">
 	    <div class="modal-dialog" role="document">
@@ -151,7 +157,7 @@
 
 	<div class="clearfix">
 	<div class = "pull-right" style="margin-top: 10px;">
-		<button class="btn btn-success" type="button"  ng-if="!selected" >Save</button>
+		<button class="btn btn-success" type="button"  ng-if="!selected" ng-click="Save()">Save</button>
 		<div ng-if="selected">
 		<button class="btn btn-success" type="button" >Edit</button>
 		<button class="btn btn-danger" type="button">Delete</button>
