@@ -14,11 +14,11 @@
 }
 
 .prev {
-	-fx-alignment: left;
+	-fx-alignment: center-left;
 }
 
 .next {
-	-fx-alignment: right;
+	-fx-alignment: center-right;
 }
 
 #distance-label {

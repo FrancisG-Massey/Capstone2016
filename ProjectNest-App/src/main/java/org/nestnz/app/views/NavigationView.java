@@ -39,13 +39,15 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
 
+import android.R.integer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
@@ -93,9 +95,9 @@ public class NavigationView extends View {
     
     final Button next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
     
-    ObservableList<Trap> orderedTraps = FXCollections.observableArrayList();
+    final ObservableList<Trap> orderedTraps;
     
-    int currentPointer = 0;
+    final IntegerProperty currentTrapIndex = new SimpleIntegerProperty(0);
     
     final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
     
@@ -117,6 +119,7 @@ public class NavigationView extends View {
     
     protected NavigationView(boolean test) {
     	super(NAME);        
+    	orderedTraps = trapPositionLayer.getTraps();
         //setShowTransitionFactory(BounceInRightTransition::new);
         
         //getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
@@ -129,6 +132,7 @@ public class NavigationView extends View {
         } else {
         	catchSelectDialog = null;
         }
+                
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
     }
     
@@ -148,14 +152,11 @@ public class NavigationView extends View {
         
         prev.toFront();
         prev.getStyleClass().add("prev");
-        //prev.setAlignment(Pos.CENTER_LEFT);
         
         next.toFront();
         prev.getStyleClass().add("next");
-        //next.setAlignment(Pos.CENTER_RIGHT);
         
-        topBox.getChildren().addAll(prev, distanceLabel, next);
-        
+        topBox.getChildren().addAll(prev, distanceLabel, next);        
         
         Button logCatch = new Button();
         logCatch.getStyleClass().add("large-button");
@@ -164,6 +165,9 @@ public class NavigationView extends View {
         	logCatch();
         });
         setBottom(logCatch);
+        
+        
+        trapProperty.bind(Bindings.valueAt(orderedTraps, currentTrapIndex));
 
         trapPositionLayer.activeTrapProperty().bind(trapProperty);
 
@@ -305,8 +309,7 @@ public class NavigationView extends View {
      */
     public void previousTrap () {
 		LOG.log(Level.FINE, "Requested swap to previous trap");
-		currentPointer--;
-		setTrap(orderedTraps.get(currentPointer));
+		currentTrapIndex.set(currentTrapIndex.get()-1);
     }
     
     /**
@@ -314,8 +317,7 @@ public class NavigationView extends View {
      */
     public void nextTrap() {
 		LOG.log(Level.FINE, "Requested swap to next trap");
-		currentPointer++;
-    	setTrap(orderedTraps.get(currentPointer));
+		currentTrapIndex.set(currentTrapIndex.get()+1);
     }
     
     /**
@@ -323,7 +325,7 @@ public class NavigationView extends View {
      * @return True if a previous trap exists, false if this is the first trap in the line
      */
     public boolean hasPreviousTrap () {
-    	return currentPointer > 0;
+    	return currentTrapIndex.get() > 0;
     }
     
     /**
@@ -331,15 +333,7 @@ public class NavigationView extends View {
      * @return True if a next trap exists, false if this is the last trap in the trapline
      */
     public boolean hasNextTrap () {
-    	return currentPointer < orderedTraps.size()-1;
-    }
-    
-    /**
-     * Sets the target trap for the navigation view
-     * @param trap The target trap
-     */
-    void setTrap (Trap trap) {
-    	trapProperty.set(trap);
+    	return currentTrapIndex.get() < orderedTraps.size()-1;
     }
     
     /**
@@ -349,12 +343,11 @@ public class NavigationView extends View {
     public final void setTrapline (Trapline trapline) {
     	Objects.requireNonNull(trapline);
     	traplineProperty.set(trapline);
+    	currentTrapIndex.set(0);
     	
     	//Sort the traps by trap number
-    	orderedTraps = trapline.getTraps().sorted((t1, t2) -> t1.getNumber() - t2.getNumber());
+    	orderedTraps.setAll(trapline.getTraps().sorted((t1, t2) -> t1.getNumber() - t2.getNumber()));
     	
-    	trapPositionLayer.getTraps().setAll(trapline.getTraps());
-    	setTrap(orderedTraps.get(0));
     }
 
     @Override
