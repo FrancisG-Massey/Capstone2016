@@ -29,14 +29,17 @@ public class ApiCatch {
 	
 	private String note;
 	
+	private String logged;
+	
 	public ApiCatch() {
 		
 	}
 
-	public ApiCatch(int trapId, int typeId, String note) {
+	public ApiCatch(int trapId, int typeId, String note, String logged) {
 		this.trapId = trapId;
 		this.typeId = typeId;
 		this.note = note;
+		this.logged = logged;
 	}
 
 	@XmlElement(name="trap_id")
@@ -48,7 +51,7 @@ public class ApiCatch {
 		this.trapId = trapId;
 	}
 
-	@XmlElement(name="type_id")
+	@XmlElement(name="catchtype_id")
 	public int getTypeId() {
 		return typeId;
 	}
@@ -65,8 +68,16 @@ public class ApiCatch {
 		this.note = note;
 	}
 
+	public String getLogged() {
+		return logged;
+	}
+
+	public void setLogged(String logged) {
+		this.logged = logged;
+	}
+
 	@Override
 	public String toString() {
-		return "ApiCatch [trapId=" + trapId + ", typeId=" + typeId + ", note=" + note + "]";
+		return "ApiCatch [trapId=" + trapId + ", typeId=" + typeId + ", note=" + note + ", logged=" + logged + "]";
 	}
 }

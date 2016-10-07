@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.services.impl;
 
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,7 +55,9 @@ public class RestNetworkService implements NetworkService {
     			.path("/catch").header("Session-Token", loginService.getSessionToken())
     			.contentType("application/json");
 		
-		ApiCatch apiCatch = new ApiCatch(trapId, loggedCatch.getCatchType().getId(), null);
+		String logged = loggedCatch.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		
+		ApiCatch apiCatch = new ApiCatch(trapId, loggedCatch.getCatchType().getId(), null, logged);
 		
 		RestDataSource dataSource = apiClient.createRestDataSource();
 		
