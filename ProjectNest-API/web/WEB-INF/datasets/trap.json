@@ -45,10 +45,27 @@
             t.trap_number
     ",
     "POST" : "
-        INSERT INTO trap
-            (trap_traplineid, trap_number, trap_coordx, trap_coordy, trap_traptypeid, trap_status, trap_createdtimestamp, trap_lastresettimestamp, trap_baitid)
+        INSERT INTO trap (
+            trap_traplineid,
+            trap_number,
+            trap_coordx,
+            trap_coordy,
+            trap_traptypeid,
+            trap_status,
+            trap_createdtimestamp,
+            trap_lastresettimestamp,
+            trap_baitid
+        )
         SELECT
-            #bigint:trapline_id#, #bigint:number#, #numeric:coord_long#, #numeric:coord_lat#, #bigint:traptype_id#, #bigint:status#, #timestamp:created#, #timestamp:last_reset#, #bigint:bait_id#
+            #bigint:trapline_id#,
+            #bigint:number#,
+            #numeric:coord_long#,
+            #numeric:coord_lat#,
+            #bigint:traptype_id#,
+            #bigint:status#,
+            #timestamp:created#,
+            #timestamp:last_reset#,
+            #bigint:bait_id#
         WHERE
             (#bigint:id# IS NULL) AND
             (#bigint:trapline_id# IS NOT NULL) AND (#bigint:traptype_id# IS NOT NULL) AND

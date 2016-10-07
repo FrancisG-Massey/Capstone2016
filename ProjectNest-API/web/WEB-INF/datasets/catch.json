@@ -43,10 +43,25 @@
             c.catch_loggedtimestamp DESC
     ",
     "POST" : "
-        INSERT INTO catch
-            (catch_trapid, catch_traptypeid, catch_userid, catch_catchtypeid, catch_baitid, catch_note, catch_loggedtimestamp, catch_imagefilename)
+        INSERT INTO catch (
+            catch_trapid,
+            catch_traptypeid,
+            catch_userid,
+            catch_catchtypeid,
+            catch_baitid,
+            catch_note,
+            catch_loggedtimestamp,
+            catch_imagefilename
+        )
         SELECT
-            #bigint:trap_id#, #bigint:traptype_id#, 1, #bigint:catchtype_id#, #bigint:bait_id#, #string:note#, #timestamp:logged#, #string:img_filename#
+            #bigint:trap_id#,
+            #bigint:traptype_id#,
+            1,
+            #bigint:catchtype_id#,
+            #bigint:bait_id#,
+            #string:note#,
+            #timestamp:logged#,
+            #string:img_filename#
         WHERE
             (#bigint:id# IS NULL) AND 
             (#bigint:trap_id# IS NOT NULL) AND (#bigint:traptype_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL) AND (#bigint:bait_id# IS NOT NULL)
