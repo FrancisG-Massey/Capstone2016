@@ -71,11 +71,13 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final Map<Integer, Region> regions = new HashMap<>();
     
-    private final TraplineUpdateService apiUpdateMonitor;
+    private final Map<Trapline, TraplineUpdateService> apiUpdateMonitors = new HashMap<>();
     
     private final LoginService loginService;
     
     private final CachingService cachingService;
+    
+    private final NetworkService networkService;
     
     private final ReadOnlyBooleanWrapper loadingProperty = new ReadOnlyBooleanWrapper(false);
     
@@ -89,8 +91,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     public TrapDataService (CachingService cachingService, LoginService loginService, NetworkService networkService) throws IOException {
     	this.cachingService = Objects.requireNonNull(cachingService);
     	this.loginService = Objects.requireNonNull(loginService);
-    	
-    	this.apiUpdateMonitor = new TraplineUpdateService(networkService);
+    	this.networkService = networkService;
     }
     
     public void initialise () {
@@ -404,7 +405,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			if (c.wasAdded()) {
 				for (Trapline t : c.getAddedSubList()) {
 					updatedTraplines.add(t);
-					t.getTraps().addListener(apiUpdateMonitor);
+					TraplineUpdateService s = new TraplineUpdateService(t, networkService);
+					t.getTraps().addListener(s);
+					apiUpdateMonitors.put(t, s);
 				}
 			} else if (c.wasUpdated()) {
 				for (Trapline t : c.getList().subList(c.getFrom(), c.getTo())) {
@@ -412,7 +415,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				}
 			} else if (c.wasRemoved()) {
 				for (Trapline t : c.getRemoved()) {
-					t.getTraps().removeListener(apiUpdateMonitor);
+					if (apiUpdateMonitors.containsKey(t)) {
+						t.getTraps().removeListener(apiUpdateMonitors.remove(t));
+					}
 				}
 			}
 		}

@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 /**
  * Represents a catch log entry to be sent/received from /catch on the API
  */
-public class ApiCatch {
+public final class ApiCatch {
 	
 	private int trapId;
 	

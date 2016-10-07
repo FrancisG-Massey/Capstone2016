@@ -17,12 +17,14 @@
 package org.nestnz.app.services;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.Trap;
+import org.nestnz.app.model.Trapline;
 
 import javafx.collections.ListChangeListener;
 
@@ -34,6 +36,8 @@ public class TraplineUpdateService implements ListChangeListener<Trap> {
 
     private static final Logger LOG = Logger.getLogger(TraplineUpdateService.class.getName());
     
+    private final Trapline trapline;
+    
     private final NetworkService networkService;
     
     /**
@@ -42,7 +46,8 @@ public class TraplineUpdateService implements ListChangeListener<Trap> {
      */
     private final Set<Catch> sentCatches = new HashSet<>();
     
-    public TraplineUpdateService (NetworkService networkService) {
+    public TraplineUpdateService (Trapline trapline, NetworkService networkService) {
+    	this.trapline = Objects.requireNonNull(trapline);
     	this.networkService = networkService;
     }
 	
@@ -61,6 +66,11 @@ public class TraplineUpdateService implements ListChangeListener<Trap> {
 							LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
 						}
 					}
+				}
+			} else if (change.wasAdded()) {
+				for (Trap trap : change.getAddedSubList()) {
+					networkService.sendCreatedTrap(trapline.getId(), trap);
+					LOG.log(Level.INFO, String.format("Detected newly created trap: %s", trap));					
 				}
 			}
 		}
