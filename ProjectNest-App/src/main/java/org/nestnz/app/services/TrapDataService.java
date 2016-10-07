@@ -71,7 +71,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final Map<Integer, Region> regions = new HashMap<>();
     
-    private final TraplineUpdateService apiUpdateMonitor = new TraplineUpdateService();
+    private final TraplineUpdateService apiUpdateMonitor;
     
     private final LoginService loginService;
     
@@ -86,9 +86,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
      */
     private final Semaphore appDataLoading = new Semaphore(0);
     
-    public TrapDataService (CachingService cachingService, LoginService loginService) throws IOException {
+    public TrapDataService (CachingService cachingService, LoginService loginService, NetworkService networkService) throws IOException {
     	this.cachingService = Objects.requireNonNull(cachingService);
     	this.loginService = Objects.requireNonNull(loginService);
+    	
+    	this.apiUpdateMonitor = new TraplineUpdateService(networkService);
     }
     
     public void initialise () {
