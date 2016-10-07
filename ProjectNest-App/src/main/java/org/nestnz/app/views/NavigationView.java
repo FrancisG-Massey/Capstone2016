@@ -134,6 +134,7 @@ public class NavigationView extends View {
     
     private void initControls () {
     	HBox topBox = new HBox();
+    	topBox.setId("top-box");
     	
     	topBox.setAlignment(Pos.CENTER);
     	
@@ -146,10 +147,12 @@ public class NavigationView extends View {
         setTop(topBox);
         
         prev.toFront();
-        prev.setAlignment(Pos.CENTER);
+        prev.getStyleClass().add("prev");
+        //prev.setAlignment(Pos.CENTER_LEFT);
         
         next.toFront();
-        next.setAlignment(Pos.CENTER);
+        prev.getStyleClass().add("next");
+        //next.setAlignment(Pos.CENTER_RIGHT);
         
         topBox.getChildren().addAll(prev, distanceLabel, next);
         
@@ -220,7 +223,7 @@ public class NavigationView extends View {
      * Displays the catch type dialog also displayed in {@link #logCatch()}, but allows the user to change the catch specified {@link integer} {@code loggedCatch} 
      * @param loggedCatch The previously specified catch to ask the user to change
      */
-    private void modifyCatch (Catch loggedCatch) {
+    protected void modifyCatch (Catch loggedCatch) {
 		Trap forTrap = trapProperty.get();
     	catchSelectDialog.setTitleText(String.format("Change catch #%d", forTrap.getNumber()));
     	catchSelectDialog.showAndWait().ifPresent(catchType -> {
