@@ -125,7 +125,7 @@ public class RequestServlet extends HttpServlet {
         if (dirtySQL == null) {
             LOG.log(Level.SEVERE, "Unable to locate requested dataset!\n{0}\nReturning 400...\n{1}", 
                     new Object[] {requestEntity, response.toString()});
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
        
@@ -186,7 +186,7 @@ public class RequestServlet extends HttpServlet {
                     jsonArray = Common.resultSetAsJSON(rsh);
                     LOG.log(Level.FINER, "ResultSet retrieved from database!");
                 } else {
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                     jsonArray = "[]";
                     LOG.log(Level.FINER, "Empty ResultSet received from database");
                 }
@@ -255,7 +255,7 @@ public class RequestServlet extends HttpServlet {
         if (dirtySQL == null) {
             LOG.log(Level.SEVERE, "Unable to locate requested dataset!\n{0}\nReturning 400...\n{1}", 
                     new Object[] {requestEntity, response.toString()});
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
