@@ -56,4 +56,38 @@ public final class ParserCatch {
 	public String toString() {
 		return "ParserCatch [typeId=" + typeId + ", timestamp=" + timestamp + ", note=" + note + "]";
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((note == null) ? 0 : note.hashCode());
+		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+		result = prime * result + typeId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ParserCatch other = (ParserCatch) obj;
+		if (note == null) {
+			if (other.note != null)
+				return false;
+		} else if (!note.equals(other.note))
+			return false;
+		if (timestamp == null) {
+			if (other.timestamp != null)
+				return false;
+		} else if (!timestamp.equals(other.timestamp))
+			return false;
+		if (typeId != other.typeId)
+			return false;
+		return true;
+	}
 }

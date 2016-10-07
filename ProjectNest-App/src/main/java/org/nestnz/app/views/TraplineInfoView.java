@@ -16,6 +16,10 @@
  *******************************************************************************/
 package org.nestnz.app.views;
 
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.TrapDataService;
@@ -40,6 +44,12 @@ import javafx.scene.layout.VBox;
 
 public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	
+	/**
+	 * Represents the number of hours between automatically fetching the trapline data from the server.
+	 * This only occurs if the view is closed & re-opened after at least the frequency has passed since the last refresh.
+	 */
+	public static final int REFRESH_FREQUENCY = 24;
+	
 	public static final String NAME = "trapline_info";
 	
 	private final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
@@ -54,10 +64,16 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 
 	public TraplineInfoView(TrapDataService dataService) {
 		super(NAME);
-		this.dataService = dataService;
+		this.dataService = Objects.requireNonNull(dataService);
 		
         this.setOnShown(evt -> {
-    		dataService.loadingProperty().addListener(this);        	
+    		dataService.loadingProperty().addListener(this);
+    		if (traplineProperty.get() != null) {
+    			Optional<LocalDateTime> lastUpdated = traplineProperty.get().getLastUpdated();
+    			if (!lastUpdated.isPresent() || lastUpdated.get().plusHours(REFRESH_FREQUENCY).isBefore(LocalDateTime.now())) {
+    				dataService.loadTrapline(traplineProperty.get());
+    			}
+    		}
         });
         
         this.setOnHidden(evt -> {
@@ -118,7 +134,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		if (newValue) {
 			this.getApplication().showLayer("loading");
 		} else {
-			this.getApplication().hideLayer("loading");			
+			this.getApplication().hideLayer("loading");
 		}
 	}
 

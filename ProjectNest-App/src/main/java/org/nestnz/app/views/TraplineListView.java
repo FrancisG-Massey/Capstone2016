@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.views;
 
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +43,13 @@ import javafx.util.StringConverter;
 
 public class TraplineListView extends View implements ChangeListener<Boolean> {
 	
+	/**
+	 * Represents the number of hours between automatically fetching the trapline list from the server.
+	 * This only occurs if the view is closed & re-opened after at least the frequency has passed since the last refresh.
+	 * This 
+	 */
+	public static final int REFRESH_FREQUENCY = 1;
+	
 	public static final String NAME = "trapline_list";
 
     private static final Logger LOG = Logger.getLogger(TraplineListView.class.getName());
@@ -51,6 +59,8 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
 	private final SidePopupView menu;
 	
 	private final TrapDataService dataService;
+	
+	private LocalDateTime lastTraplineFetch = null;
 
     public TraplineListView(TrapDataService dataService) {
         super(NAME);
@@ -93,7 +103,11 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
         });
 				
         this.setOnShown(evt -> {
-    		dataService.loadingProperty().addListener(this);        	
+    		dataService.loadingProperty().addListener(this);
+    		if (lastTraplineFetch == null || lastTraplineFetch.plusHours(REFRESH_FREQUENCY).isBefore(LocalDateTime.now())) {
+    			LOG.log(Level.INFO, "Refreshing trapline list. Last refresh: "+lastTraplineFetch);
+    			dataService.refreshTraplines();//Load the traplines if (a) they haven't been loaded yet or (b) at least an hour has passed since their last load  			
+    		}
         });
         
         this.setOnHidden(evt -> {
@@ -103,6 +117,7 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
         setCenter(traplineList);
 		menu = buildMenu();
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
+        
     }
 	
 	private SidePopupView buildMenu () {
@@ -133,7 +148,8 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
 		if (newValue) {
 			this.getApplication().showLayer("loading");
 		} else {
-			this.getApplication().hideLayer("loading");			
+			this.getApplication().hideLayer("loading");	
+			lastTraplineFetch = LocalDateTime.now();
 		}
 	}
     
