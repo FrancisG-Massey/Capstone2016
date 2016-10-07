@@ -39,7 +39,6 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
 
-import android.R.integer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.DoubleProperty;
@@ -162,7 +161,7 @@ public class NavigationView extends View {
         logCatch.getStyleClass().add("large-button");
         logCatch.setText("Log Catch");
         logCatch.setOnAction(evt -> {
-        	logCatch();
+        	showLogCatchDialog();
         });
         setBottom(logCatch);
         
@@ -210,7 +209,7 @@ public class NavigationView extends View {
     /**
      * Displays a dialog prompting the user to select the catch type for the current trap
      */
-    private void logCatch () {
+    private void showLogCatchDialog () {
 		Trap forTrap = trapProperty.get();
     	catchSelectDialog.setTitleText(String.format("Log catch #%d", forTrap.getNumber()));
     	catchSelectDialog.showAndWait().ifPresent(catchType -> {
@@ -220,11 +219,14 @@ public class NavigationView extends View {
         		modifyCatch(loggedCatch);
         	}*/);
         	forTrap.getCatches().add(loggedCatch);
+        	if (hasNextTrap()) {
+        		nextTrap();
+        	}
     	});
     }
     
     /**
-     * Displays the catch type dialog also displayed in {@link #logCatch()}, but allows the user to change the catch specified {@link integer} {@code loggedCatch} 
+     * Displays the catch type dialog also displayed in {@link #showLogCatchDialog()}, but allows the user to change the catch specified {@link integer} {@code loggedCatch} 
      * @param loggedCatch The previously specified catch to ask the user to change
      */
     protected void modifyCatch (Catch loggedCatch) {
@@ -241,7 +243,7 @@ public class NavigationView extends View {
     }
     
     /**
-     * Builds the catch selection dialog, used by {@link #logCatch()}. This only ever needs to be called once when the view is created
+     * Builds the catch selection dialog, used by {@link #showLogCatchDialog()}. This only ever needs to be called once when the view is created
      * @return The dialog used to select the creature caught in the active trap
      */
     private final Dialog<CatchType> makeCatchDialog () {
