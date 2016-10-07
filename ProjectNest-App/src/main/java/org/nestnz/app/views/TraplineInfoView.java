@@ -17,6 +17,7 @@
 package org.nestnz.app.views;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -58,6 +59,8 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	
     private Label traplineSize = new Label();
 	
+    private Label lastUpdated = new Label();
+	
 	private final SidePopupView menu;
 	
 	private final TrapDataService dataService;
@@ -81,7 +84,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         });
         
         VBox controls = new VBox();
-        controls.getChildren().add(traplineSize);
+        controls.getChildren().addAll(traplineSize, lastUpdated);
         setCenter(controls);
         
         start.getStyleClass().add("large-button");
@@ -98,9 +101,18 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	public void setTrapline (Trapline trapline) {
 		traplineProperty.set(trapline);
 		start.visibleProperty().bind(Bindings.isNotEmpty(trapline.getTraps()));
-        traplineSize.textProperty().bind(Bindings.createStringBinding(() -> {
-        	return String.format("Traps: %d", trapline.getTraps().size());
-        }, trapline.getTraps()));
+        traplineSize.textProperty().bind(Bindings.format("Traps: %d", Bindings.size(trapline.getTraps())));
+        
+        lastUpdated.textProperty().bind(Bindings.createStringBinding(() -> {
+        	String time;
+        	if (trapline.getLastUpdated().isPresent()) {
+        		LocalDateTime lastUpdated = trapline.getLastUpdated().get();
+            	time = lastUpdated.format(DateTimeFormatter.ofPattern("EEEE, d MMMM h:mm a"));
+        	} else {
+        		time = "Never";
+        	}
+        	return String.format("Last fetched: %s", time);
+        }, trapline.lastUpdatedProperty()));
 	}
 	
 	private SidePopupView buildMenu () {
