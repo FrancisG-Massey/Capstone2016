@@ -1,14 +1,13 @@
 'use strict';
  
 angular.module('Admin')
-.controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline','baits','trap_type',function ($scope,$rootScope,$http,region,trapline,baits,trap_type) {
+.controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline','baits','trap_type','$route',function ($scope,$rootScope,$http,region,trapline,baits,trap_type,$route) {
 	$rootScope.wrapClass = undefined;
     $scope.regions = region.data;
     $scope.traplines = trapline.data;
     $scope.baits = baits;
     $scope.trap_types = trap_type;
     console.log($scope.traplines);
-
 	//console.log($rootScope.traps);
 	
 	// Valid Trapline objects are nested in each region object. 
@@ -56,29 +55,19 @@ angular.module('Admin')
     	console.log($scope.startTag);
     	console.log($scope.endTag);
     	
-    	var object = new Object();
-    	object.name = $scope.line_name;
-    	object.region_id = parseInt($scope.region_id);
-    	object.start_tag =  $scope.startTag;
-    	object.end_tag = $scope.endTag;
-    	object.img_filename = "hello";
-    	
-		/*var data = {
+  	
+		var data = {
 				 "name": $scope.line_name,
 	             "region_id": parseInt($scope.region_id),
 	             "start_tag": $scope.startTag,
 	             "end_tag": $scope.endTag,
 	             "img_filename": "hello"
 
-		};*/	
+		};	
     	
-     	$http.post('https://www.nestnz.org/api/trapline',object)
+     	$http.post('https://www.nestnz.org/api/trapline',data)
         .then(function(data,status,header,config) {
-            $scope.ResponseDetails = "Data: " + data +
-            "<hr />status: " + status +
-            "<hr />headers: " + header +
-            "<hr />config: " + config;
-            console.log($scope.ResponseDetails);
+            $route.reload();
         });         
      };
 			
@@ -98,13 +87,6 @@ angular.module('Admin')
 		$scope.catch_types = catch_types;
 		console.log($scope.catch_types);
 
-		/*$scope.catch_types = [];
-    	$http.get('https://www.nestnz.org/api/catch-type')
-        .then(function(response) {
-            $scope.catch_types = response.data;
-            console.log($scope.catch_types);
-        });*/
-    	
 		// pagination
 	    var pageLength = 10,
 	    	numTraps = traps.length,
@@ -150,10 +132,14 @@ angular.module('Admin')
     	
     	
     	$scope.setSelected = function(item){
-    		
     	$scope.selected = this.trap;
 		$scope.selected.popup.openPopup();
     	mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
+    	$scope.latitude = $scope.selected.coord_lat;
+    	$scope.longtitude = $scope.selected.coord_long;
+    	$scope.baitInput= $scope.selected.bait_id;
+    	$scope.typeInput= $scope.selected.traptype_id;
+    	$scope.status = $scope.selected.status;
     	
     	// get catch by passing trap id
     	$http.get('https://www.nestnz.org/api/catch?trap-id='+$scope.selected.id)
@@ -173,6 +159,8 @@ angular.module('Admin')
         	    }
         	};
         });
+    	console.log($scope.baitInput);
+    	console.log($scope.typeInput);
 
     };
     
