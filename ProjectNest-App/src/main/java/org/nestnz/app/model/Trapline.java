@@ -70,7 +70,7 @@ public final class Trapline {
 	 * Indicates the date & time this trapline was last updated from the server
 	 * This will be Optional.empty() if the trap data has not yet been fetched from the server
 	 */
-	private Optional<LocalDateTime> lastUpdated = Optional.empty();
+	private final ObjectProperty<Optional<LocalDateTime>> lastUpdatedProperty = new SimpleObjectProperty<>(Optional.empty());
 	
 	public Trapline(int id) {
 		this.idProperty.set(id);
@@ -158,15 +158,19 @@ public final class Trapline {
 	}
 	
 	public Optional<LocalDateTime> getLastUpdated () {
-		return lastUpdated;
+		return lastUpdatedProperty.get();
 	}
 	
 	public void setLastUpdated (Optional<LocalDateTime> lastUpdated) {
-		this.lastUpdated = lastUpdated;
+		this.lastUpdatedProperty.set(lastUpdated);
 	}
 	
 	public void setLastUpdated (LocalDateTime lastUpdated) {
-		this.lastUpdated = Optional.ofNullable(lastUpdated);
+		this.lastUpdatedProperty.set(Optional.ofNullable(lastUpdated));
+	}
+	
+	public ObjectProperty<Optional<LocalDateTime>> lastUpdatedProperty () {
+		return lastUpdatedProperty;
 	}
 	
 	public ObservableList<CatchType> getCatchTypes () {

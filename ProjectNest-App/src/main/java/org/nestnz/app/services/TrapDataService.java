@@ -65,7 +65,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	
     private final ObservableList<Trapline> traplines = FXCollections.observableArrayList(trapline -> {
     	return new Observable[] { trapline.nameProperty(), trapline.regionProperty(), trapline.getTraps(),
-    			trapline.endProperty(), trapline.startProperty(), trapline.getCatchTypes() };
+    			trapline.endProperty(), trapline.startProperty(), trapline.getCatchTypes(),
+    			trapline.lastUpdatedProperty() };
     });
     
     private final Map<Integer, Region> regions = new HashMap<>();
