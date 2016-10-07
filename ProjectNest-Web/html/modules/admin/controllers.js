@@ -44,39 +44,42 @@ angular.module('Admin')
     $scope.addNew = function() {  	
     	$scope.selected = false;
     	$rootScope.region_selected = undefined;
+    	$scope.line_name = undefined;
+    	$scope.region_id = undefined;
+    	$scope.startTag = undefined;
+    	$scope.endTag = undefined;
     };
     
     $scope.Save = function () {
-
+    	console.log($scope.region_id);
+    	console.log($scope.line_name);
+    	console.log($scope.startTag);
+    	console.log($scope.endTag);
     	
-		var data = {
+    	var object = new Object();
+    	object.name = $scope.line_name;
+    	object.region_id = parseInt($scope.region_id);
+    	object.start_tag =  $scope.startTag;
+    	object.end_tag = $scope.endTag;
+    	object.img_filename = "hello";
+    	
+		/*var data = {
 				 "name": $scope.line_name,
 	             "region_id": parseInt($scope.region_id),
 	             "start_tag": $scope.startTag,
 	             "end_tag": $scope.endTag,
 	             "img_filename": "hello"
 
-		};	
-     
-     	$http.post('https://www.nestnz.org/api/trapline',data)
-        .then(function(data, status, header, config) {
+		};*/	
+    	
+     	$http.post('https://www.nestnz.org/api/trapline',object)
+        .then(function(data,status,header,config) {
             $scope.ResponseDetails = "Data: " + data +
             "<hr />status: " + status +
             "<hr />headers: " + header +
             "<hr />config: " + config;
             console.log($scope.ResponseDetails);
-        });
-         
-       /*  $http.post('https://www.nestnz.org/api/trapline', data, config)
-         .success(function (data, status, headers, config) {
-             $scope.PostDataResponse = data;
-         })
-         .error(function (data, status, header, config) {
-             $scope.ResponseDetails = "Data: " + data +
-                 "<hr />status: " + status +
-                 "<hr />headers: " + header +
-                 "<hr />config: " + config;
-         });*/
+        });         
      };
 			
 }])

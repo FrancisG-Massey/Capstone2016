@@ -53,17 +53,6 @@ crossorigin="anonymous">
 					</span>
 					</a>
 				</div>
-				<script>
-				// for mobile menu view
-				// collapse the menu in when an option is clicked 
-				$(function() {
-				    $('.nav a').on('click', function(){ 
-				        if($('.navbar-toggle').css('display') !='none'){
-				            $(".navbar-toggle").trigger( "click" );
-				        }
-				    });
-				});
-				</script>
 				<div class="collapse navbar-collapse" id="navbar" bs-active-link>
 					<ul class="nav navbar-nav navbar-right" ng-cloak>
 						<li><a href="#/about">About</a></li>
@@ -89,6 +78,17 @@ crossorigin="anonymous">
 						<li ng-if="!globals.currentUser"><a href="#/login">Log In</a></li>
 					</ul>
 				</div>
+				<script>
+				// for mobile menu view
+				// collapse the menu in when an option is clicked 
+				$(function() {
+				    $('.nav a').on('click', function(){ 
+				        if($('.navbar-toggle').css('display') !='none'){
+				            $(".navbar-toggle").trigger( "click" );
+				        }
+				    });
+				});
+				</script>
 			</div>
 		</nav>
 

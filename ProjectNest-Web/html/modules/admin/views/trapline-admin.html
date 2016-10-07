@@ -33,9 +33,9 @@
           </div>
 		  <div class="col-md-6 form-group">
 			<label>Region</label>
-			<select class="form-control">
-			<option data-ng-selected="region.name == selected.region.name" 
-			ng-model="region_id" data-ng-repeat="region in regions">{{region.name}}</option>
+			<select class="form-control" ng-model="region_id" >
+			<option data-ng-selected="region.name == selected.region.name" ng-value="{{region.id}}" data-ng-repeat="region in regions">{{region.name}}</option>
+			
 			</select>
 		</div>
 		</div>
@@ -70,7 +70,7 @@
 				</div>
 			</div>
     	<div class="clearfix">
-		<div class="pull-right" style="margin-top: 10px;">
+		<div class="pull-right" style="margin-top: 10px;" ng-click="Save()">
         <button class="btn btn-success" type="button" ng-if="!selected">Save</button>
         <div ng-if="selected">
         <button class="btn btn-success" type="button">Edit</button>
