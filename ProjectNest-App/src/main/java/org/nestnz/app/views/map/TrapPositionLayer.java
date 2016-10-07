@@ -50,7 +50,10 @@ public class TrapPositionLayer extends PositionLayer implements ListChangeListen
 			removePoint(activeTrapIcon);
 			if (oldValue != null) {
 				MapPoint pos = new MapPoint(oldValue.getLatitude(), oldValue.getLongitude());
-				addPoint(pos, trapIcons.get(oldValue));
+				Node icon = trapIcons.get(oldValue);
+				if (icon != null) {
+					addPoint(pos, icon);
+				}
 			}
 			if (newValue != null) {
 				removePoint(trapIcons.get(newValue));

@@ -12,6 +12,17 @@ apply plugin: 'eclipse'
 apply plugin: 'pmd'
 apply plugin: 'jdepend'
 
+task jdependReport(dependsOn: jdependMain, group: 'verification', description: 'Generates a HTML report after executing jdepend checks.') << {
+   ant.xslt(
+      in: "$reporting.baseDir/jdepend/main.xml",
+      style: "$rootDir/conf/jdepend/jdepend-report.xslt",
+      out:"$reporting.baseDir/jdepend/main.html")
+}
+
+check {
+   dependsOn += ['jdependReport']
+}
+
 eclipse {
 	classpath {
 		downloadSources = true
@@ -49,6 +60,7 @@ dependencies {
     compile 'com.gluonhq:maps:1.0.0'
     
     testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.+'
 
     androidRuntime 'com.gluonhq:charm-android:3.0.0'
     iosRuntime 'com.gluonhq:charm-ios:3.0.0'

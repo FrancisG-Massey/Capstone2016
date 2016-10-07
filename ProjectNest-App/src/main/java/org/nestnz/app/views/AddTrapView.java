@@ -63,8 +63,7 @@ public class AddTrapView extends View {
 	
 	public AddTrapView() {
 		super(NAME);
-		addTrapButton.setMaxHeight(1000.0);
-		addTrapButton.setMaxWidth(1000.0);
+		addTrapButton.getStyleClass().add("large-button");
 		addTrapButton.setVisible(false);//Hide the 'add trap' button until we've set the trapline
 		map.setZoom(17);		
 		
@@ -87,6 +86,7 @@ public class AddTrapView extends View {
 						String.format("Created trap at %1$.6f, %2$.6f", lastTrapPosition.getLatitude(), lastTrapPosition.getLongitude()));
 			}
 		});
+        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
 	
 	private void addTrap (Position position) {

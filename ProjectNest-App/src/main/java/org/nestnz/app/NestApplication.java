@@ -19,8 +19,12 @@ package org.nestnz.app;
 import java.io.File;
 import java.io.IOException;
 
+import org.nestnz.app.services.CachingService;
 import org.nestnz.app.services.LoginService;
+import org.nestnz.app.services.NetworkService;
 import org.nestnz.app.services.TrapDataService;
+import org.nestnz.app.services.impl.DefaultCachingService;
+import org.nestnz.app.services.impl.RestNetworkService;
 import org.nestnz.app.views.AddTrapView;
 import org.nestnz.app.views.LoginView;
 import org.nestnz.app.views.NavigationView;
@@ -49,7 +53,11 @@ public class NestApplication extends MobileApplication {
     @Override
     public void init() throws IOException {
         appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
-        trapDataService = new TrapDataService(new File(appStoragePath, "cache"), LoginService.getInstance());
+        LoginService loginService = LoginService.getInstance();
+        CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
+        NetworkService networkService = new RestNetworkService(loginService);
+        trapDataService = new TrapDataService(cachingService, loginService, networkService);
+        trapDataService.initialise();
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));

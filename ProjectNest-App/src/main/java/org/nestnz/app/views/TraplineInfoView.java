@@ -16,6 +16,11 @@
  *******************************************************************************/
 package org.nestnz.app.views;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.TrapDataService;
@@ -40,6 +45,12 @@ import javafx.scene.layout.VBox;
 
 public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	
+	/**
+	 * Represents the number of hours between automatically fetching the trapline data from the server.
+	 * This only occurs if the view is closed & re-opened after at least the frequency has passed since the last refresh.
+	 */
+	public static final int REFRESH_FREQUENCY = 24;
+	
 	public static final String NAME = "trapline_info";
 	
 	private final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
@@ -48,16 +59,24 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	
     private Label traplineSize = new Label();
 	
+    private Label lastUpdated = new Label();
+	
 	private final SidePopupView menu;
 	
 	private final TrapDataService dataService;
 
 	public TraplineInfoView(TrapDataService dataService) {
 		super(NAME);
-		this.dataService = dataService;
+		this.dataService = Objects.requireNonNull(dataService);
 		
         this.setOnShown(evt -> {
-    		dataService.loadingProperty().addListener(this);        	
+    		dataService.loadingProperty().addListener(this);
+    		if (traplineProperty.get() != null) {
+    			Optional<LocalDateTime> lastUpdated = traplineProperty.get().getLastUpdated();
+    			if (!lastUpdated.isPresent() || lastUpdated.get().plusHours(REFRESH_FREQUENCY).isBefore(LocalDateTime.now())) {
+    				dataService.loadTrapline(traplineProperty.get());
+    			}
+    		}
         });
         
         this.setOnHidden(evt -> {
@@ -65,7 +84,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         });
         
         VBox controls = new VBox();
-        controls.getChildren().add(traplineSize);
+        controls.getChildren().addAll(traplineSize, lastUpdated);
         setCenter(controls);
         
         start.getStyleClass().add("large-button");
@@ -82,9 +101,18 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	public void setTrapline (Trapline trapline) {
 		traplineProperty.set(trapline);
 		start.visibleProperty().bind(Bindings.isNotEmpty(trapline.getTraps()));
-        traplineSize.textProperty().bind(Bindings.createStringBinding(() -> {
-        	return String.format("Traps: %d", trapline.getTraps().size());
-        }, trapline.getTraps()));
+        traplineSize.textProperty().bind(Bindings.format("Traps: %d", Bindings.size(trapline.getTraps())));
+        
+        lastUpdated.textProperty().bind(Bindings.createStringBinding(() -> {
+        	String time;
+        	if (trapline.getLastUpdated().isPresent()) {
+        		LocalDateTime lastUpdated = trapline.getLastUpdated().get();
+            	time = lastUpdated.format(DateTimeFormatter.ofPattern("EEEE, d MMMM h:mm a"));
+        	} else {
+        		time = "Never";
+        	}
+        	return String.format("Last fetched: %s", time);
+        }, trapline.lastUpdatedProperty()));
 	}
 	
 	private SidePopupView buildMenu () {
@@ -118,7 +146,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		if (newValue) {
 			this.getApplication().showLayer("loading");
 		} else {
-			this.getApplication().hideLayer("loading");			
+			this.getApplication().hideLayer("loading");
 		}
 	}
 

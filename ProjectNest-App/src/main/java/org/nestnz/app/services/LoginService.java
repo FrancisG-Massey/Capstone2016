@@ -36,7 +36,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 
-public final class LoginService {
+public class LoginService {
 	
 	public static enum LoginStatus {
 		PENDING_LOGIN,
