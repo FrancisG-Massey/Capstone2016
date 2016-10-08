@@ -42,7 +42,9 @@
             tl.trapline_imagefilename AS img_filename,
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 0) AS common_ct_id_1,
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 1) AS common_ct_id_2,
-            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3,
+            tl.trapline_defaultbaitid AS default_bait_id,
+            tl.trapline_defaulttraptypeid AS default_traptype_id
         FROM
             logged_user lu,
             trapline tl
@@ -65,14 +67,18 @@
             trapline_regionid,
             trapline_starttag,
             trapline_endtag,
-            trapline_imagefilename
+            trapline_imagefilename,
+            trapline_defaultbaitid,
+            default_traptype_id
         )
         SELECT
             #string:name#,
             #bigint:region_id#,
             #string:start_tag#,
             #string:end_tag#,
-            #string:img_filename#
+            #string:img_filename#,
+            #bigint:default_bait_id#,
+            #bigint:default_traptype_id#
         WHERE
             (#bigint:id# IS NULL) AND
             (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL)

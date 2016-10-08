@@ -296,9 +296,17 @@ CREATE TABLE public.trapline
   trapline_starttag text,
   trapline_endtag text,
   trapline_imagefilename text,
+  trapline_defaulttraptypeid bigint,
+  trapline_defaultbaitid bigint,
   CONSTRAINT trapline_pkey PRIMARY KEY (trapline_id),
   CONSTRAINT trapline_trapline_regionid_fkey FOREIGN KEY (trapline_regionid)
       REFERENCES public.region (region_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT trapline_trapline_defaulttraptypeid_fkey FOREIGN KEY (trapline_defaulttraptypeid)
+      REFERENCES public.traptype (traptype_id) MATCH SIMPLE
+      ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT trapline_trapline_defaultbaitid_fkey FOREIGN KEY (trapline_defaultbaitid)
+      REFERENCES public.bait (bait_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT
 )
 WITH (
@@ -662,6 +670,26 @@ $BODY$
         END IF;
         IF NEW.trap_status IS NULL THEN
             NEW.trap_status := 1;
+        END IF;
+        IF NEW.trap_baitid IS NULL THEN
+            NEW.trap_baitid := (
+                SELECT
+                    tl.trapline_defaultbaitid
+                FROM
+                    trapline tl
+                WHERE
+                    tl.trapline_id = NEW.trap_traplineid
+            );
+        END IF;
+        IF NEW.trap_traptypeid IS NULL THEN
+            NEW.trap_traptypeid := (
+                SELECT
+                    tl.trapline_defaulttraptypeid
+                FROM
+                    trapline tl
+                WHERE
+                    tl.trapline_id = NEW.trap_traplineid
+            );
         END IF;
         RETURN NEW;
     END;
