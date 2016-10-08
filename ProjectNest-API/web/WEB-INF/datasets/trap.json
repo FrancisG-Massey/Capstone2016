@@ -68,8 +68,7 @@
             #bigint:bait_id#
         WHERE
             (#bigint:id# IS NULL) AND
-            (#bigint:trapline_id# IS NOT NULL) AND (#bigint:traptype_id# IS NOT NULL) AND
-            (((#numeric:coord_long# IS NULL) AND (#numeric:coord_lat# IS NULL)) OR ((#numeric:coord_long# IS NULL) AND (#numeric:coord_lat# IS NULL)))
+            (#bigint:trapline_id# IS NOT NULL) AND (#bigint:traptype_id# IS NOT NULL)
         RETURNING
             trap_id
     ",
