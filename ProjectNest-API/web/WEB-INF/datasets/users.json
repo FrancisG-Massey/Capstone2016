@@ -38,10 +38,27 @@
             u.user_id
     ",
     "POST" : "
-        INSERT INTO users
-            (user_name, user_password, user_contactfullname, user_contactphone, user_contactemail, user_createdtimestamp, user_createduserid, user_isadmin, user_isinactive)
+        INSERT INTO users (
+            user_name,
+            user_password,
+            user_contactfullname,
+            user_contactphone,
+            user_contactemail,
+            user_createdtimestamp,
+            user_createduserid,
+            user_isadmin,
+            user_isinactive
+        )
         SELECT
-            #string:name#, #string:password#, #string:fullname#, #string:phone#, #string:email#, now()::timestamp, 1, #boolean:admin#, #boolean:inactive#
+            #string:name#,
+            #string:password#,
+            #string:fullname#,
+            #string:phone#,
+            #string:email#,
+            now()::timestamp,
+            1,
+            #boolean:admin#,
+            #boolean:inactive#
         WHERE
             (#bigint:id# IS NULL) AND 
             (#string:name# IS NOT NULL) AND (#string:password# IS NOT NULL)

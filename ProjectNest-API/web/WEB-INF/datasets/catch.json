@@ -43,13 +43,31 @@
             c.catch_loggedtimestamp DESC
     ",
     "POST" : "
-        INSERT INTO catch
-            (catch_trapid, catch_traptypeid, catch_userid, catch_catchtypeid, catch_baitid, catch_note, catch_loggedtimestamp, catch_imagefilename)
+        WITH trap_ref AS (
+            SELECT * FROM trap t WHERE t.trap_id = #bigint:trap_id# LIMIT 1
+        )
+        INSERT INTO catch (
+            catch_trapid,
+            catch_traptypeid,
+            catch_userid,
+            catch_catchtypeid,
+            catch_baitid,
+            catch_note,
+            catch_loggedtimestamp,
+            catch_imagefilename
+        )
         SELECT
-            #bigint:trap_id#, #bigint:traptype_id#, 1, #bigint:catchtype_id#, #bigint:bait_id#, #string:note#, #timestamp:logged#, #string:img_filename#
+            #bigint:trap_id#,
+            (SELECT t.trap_traptypeid FROM trap_ref t),
+            1,
+            #bigint:catchtype_id#,
+            (SELECT t.trap_baitid FROM trap_ref t),
+            #string:note#,
+            #timestamp:logged#,
+            #string:img_filename#
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#bigint:trap_id# IS NOT NULL) AND (#bigint:traptype_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL) AND (#bigint:bait_id# IS NOT NULL)
+            (#bigint:trap_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL)
         RETURNING
             catch_id
     ",

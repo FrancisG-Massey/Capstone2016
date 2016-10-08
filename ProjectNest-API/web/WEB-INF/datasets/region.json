@@ -33,8 +33,9 @@
             r.region_id
     ",
     "POST" : "
-        INSERT INTO region
-            (region_name)
+        INSERT INTO region (
+            region_name
+        )
         SELECT
             #string:name#
         WHERE

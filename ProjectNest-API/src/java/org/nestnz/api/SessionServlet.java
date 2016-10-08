@@ -59,7 +59,7 @@ public class SessionServlet extends HttpServlet {
         ServletContext sc = this.getServletContext();
         propPath = sc.getRealPath("/WEB-INF/dbconfig.properties");
         
-        LOG.log(Level.CONFIG, "Initializing RequestServlet @{0}", sc.getContextPath());
+        LOG.log(Level.INFO, "Initializing RequestServlet @{0}", sc.getContextPath());
         
         // Attempt the initial connection to the database.
         try {
@@ -151,13 +151,13 @@ public class SessionServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        LOG.log(Level.FINER, "Received request:\n{0}", request.toString());
+        LOG.log(Level.INFO, "Received request:\n{0}", request.toString());
         
         // Check for a well-formed basic auth header.
         final String auth = request.getHeader("Authorization");
         if (auth == null || !auth.startsWith("Basic ")) {
             // No basic auth header found, or header is not well-formed
-            LOG.log(Level.FINER, "No basic auth header, or header is poorly formed. Returning 401...\n{0}", response.toString());
+            LOG.log(Level.INFO, "No basic auth header, or header is poorly formed. Returning 401...\n{0}", response.toString());
             response.addHeader("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -171,7 +171,7 @@ public class SessionServlet extends HttpServlet {
         final int delimiterIndex = decodedCredentials.indexOf(":");
         if (delimiterIndex < 1) {
             // Header is not well-formed
-            LOG.log(Level.FINER, "Basic auth header is not well formed. Returning 401...\n{0}", response.toString());
+            LOG.log(Level.INFO, "Basic auth header is not well formed. Returning 401...\n{0}", response.toString());
             response.addHeader("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -195,7 +195,7 @@ public class SessionServlet extends HttpServlet {
                     rsh.next();
                     dbPassword = rsh.getString("user_password");
                     dbUserID = rsh.getLong("user_id");
-                    LOG.log(Level.FINER, "User '{0}' with id '{1}' has successfully logged in!", new Object[]{inputUsername, Long.toString(dbUserID)});
+                    LOG.log(Level.INFO, "User '{0}' with id '{1}' has successfully logged in!", new Object[]{inputUsername, Long.toString(dbUserID)});
                 } else {
                     // No such-named user is registered in the database.
                     LOG.log(Level.INFO, "Failed login attempt from {0} with unrecognised username: \"{1}\" and password: \"{2}\"\nReturning 403...\n{3}", 
@@ -247,7 +247,7 @@ public class SessionServlet extends HttpServlet {
         }
         
         // Return the new session id to the client
-        LOG.log(Level.FINER, "Session created for user: '{0}', token: {1}\nReturning 200...\n{2}", 
+        LOG.log(Level.INFO, "Session created for user: '{0}', token: {1}\nReturning 200...\n{2}", 
                 new Object[]{inputUsername, newSessionToken, response.toString()});
         response.addHeader("Session-Token", newSessionToken);
         response.setStatus(HttpServletResponse.SC_CREATED);
@@ -265,7 +265,7 @@ public class SessionServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        LOG.log(Level.FINER, "Received request:\n{0}\n", request.toString());
+        LOG.log(Level.INFO, "Received request:\n{0}\n", request.toString());
         
         // Check for a "Session-Token" header with regex validation
         final String sessionToken = request.getHeader("Session-Token");
