@@ -66,7 +66,7 @@ public class RequestServlet extends HttpServlet {
         propPath = sc.getRealPath("/WEB-INF/dbconfig.properties");
         datasetsPath = sc.getRealPath("/WEB-INF/datasets.properties");
 
-        LOG.log(Level.CONFIG, "Initializing RequestServlet @{0}", sc.getContextPath());
+        LOG.log(Level.INFO, "Initializing RequestServlet @{0}", sc.getContextPath());
         
         // Attempt the initial connection to the database.
         try {
@@ -100,7 +100,7 @@ public class RequestServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        LOG.log(Level.FINER, "Received incoming request:\n{0}\n", request.toString());
+        LOG.log(Level.INFO, "Received incoming request:\n{0}\n", request.toString());
         String dirtySQL;
         
         // Parse out the requested entity type and id from the request URL
@@ -146,12 +146,12 @@ public class RequestServlet extends HttpServlet {
         Map<String, String> datasetParams = new HashMap<>();
         List<String> datasetParamOrder = new ArrayList<>();
         Common.parseDatasetParameters(dirtySQL, datasetParams, datasetParamOrder);
-        LOG.log(Level.FINEST, "Dataset accepts the following parameters:\n{0}", datasetParams.toString());
+        LOG.log(Level.INFO, "Dataset accepts the following parameters:\n{0}", datasetParams.toString());
 
         // Fill the datasetParams map with values if they are provided in the request
         // Note if a query string parameter has multiple mappings, its undefined behaviour as to which one will be used.
         Enumeration<String> parameterNames = request.getParameterNames();
-        LOG.log(Level.FINEST, "Request supplies the following parameters:\n{0}", parameterNames.toString());
+        LOG.log(Level.INFO, "Request supplies the following parameters:\n{0}", parameterNames.toString());
         while (parameterNames.hasMoreElements()) {
             final String paramName = (String) parameterNames.nextElement();
             if (datasetParams.containsKey(paramName)) {
@@ -159,17 +159,17 @@ public class RequestServlet extends HttpServlet {
             }
         }
         // Add the session token as a parameter (we've already validated it above)
-        LOG.log(Level.FINEST, "Using session token from header: {0}", sessionToken);
+        LOG.log(Level.INFO, "Using session token from header: {0}", sessionToken);
         datasetParams.put("session-token", sessionToken);
         // If a subroute was provided specifying the entity id, use it
         if (!requestEntityID.isEmpty()) {
-            LOG.log(Level.FINEST, "Using entity id from URL path: {0}", requestEntityID);
+            LOG.log(Level.INFO, "Using entity id from URL path: {0}", requestEntityID);
             datasetParams.put("id", requestEntityID);
         }
 
         // Replace the placeholders in the retrieved SQL with the values supplied by the request
         final String cleanSQL = dirtySQL.replaceAll(Common.DATASETPARAM_REGEX, "?");
-        LOG.log(Level.FINEST, "Using SQL template from dataset '{0}':\n{1}", new Object[] {requestEntity, cleanSQL});
+        LOG.log(Level.INFO, "Using SQL template from dataset '{0}':\n{1}", new Object[] {requestEntity, cleanSQL});
 
         // Get the DB response and convert it to JSON
         String jsonArray;
@@ -184,22 +184,22 @@ public class RequestServlet extends HttpServlet {
                 if (rsh.isBeforeFirst()) {
                     response.setStatus(HttpServletResponse.SC_OK);
                     jsonArray = Common.resultSetAsJSON(rsh);
-                    LOG.log(Level.FINER, "ResultSet retrieved from database!");
+                    LOG.log(Level.INFO, "ResultSet retrieved from database!");
                 } else {
                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                     jsonArray = "[]";
-                    LOG.log(Level.FINER, "Empty ResultSet received from database");
+                    LOG.log(Level.INFO, "Empty ResultSet received from database");
                 }
             }
 
         } catch (ParseException | NumberFormatException ex){
             // Error is written to log lower down the stack so parameter values can be logged.
-            LOG.log(Level.FINER, "Parse error while casting expected types:\n{0}\nReturning 400...\n{1}", 
+            LOG.log(Level.INFO, "Parse error while casting expected types:\n{0}\nReturning 400...\n{1}", 
                     new Object[]{ex.getMessage(), response.toString()});
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         } catch (IOException | SQLException ex) {
-            LOG.log(Level.FINER, "IO/SQL error while casting to types expected by dataset:\n{0}\n{1}\nReturning 500...", 
+            LOG.log(Level.INFO, "IO/SQL error while casting to types expected by dataset:\n{0}\n{1}\nReturning 500...", 
                     new Object[]{ex.getMessage(), response.toString()});
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
@@ -210,7 +210,7 @@ public class RequestServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             out.print(jsonArray);
         }
-        LOG.log(Level.FINER, "Request completed successfully! Returning 20X...\n{0}", response.toString());
+        LOG.log(Level.INFO, "Request completed successfully! Returning 20X...\n{0}", response.toString());
     }
 
     /**
@@ -224,7 +224,7 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        LOG.log(Level.FINER, "Received incoming request:\n{0}\n", request.toString());
+        LOG.log(Level.INFO, "Received incoming request:\n{0}\n", request.toString());
         String dirtySQL;
 
         // Parse out the requested entity type and id from the request URL
@@ -276,7 +276,7 @@ public class RequestServlet extends HttpServlet {
         Map<String, String> datasetParams = new HashMap<>();
         List<String> datasetParamOrder = new ArrayList<>();
         Common.parseDatasetParameters(dirtySQL, datasetParams, datasetParamOrder);
-        LOG.log(Level.FINEST, "Dataset accepts the following parameters:\n{0}", datasetParams.toString());
+        LOG.log(Level.INFO, "Dataset accepts the following parameters:\n{0}", datasetParams.toString());
 
         // If the json object provided by the request is unparsable, a 400 bad request is returned.
         String requestJSON = null;
@@ -291,7 +291,7 @@ public class RequestServlet extends HttpServlet {
             requestJSON = Common.BufferedReaderToString(request.getReader());
             Type stringStringMap = new TypeToken<Map<String, String>>(){}.getType();
             requestObjectParams = new Gson().fromJson(requestJSON, stringStringMap);
-            LOG.log(Level.FINEST, "Request supplies the following parameters:\n{0}", requestObjectParams.toString());
+            LOG.log(Level.INFO, "Request supplies the following parameters:\n{0}", requestObjectParams.toString());
         } 
         catch (JsonSyntaxException | MalformedJsonException ex) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -309,12 +309,12 @@ public class RequestServlet extends HttpServlet {
         }
 
         // Add the session token as a parameter (we've already validated it above)
-        LOG.log(Level.FINEST, "Using session token from header: {0}", sessionToken);
+        LOG.log(Level.INFO, "Using session token from header: {0}", sessionToken);
         datasetParams.put("session-token", sessionToken);
 
         // Replace the placeholders in the retrieved SQL with the values supplied by the request
         final String cleanSQL = dirtySQL.replaceAll(Common.DATASETPARAM_REGEX, "?");
-        LOG.log(Level.FINEST, "Using SQL template from dataset '{0}':\n{1}", new Object[] {requestEntity, cleanSQL});
+        LOG.log(Level.INFO, "Using SQL template from dataset '{0}':\n{1}", new Object[] {requestEntity, cleanSQL});
 
         // Get the DB response (new record id) and convert it to a location header to output
         String jsonArray;
@@ -324,6 +324,7 @@ public class RequestServlet extends HttpServlet {
         ) {
             // Bind all of the parameters to their placeholders
             Common.bindDynamicParameters(st, datasetParams, datasetParamOrder);
+            LOG.log(Level.INFO, "Sending SQL query to db server:\n{0}", new Object[] {st.toString()});
 
             try (ResultSet rsh = st.executeQuery();) {
                 if (rsh.isBeforeFirst()) {
@@ -343,11 +344,11 @@ public class RequestServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
         catch (IOException | SQLException ex) {
-            LOG.log(Level.FINER, "IO/SQL error while casting to types expected by dataset:\n{0}\n{1}\nReturning 500...", 
+            LOG.log(Level.INFO, "IO/SQL error while casting to types expected by dataset:\n{0}\n{1}\nReturning 500...", 
                     new Object[]{ex.getMessage(), response.toString()});
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-        LOG.log(Level.FINER, "Request completed successfully!\n{0}", response.toString());
+        LOG.log(Level.INFO, "Request completed successfully!\n{0}", response.toString());
     }
 
     /**
@@ -361,10 +362,10 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        LOG.log(Level.FINER, "Received incoming request:\n{0}\n", request.toString());
+        LOG.log(Level.INFO, "Received incoming request:\n{0}\n", request.toString());
 
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-        LOG.log(Level.FINEST, "Request to not-implemented method PUT\nReturning 501...{0}", response.toString());
+        LOG.log(Level.INFO, "Request to not-implemented method PUT\nReturning 501...{0}", response.toString());
     }
     
     /**
@@ -378,10 +379,10 @@ public class RequestServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        LOG.log(Level.FINER, "Received incoming request:\n{0}\n", request.toString());
+        LOG.log(Level.INFO, "Received incoming request:\n{0}\n", request.toString());
         
         response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-        LOG.log(Level.FINEST, "Request to not-implemented method PUT\nReturning 501...{0}", response.toString());
+        LOG.log(Level.INFO, "Request to not-implemented method PUT\nReturning 501...{0}", response.toString());
     }
 
     /**
