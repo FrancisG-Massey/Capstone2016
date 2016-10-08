@@ -7,6 +7,7 @@
  **********************************************************/
 package org.nestnz.api;
 
+import com.berry.BCrypt;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.io.BufferedReader;
@@ -43,6 +44,8 @@ public class Common {
     public final static String URLENTITY_REGEX = "\\/([\\w-]*)";
     public final static String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
     public final static String DATASETPARAM_REGEX = "(#[\\w-]+:[\\w-]+#)";
+
+    public final static int BCRYPT_COST = 12;
 
     // This is a better regex which captures only strictly typed dataset parameters
     // except we can't test for invalid uncaptured params easily and these will go straight to the db...
@@ -250,6 +253,12 @@ public class Common {
                             java.util.Date dt2 = ISO8601DATEFORMAT.parse(nextParamValue.trim().replaceAll(" ", "T"));
                             st.setTimestamp(i, new java.sql.Timestamp(dt2.getTime()));
                             break;
+                        case "string-bcrypt":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.VARCHAR);
+                                continue;
+                            }
+                            nextParamValue = BCrypt.hashpw(nextParamValue, BCrypt.gensalt(Common.BCRYPT_COST));
                         case "string":
                         case "varchar":
                             if (nextParamValue == null) {

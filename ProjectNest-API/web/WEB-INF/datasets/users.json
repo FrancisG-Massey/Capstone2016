@@ -50,8 +50,8 @@
             user_isinactive
         )
         SELECT
-            #string:name#,
-            #string:password#,
+            #string:username#,
+            #string-bcrypt:password#,
             #string:fullname#,
             #string:phone#,
             #string:email#,
@@ -61,7 +61,7 @@
             #boolean:inactive#
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#string:name# IS NOT NULL) AND (#string:password# IS NOT NULL)
+            (#string:username# IS NOT NULL) AND (#string:password# IS NOT NULL)
         RETURNING
             user_id
     ",
