@@ -17,6 +17,7 @@
 package org.nestnz.app.services.impl;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,20 +68,32 @@ public class RestNetworkService implements NetworkService {
 
     	result.stateProperty().addListener((obs, oldValue, newValue) -> {
     		switch (newValue) {
-			case FAILED:
-	    		LOG.log(Level.WARNING, "Failed to send catch to server. Http response: "+dataSource.getResponseMessage(), result.getException());
-				break;
-			case SUCCEEDED:
+			case FAILED://Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
+	    	case SUCCEEDED:
+				if (dataSource.getResponseCode() == 201) {//Created successfully
+					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
+					if (locationHeaders.isEmpty()) {
+						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for catch "+apiCatch);
+					} else {
+						int id;
+						try {
+							id = extractIdFromRedirect(locationHeaders.get(0));
+						} catch (RuntimeException ex) {
+							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
+							return;
+						}
+						LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);
+						loggedCatch.setId(id);
+					}
+				} else {
+					LOG.log(Level.WARNING, "Failed to send catch to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
+				}
 				break;
 			case READY:
-				break;
 			case REMOVED:
-				break;
 			case RUNNING:
-				break;
 			default:
-				break;
-    		
+				break;    		
     		}
     	});
 	}
@@ -92,6 +105,10 @@ public class RestNetworkService implements NetworkService {
 	public void sendCreatedTrap(int traplineId, Trap trap) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	public int extractIdFromRedirect (String location) {
+		return Integer.parseInt(location.substring(location.lastIndexOf('/')+1));
 	}
 
 }

@@ -71,6 +71,7 @@ public final class ParserTrap {
 		this.catches = new ArrayList<>();
 		for (Catch c : trap.getCatches()) {
 			ParserCatch pCatch = new ParserCatch();
+			pCatch.setId(c.getId().orElse(-1));
 			pCatch.setTypeId(c.getCatchType().getId());
 			pCatch.setTimestamp(c.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 			this.catches.add(pCatch);
