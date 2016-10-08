@@ -168,7 +168,8 @@ CREATE TABLE public.region
 (
   region_id bigint NOT NULL DEFAULT nextval('region_region_id_seq'::regclass),
   region_name text NOT NULL,
-  CONSTRAINT region_pkey PRIMARY KEY (region_id)
+  CONSTRAINT region_pkey PRIMARY KEY (region_id),
+  CONSTRAINT region_unique UNIQUE (region_name)
 )
 WITH (
   OIDS=FALSE
@@ -194,7 +195,8 @@ CREATE TABLE public.users
   user_isinactive boolean NOT NULL DEFAULT FALSE,
   CONSTRAINT users_pkey PRIMARY KEY (user_id),
   -- All usernames must be unique
-  CONSTRAINT users_user_name_key UNIQUE (user_name),
+  CONSTRAINT username_unique UNIQUE (user_name),
+  CONSTRAINT useremail_unique UNIQUE (user_contactemail),
   -- Phone numbers must be of length 8-15 inclusive, and contain only numerals
   CONSTRAINT valid_phone CHECK (user_contactphone IS NULL OR user_contactphone ~ '^\d{5,14}$'::text),
   -- Usernames must be at least 3 characters long and not contain colons (breaks basic auth)
@@ -217,7 +219,7 @@ CREATE TABLE public.session
   session_token text NOT NULL,
   session_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   CONSTRAINT session_pkey PRIMARY KEY (session_id),
-  CONSTRAINT session_session_token UNIQUE (session_token),
+  CONSTRAINT session_token_unique UNIQUE (session_token),
   CONSTRAINT session_session_userid_fkey FOREIGN KEY (session_userid)
       REFERENCES public.users (user_id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -257,7 +259,8 @@ CREATE TABLE public.bait
   bait_name text NOT NULL,
   bait_imagefilename text,
   bait_note text,
-  CONSTRAINT bait_pkey PRIMARY KEY (bait_id)
+  CONSTRAINT bait_pkey PRIMARY KEY (bait_id),
+  CONSTRAINT bait_unique UNIQUE (bait_name)
 )
 WITH (
   OIDS=FALSE
@@ -276,6 +279,7 @@ CREATE TABLE public.traptype
   traptype_model text,
   traptype_note text,
   CONSTRAINT traptype_pkey PRIMARY KEY (traptype_id),
+  CONSTRAINT traptype_unique UNIQUE (traptype_name),
   CONSTRAINT traptype_valid_text_identifier CHECK (NOT ((traptype_model IS NULL) AND (traptype_name IS NULL)))
 )
 WITH (
@@ -299,6 +303,7 @@ CREATE TABLE public.trapline
   trapline_defaulttraptypeid bigint,
   trapline_defaultbaitid bigint,
   CONSTRAINT trapline_pkey PRIMARY KEY (trapline_id),
+  CONSTRAINT trapline_unique UNIQUE (trapline_name),
   CONSTRAINT trapline_trapline_regionid_fkey FOREIGN KEY (trapline_regionid)
       REFERENCES public.region (region_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -333,7 +338,8 @@ CREATE TABLE public.catchtype
   catchtype_id bigint NOT NULL DEFAULT nextval('catchtype_catchtype_id_seq'::regclass),
   catchtype_name text NOT NULL,
   catchtype_imagefilename text,
-  CONSTRAINT catchtype_pkey PRIMARY KEY (catchtype_id)
+  CONSTRAINT catchtype_pkey PRIMARY KEY (catchtype_id),
+  CONSTRAINT catchtype_unique UNIQUE (catchtype_name)
 )
 WITH (
   OIDS=FALSE
@@ -352,6 +358,7 @@ CREATE TABLE public.traplineuser
   traplineuser_traplineid bigint NOT NULL,
   traplineuser_isadmin boolean NOT NULL DEFAULT FALSE,
   CONSTRAINT traplineuser_pkey PRIMARY KEY (traplineuser_id),
+  CONSTRAINT traplineuser_unique UNIQUE (traplineuser_userid, traplineuser_traplineid),
   CONSTRAINT traplineuser_traplineuser_traplineid_fkey FOREIGN KEY (traplineuser_traplineid)
       REFERENCES public.trapline (trapline_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -401,6 +408,7 @@ CREATE TABLE public.trap
   trap_lastresettimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   trap_baitid bigint,
   CONSTRAINT trap_pkey PRIMARY KEY (trap_id),
+  CONSTRAINT trap_coords_unique UNIQUE (trap_coordx, trap_coordy),
   CONSTRAINT trap_trap_baitid_fkey FOREIGN KEY (trap_baitid)
       REFERENCES public.bait (bait_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -468,6 +476,7 @@ CREATE TABLE public.catch
   catch_loggedtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   catch_imagefilename text,
   CONSTRAINT catch_pkey PRIMARY KEY (catch_id),
+  CONSTRAINT catch_unique UNIQUE (catch_trapid, catch_catchtypeid, catch_loggedtimestamp),
   CONSTRAINT catch_catch_trapid_fkey FOREIGN KEY (catch_trapid)
       REFERENCES public.trap (trap_id) MATCH SIMPLE
       ON UPDATE CASCADE ON DELETE RESTRICT,
