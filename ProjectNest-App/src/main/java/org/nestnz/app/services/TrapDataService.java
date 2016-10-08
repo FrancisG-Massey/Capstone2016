@@ -230,19 +230,25 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         				trapline.setRegion(region);        				
         				trapline.getCatchTypes().clear();
         				
+        				Map<Integer, CatchType> catchTypeCopy = new HashMap<>(catchTypes.getData());
+        				
+        				//Add the most common catch types first
         				CatchType ct;
-        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_1"));
+        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_1"));
         				if (ct != null) {
         					trapline.getCatchTypes().add(ct);
         				}
-        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_2"));
+        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_2"));
         				if (ct != null) {
         					trapline.getCatchTypes().add(ct);
         				}
-        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_3"));
+        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_3"));
         				if (ct != null) {
         					trapline.getCatchTypes().add(ct);
         				}
+        				
+        				//Then add whatever's left over
+        				trapline.getCatchTypes().addAll(catchTypeCopy.values());
         			}
     				loadingProperty.set(false);
     			});
