@@ -266,7 +266,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	loadingProperty.set(true);
     	
     	RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/trap").header("Session-Token", loginService.getSessionToken());
+    			.path("/trap").queryParam("trapline-id", Integer.toString(trapline.getId()))
+    			.header("Session-Token", loginService.getSessionToken());
     	
     	RestDataSource dataSource = trapsClient.createRestDataSource();
     	BackgroundTasks.runInBackground(() -> {
