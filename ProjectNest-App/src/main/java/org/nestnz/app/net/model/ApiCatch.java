@@ -14,43 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.services.net.messages;
+package org.nestnz.app.net.model;
 
-import javax.json.JsonObject;
 import javax.xml.bind.annotation.XmlElement;
 
-import org.nestnz.app.services.net.APIUpdateMessage;
-
 /**
- * 
+ * Represents a catch log entry to be sent/received from /catch on the API
  */
-public final class CatchLog implements APIUpdateMessage {
-	
-	private String note;
-	
-	private int typeId;
+public final class ApiCatch {
 	
 	private int trapId;
 	
-	public CatchLog () {
+	private int typeId;
+	
+	private String note;
+	
+	private String logged;
+	
+	public ApiCatch() {
 		
 	}
 
-	public String getNote() {
-		return note;
-	}
-
-	public void setNote(String note) {
+	public ApiCatch(int trapId, int typeId, String note, String logged) {
+		this.trapId = trapId;
+		this.typeId = typeId;
 		this.note = note;
-	}
-
-	@XmlElement(name="type_id")
-	public int getTypeId() {
-		return typeId;
-	}
-
-	public void setTypeId(int id) {
-		this.typeId = id;
+		this.logged = logged;
 	}
 
 	@XmlElement(name="trap_id")
@@ -62,34 +51,33 @@ public final class CatchLog implements APIUpdateMessage {
 		this.trapId = trapId;
 	}
 
+	@XmlElement(name="catchtype_id")
+	public int getTypeId() {
+		return typeId;
+	}
+
+	public void setTypeId(int typeId) {
+		this.typeId = typeId;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public String getLogged() {
+		return logged;
+	}
+
+	public void setLogged(String logged) {
+		this.logged = logged;
+	}
+
 	@Override
 	public String toString() {
-		return "CatchLog [note=" + note + ", typeId=" + typeId + ", trapId=" + trapId + "]";
+		return "ApiCatch [trapId=" + trapId + ", typeId=" + typeId + ", note=" + note + ", logged=" + logged + "]";
 	}
-
-	/* (non-Javadoc)
-	 * @see org.nestnz.app.services.net.APIUpdateMessage#getMethod()
-	 */
-	@Override
-	public String getMethod() {
-		return "POST";
-	}
-
-	/* (non-Javadoc)
-	 * @see org.nestnz.app.services.net.APIUpdateMessage#getPath()
-	 */
-	@Override
-	public String getPath() {
-		return "/catch";
-	}
-
-	/* (non-Javadoc)
-	 * @see org.nestnz.app.services.net.APIUpdateMessage#onSuccessfulUpdate(javax.json.JsonObject)
-	 */
-	@Override
-	public void onSuccessfulUpdate(JsonObject response) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

@@ -18,6 +18,8 @@ package org.nestnz.app.parser;
 
 public final class ParserCatch {
 	
+	private int id;
+	
 	private int typeId;
 	
 	private String timestamp;
@@ -26,6 +28,14 @@ public final class ParserCatch {
 	
 	public ParserCatch () {
 		
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public int getTypeId() {

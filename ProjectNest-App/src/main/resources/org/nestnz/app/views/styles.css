@@ -13,9 +13,22 @@
 	
 }
 
+.prev {
+	-fx-alignment: center-left;
+}
+
+.next {
+	-fx-alignment: center-right;
+}
+
 #distance-label {
 	-fx-font-size: 1.3em;
 	-fx-alignment: center;
+	-fx-max-width: 1000px;
+}
+
+#top-box {
+	-fx-max-width: 1000px;
 }
 
 .text-field:error {

@@ -71,11 +71,13 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final Map<Integer, Region> regions = new HashMap<>();
     
-    private final TraplineUpdateService apiUpdateMonitor = new TraplineUpdateService();
+    private final Map<Trapline, TraplineUpdateService> apiUpdateMonitors = new HashMap<>();
     
     private final LoginService loginService;
     
     private final CachingService cachingService;
+    
+    private final NetworkService networkService;
     
     private final ReadOnlyBooleanWrapper loadingProperty = new ReadOnlyBooleanWrapper(false);
     
@@ -86,9 +88,10 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
      */
     private final Semaphore appDataLoading = new Semaphore(0);
     
-    public TrapDataService (CachingService cachingService, LoginService loginService) throws IOException {
+    public TrapDataService (CachingService cachingService, LoginService loginService, NetworkService networkService) throws IOException {
     	this.cachingService = Objects.requireNonNull(cachingService);
     	this.loginService = Objects.requireNonNull(loginService);
+    	this.networkService = networkService;
     }
     
     public void initialise () {
@@ -227,19 +230,25 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
         				trapline.setRegion(region);        				
         				trapline.getCatchTypes().clear();
         				
+        				Map<Integer, CatchType> catchTypeCopy = new HashMap<>(catchTypes.getData());
+        				
+        				//Add the most common catch types first
         				CatchType ct;
-        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_1"));
+        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_1"));
         				if (ct != null) {
         					trapline.getCatchTypes().add(ct);
         				}
-        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_2"));
+        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_2"));
         				if (ct != null) {
         					trapline.getCatchTypes().add(ct);
         				}
-        				ct = catchTypes.getData().get(traplineJson.getInt("common_ct_id_3"));
+        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_3"));
         				if (ct != null) {
         					trapline.getCatchTypes().add(ct);
         				}
+        				
+        				//Then add whatever's left over
+        				trapline.getCatchTypes().addAll(catchTypeCopy.values());
         			}
     				loadingProperty.set(false);
     			});
@@ -402,7 +411,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			if (c.wasAdded()) {
 				for (Trapline t : c.getAddedSubList()) {
 					updatedTraplines.add(t);
-					t.getTraps().addListener(apiUpdateMonitor);
+					TraplineUpdateService s = new TraplineUpdateService(t, networkService);
+					t.getTraps().addListener(s);
+					apiUpdateMonitors.put(t, s);
 				}
 			} else if (c.wasUpdated()) {
 				for (Trapline t : c.getList().subList(c.getFrom(), c.getTo())) {
@@ -410,7 +421,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				}
 			} else if (c.wasRemoved()) {
 				for (Trapline t : c.getRemoved()) {
-					t.getTraps().removeListener(apiUpdateMonitor);
+					if (apiUpdateMonitors.containsKey(t)) {
+						t.getTraps().removeListener(apiUpdateMonitors.remove(t));
+					}
 				}
 			}
 		}

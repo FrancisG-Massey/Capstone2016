@@ -14,33 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.services.net;
+package org.nestnz.app.services;
 
-import javax.json.JsonObject;
-import javax.xml.bind.annotation.XmlTransient;
+import org.nestnz.app.model.Catch;
+import org.nestnz.app.model.Trap;
 
 /**
- * Represents an update request to the NestNZ API.
+ * 
  */
-public interface APIUpdateMessage {
+public interface NetworkService {
+
+	public void sendLoggedCatch(int trapId, Catch loggedCatch);
 	
-	/**
-	 * Gets the HTTP method used to send the request to the server (eg POST, PUT, DELETE, etc
-	 * @return
-	 */
-	@XmlTransient
-	public String getMethod();
-	
-	/**
-	 * Gets the API path used to update the data on the server (eg /trap, /trapline, etc)
-	 * @return
-	 */
-	@XmlTransient
-	public String getPath();
-	
-	/**
-	 * Called if & when the update is sent to & accepted by the server
-	 * @param response The Json response object received by the server
-	 */
-	public void onSuccessfulUpdate(JsonObject response);
+	public void sendCreatedTrap(int traplineId, Trap trap);
 }

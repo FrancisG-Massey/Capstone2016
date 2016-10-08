@@ -16,12 +16,15 @@
  *******************************************************************************/
 package org.nestnz.app.services;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.Trap;
-import org.nestnz.app.services.net.messages.CatchLog;
+import org.nestnz.app.model.Trapline;
 
 import javafx.collections.ListChangeListener;
 
@@ -32,6 +35,21 @@ import javafx.collections.ListChangeListener;
 public class TraplineUpdateService implements ListChangeListener<Trap> {
 
     private static final Logger LOG = Logger.getLogger(TraplineUpdateService.class.getName());
+    
+    private final Trapline trapline;
+    
+    private final NetworkService networkService;
+    
+    /**
+     * Represents catches which have been sent to the network service to be logged in the server, to prevent duplicate requests
+     * FIXME: At the moment catches added here are never removed - a possible memory leak. 
+     */
+    private final Set<Catch> sentCatches = new HashSet<>();
+    
+    public TraplineUpdateService (Trapline trapline, NetworkService networkService) {
+    	this.trapline = Objects.requireNonNull(trapline);
+    	this.networkService = networkService;
+    }
 	
 	/* (non-Javadoc)
 	 * @see javafx.collections.ListChangeListener#onChanged(javafx.collections.ListChangeListener.Change)
@@ -42,13 +60,17 @@ public class TraplineUpdateService implements ListChangeListener<Trap> {
 			if (change.wasUpdated()) {
 				for (Trap trap : change.getList().subList(change.getFrom(), change.getTo())) {
 					for (Catch c : trap.getCatches()) {
-						if (!c.getId().isPresent()) {
-							CatchLog cLog = new CatchLog();
-							cLog.setTypeId(c.getCatchType().getId());
-							cLog.setTrapId(trap.getId());
-							LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", cLog));
+						if (!c.getId().isPresent() && !sentCatches.contains(c)) {
+							sentCatches.add(c);
+							networkService.sendLoggedCatch(trap.getId(), c);
+							LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
 						}
 					}
+				}
+			} else if (change.wasAdded()) {
+				for (Trap trap : change.getAddedSubList()) {
+					networkService.sendCreatedTrap(trapline.getId(), trap);
+					LOG.log(Level.INFO, String.format("Detected newly created trap: %s", trap));					
 				}
 			}
 		}

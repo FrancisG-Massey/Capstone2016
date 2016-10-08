@@ -18,6 +18,9 @@ package org.nestnz.app.views;
 
 import static org.nestnz.app.util.NavigationTools.getDistance;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,10 +45,11 @@ import com.gluonhq.maps.MapView;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
@@ -93,9 +97,9 @@ public class NavigationView extends View {
     
     final Button next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
     
-    ObservableList<Trap> orderedTraps = FXCollections.observableArrayList();
+    final ObservableList<Trap> orderedTraps;
     
-    int currentPointer = 0;
+    final IntegerProperty currentTrapIndex = new SimpleIntegerProperty(0);
     
     final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
     
@@ -117,6 +121,7 @@ public class NavigationView extends View {
     
     protected NavigationView(boolean test) {
     	super(NAME);        
+    	orderedTraps = trapPositionLayer.getTraps();
         //setShowTransitionFactory(BounceInRightTransition::new);
         
         //getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
@@ -129,11 +134,13 @@ public class NavigationView extends View {
         } else {
         	catchSelectDialog = null;
         }
+                
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
     }
     
     private void initControls () {
     	HBox topBox = new HBox();
+    	topBox.setId("top-box");
     	
     	topBox.setAlignment(Pos.CENTER);
     	
@@ -146,21 +153,23 @@ public class NavigationView extends View {
         setTop(topBox);
         
         prev.toFront();
-        prev.setAlignment(Pos.CENTER);
+        prev.getStyleClass().add("prev");
         
         next.toFront();
-        next.setAlignment(Pos.CENTER);
+        prev.getStyleClass().add("next");
         
-        topBox.getChildren().addAll(prev, distanceLabel, next);
-        
+        topBox.getChildren().addAll(prev, distanceLabel, next);        
         
         Button logCatch = new Button();
         logCatch.getStyleClass().add("large-button");
         logCatch.setText("Log Catch");
         logCatch.setOnAction(evt -> {
-        	logCatch();
+        	showLogCatchDialog();
         });
         setBottom(logCatch);
+        
+        
+        trapProperty.bind(Bindings.valueAt(orderedTraps, currentTrapIndex));
 
         trapPositionLayer.activeTrapProperty().bind(trapProperty);
 
@@ -203,24 +212,29 @@ public class NavigationView extends View {
     /**
      * Displays a dialog prompting the user to select the catch type for the current trap
      */
-    private void logCatch () {
+    private void showLogCatchDialog () {
 		Trap forTrap = trapProperty.get();
     	catchSelectDialog.setTitleText(String.format("Log catch #%d", forTrap.getNumber()));
     	catchSelectDialog.showAndWait().ifPresent(catchType -> {
-    		Catch loggedCatch = new Catch(catchType);
         	getApplication().showMessage(String.format("Logged %s in trap #%d", 
-        			catchType.getName(), forTrap.getNumber()), "Change", evt -> {
+        			catchType.getName(), forTrap.getNumber())/*, "Change", evt -> {
         		modifyCatch(loggedCatch);
-        	});
-        	forTrap.getCatches().add(loggedCatch);
+        	}*/);
+        	if (catchType != CatchType.EMPTY) {
+        		Catch loggedCatch = new Catch(catchType);
+        		forTrap.getCatches().add(loggedCatch);
+        	}
+        	if (hasNextTrap()) {
+        		nextTrap();
+        	}
     	});
     }
     
     /**
-     * Displays the catch type dialog also displayed in {@link #logCatch()}, but allows the user to change the catch specified {@link integer} {@code loggedCatch} 
+     * Displays the catch type dialog also displayed in {@link #showLogCatchDialog()}, but allows the user to change the catch specified {@link integer} {@code loggedCatch} 
      * @param loggedCatch The previously specified catch to ask the user to change
      */
-    private void modifyCatch (Catch loggedCatch) {
+    protected void modifyCatch (Catch loggedCatch) {
 		Trap forTrap = trapProperty.get();
     	catchSelectDialog.setTitleText(String.format("Change catch #%d", forTrap.getNumber()));
     	catchSelectDialog.showAndWait().ifPresent(catchType -> {
@@ -234,7 +248,7 @@ public class NavigationView extends View {
     }
     
     /**
-     * Builds the catch selection dialog, used by {@link #logCatch()}. This only ever needs to be called once when the view is created
+     * Builds the catch selection dialog, used by {@link #showLogCatchDialog()}. This only ever needs to be called once when the view is created
      * @return The dialog used to select the creature caught in the active trap
      */
     private final Dialog<CatchType> makeCatchDialog () {
@@ -302,8 +316,7 @@ public class NavigationView extends View {
      */
     public void previousTrap () {
 		LOG.log(Level.FINE, "Requested swap to previous trap");
-		currentPointer--;
-		setTrap(orderedTraps.get(currentPointer));
+		currentTrapIndex.set(currentTrapIndex.get()-1);
     }
     
     /**
@@ -311,8 +324,7 @@ public class NavigationView extends View {
      */
     public void nextTrap() {
 		LOG.log(Level.FINE, "Requested swap to next trap");
-		currentPointer++;
-    	setTrap(orderedTraps.get(currentPointer));
+		currentTrapIndex.set(currentTrapIndex.get()+1);
     }
     
     /**
@@ -320,7 +332,7 @@ public class NavigationView extends View {
      * @return True if a previous trap exists, false if this is the first trap in the line
      */
     public boolean hasPreviousTrap () {
-    	return currentPointer > 0;
+    	return currentTrapIndex.get() > 0;
     }
     
     /**
@@ -328,15 +340,7 @@ public class NavigationView extends View {
      * @return True if a next trap exists, false if this is the last trap in the trapline
      */
     public boolean hasNextTrap () {
-    	return currentPointer < orderedTraps.size()-1;
-    }
-    
-    /**
-     * Sets the target trap for the navigation view
-     * @param trap The target trap
-     */
-    void setTrap (Trap trap) {
-    	trapProperty.set(trap);
+    	return currentTrapIndex.get() < orderedTraps.size()-1;
     }
     
     /**
@@ -346,12 +350,14 @@ public class NavigationView extends View {
     public final void setTrapline (Trapline trapline) {
     	Objects.requireNonNull(trapline);
     	traplineProperty.set(trapline);
+    	currentTrapIndex.set(0);
+    	
+    	List<Trap> trapsTmp = new ArrayList<>(trapline.getTraps());
+    	Collections.sort(trapsTmp, (t1, t2) -> t1.getNumber() - t2.getNumber());
     	
     	//Sort the traps by trap number
-    	orderedTraps = trapline.getTraps().sorted((t1, t2) -> t1.getNumber() - t2.getNumber());
+    	orderedTraps.setAll(trapsTmp);
     	
-    	trapPositionLayer.getTraps().setAll(trapline.getTraps());
-    	setTrap(orderedTraps.get(0));
     }
 
     @Override
