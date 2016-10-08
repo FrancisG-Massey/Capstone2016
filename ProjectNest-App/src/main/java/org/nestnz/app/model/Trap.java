@@ -106,6 +106,19 @@ public final class Trap {
 		return idProperty.get();
 	}
 	
+	/**
+	 * Sets the ID for this trap. 
+	 * The ID can only be set if the trap has not yet been created on the server (and thus has id=0).
+	 * @param id The internal system ID for the trap
+	 * @throws IllegalStateException if the trap ID has already been set
+	 */
+	public void setId (int id) {
+		if (idProperty.get() != 0) {
+			throw new IllegalStateException("ID already set for trap "+idProperty.get()+"! Tried to set to "+id);
+		}
+		idProperty.set(id);
+	}
+	
 	public ReadOnlyIntegerProperty idProperty() {
 		return idProperty.getReadOnlyProperty();
 	}

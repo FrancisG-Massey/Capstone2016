@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.net.model.ApiCatch;
+import org.nestnz.app.net.model.ApiTrap;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.NetworkService;
 
@@ -103,8 +104,50 @@ public class RestNetworkService implements NetworkService {
 	 */
 	@Override
 	public void sendCreatedTrap(int traplineId, Trap trap) {
-		// TODO Auto-generated method stub
+		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
+    			.path("/trap").header("Session-Token", loginService.getSessionToken())
+    			.contentType("application/json");
+		
+		String created = trap.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+		
+		ApiTrap apiTrap = new ApiTrap(traplineId, trap.getNumber(), trap.getLatitude(), trap.getLongitude(), created);
+		
+		RestDataSource dataSource = apiClient.createRestDataSource();
+		
+		ObjectDataWriter<ApiTrap> writer = new RestObjectDataWriterAndRemover<>(dataSource, ApiTrap.class);
+    	
+		GluonObservableObject<ApiTrap> result = DataProvider.storeObject(apiTrap, writer);
 
+    	result.stateProperty().addListener((obs, oldValue, newValue) -> {
+    		switch (newValue) {
+			case FAILED://Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
+	    	case SUCCEEDED:
+				if (dataSource.getResponseCode() == 201) {//Created successfully
+					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
+					if (locationHeaders.isEmpty()) {
+						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for trap "+apiTrap);
+					} else {
+						int id;
+						try {
+							id = extractIdFromRedirect(locationHeaders.get(0));
+						} catch (RuntimeException ex) {
+							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
+							return;
+						}
+						LOG.log(Level.INFO, "Successfully created trap: "+apiTrap);
+						trap.setId(id);
+					}
+				} else {
+					LOG.log(Level.WARNING, "Failed to send trap to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
+				}
+				break;
+			case READY:
+			case REMOVED:
+			case RUNNING:
+			default:
+				break;    		
+    		}
+    	});
 	}
 	
 	public int extractIdFromRedirect (String location) {
