@@ -18,6 +18,9 @@ package org.nestnz.app.views;
 
 import static org.nestnz.app.util.NavigationTools.getDistance;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -347,8 +350,11 @@ public class NavigationView extends View {
     	traplineProperty.set(trapline);
     	currentTrapIndex.set(0);
     	
+    	List<Trap> trapsTmp = new ArrayList<>(trapline.getTraps());
+    	Collections.sort(trapsTmp, (t1, t2) -> t1.getNumber() - t2.getNumber());
+    	
     	//Sort the traps by trap number
-    	orderedTraps.setAll(trapline.getTraps().sorted((t1, t2) -> t1.getNumber() - t2.getNumber()));
+    	orderedTraps.setAll(trapsTmp);
     	
     }
 
