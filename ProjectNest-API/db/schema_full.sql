@@ -455,7 +455,7 @@ CREATE TABLE public.catch
   catch_traptypeid bigint NOT NULL,
   catch_userid bigint NOT NULL,
   catch_catchtypeid bigint NOT NULL,
-  catch_baitid bigint NOT NULL,
+  catch_baitid bigint,
   catch_note text,
   catch_loggedtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
   catch_imagefilename text,
