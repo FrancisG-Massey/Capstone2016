@@ -82,7 +82,6 @@ angular.module('Admin')
 		console.log($scope.baits);
 		$scope.trap_type = trap_type;
 		console.log($scope.trap_type);
-		$scope.status= -1;
 		// get all catch types
 		$scope.catch_types = catch_types;
 		console.log($scope.catch_types);
@@ -124,7 +123,7 @@ angular.module('Admin')
         var marker, popupText;
 	    for (var i = 0; i < traps.length; i++) {
 	    	trap = traps[i];
-	    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
+	    	popupText = "<strong>Trap: " + trap.number + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
 	    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
 		}
    
