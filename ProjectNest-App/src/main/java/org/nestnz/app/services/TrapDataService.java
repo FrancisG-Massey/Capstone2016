@@ -272,30 +272,34 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	RestDataSource dataSource = trapsClient.createRestDataSource();
     	BackgroundTasks.runInBackground(() -> {
     		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
-    			JsonArray array = reader.readArray();
-    			LOG.log(Level.INFO, "Response: "+array.toString());
     			Platform.runLater(() -> {
-    				for (JsonValue value : array) {
-        				JsonObject trapJson = (JsonObject) value;
-        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
-        					continue;//If the trap doesn't belong to the specified trapline, ignore it
-        				}
-        				int id = trapJson.getInt("id");
-        				int number = trapJson.getInt("number");
-        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
-        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
-        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
-        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
-        				Trap trap = trapline.getTrap(id);
-        				if (trap == null) {
-        					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
-        					trapline.getTraps().add(trap);
-        				} else {
-        					trap.setNumber(number);
-        					trap.setLatitude(latitude);
-        					trap.setLongitude(longitude);
-        					trap.setLastReset(lastReset);
-        				}
+        			if (dataSource.getResponseCode() == 204) {
+	        			LOG.log(Level.INFO, "Trapline "+trapline.getId()+" currently has no traps!");        				
+        			} else {
+	        			JsonArray array = reader.readArray();
+	        			LOG.log(Level.INFO, "Response: "+array.toString());
+	    				for (JsonValue value : array) {
+	        				JsonObject trapJson = (JsonObject) value;
+	        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
+	        					continue;//If the trap doesn't belong to the specified trapline, ignore it
+	        				}
+	        				int id = trapJson.getInt("id");
+	        				int number = trapJson.getInt("number");
+	        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
+	        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
+	        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
+	        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
+	        				Trap trap = trapline.getTrap(id);
+	        				if (trap == null) {
+	        					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
+	        					trapline.getTraps().add(trap);
+	        				} else {
+	        					trap.setNumber(number);
+	        					trap.setLatitude(latitude);
+	        					trap.setLongitude(longitude);
+	        					trap.setLastReset(lastReset);
+	        				}
+	        			}
         			}
     				trapline.setLastUpdated(LocalDateTime.now());
     				loadingProperty.set(false);
