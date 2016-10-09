@@ -130,16 +130,22 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			Trap trap = new Trap(pTrap.getId(), pTrap.getNumber(), 
 					pTrap.getCoordLat(), pTrap.getCoordLong(), 
 					status, created, reset);
-			for (ParserCatch pCatch : pTrap.getCatches()) {
-				CatchType cType = catchTypes.getData().get(pCatch.getTypeId());			
-				LocalDateTime timestamp = LocalDateTime.parse(pCatch.getTimestamp());
-				trap.getCatches().add(new Catch(cType, timestamp));
+			if (pTrap.getCatches() != null) {
+				for (ParserCatch pCatch : pTrap.getCatches()) {
+					CatchType cType = catchTypes.getData().get(pCatch.getTypeId());			
+					LocalDateTime timestamp = LocalDateTime.parse(pCatch.getTimestamp());
+					trap.getCatches().add(new Catch(cType, timestamp));
+				}
+			} else {
+				LOG.log(Level.WARNING, "getCatches() is returning null for trapline "+pLine.getId()+", trap "+pTrap.getId());
 			}
 			t.getTraps().add(trap);
 		}
-		for (long catchTypeId : pLine.getCatchTypes()) {
-			CatchType cType = catchTypes.getData().get(Integer.valueOf((int) catchTypeId));			
-			t.getCatchTypes().add(Objects.requireNonNull(cType, "Catch type "+catchTypeId+" for trapline "+t.getId()+" does not exist!"));
+		if (pLine.getCatchTypes() != null) {
+			for (long catchTypeId : pLine.getCatchTypes()) {
+				CatchType cType = catchTypes.getData().get(Integer.valueOf((int) catchTypeId));			
+				t.getCatchTypes().add(Objects.requireNonNull(cType, "Catch type "+catchTypeId+" for trapline "+t.getId()+" does not exist!"));
+			}
 		}
 		if (pLine.getLastUpdated() != null) {
 			t.setLastUpdated(LocalDateTime.parse(pLine.getLastUpdated()));

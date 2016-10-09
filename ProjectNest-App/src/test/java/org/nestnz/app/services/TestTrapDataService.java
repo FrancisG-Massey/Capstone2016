@@ -109,7 +109,7 @@ public class TestTrapDataService {
 				
 				traps.add(new ParserTrap(7623, 1, -40.314206, 175.779946, "ACTIVE", "2016-04-16T10:26:07", "2016-08-16T10:28:07", new ArrayList<>()));
 				traps.add(new ParserTrap(7468, 2, -40.311086, 175.775306, "ACTIVE", "2016-04-16T10:30:07", "2016-08-16T10:30:07", new ArrayList<>()));
-				traps.add(new ParserTrap(9072, 3, -40.311821, 175.775993, "INACTIVE", "2016-04-16T10:36:07", "2016-08-16T10:36:07", new ArrayList<>()));
+				traps.add(new ParserTrap(9072, 3, -40.311821, 175.775993, "INACTIVE", "2016-04-16T10:36:07", "2016-08-16T10:36:07", null));
 				
 				List<Long> catchTypes = new ArrayList<>();
 				
