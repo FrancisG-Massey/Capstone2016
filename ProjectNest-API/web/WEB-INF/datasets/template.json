@@ -1,8 +1,16 @@
 {
+    "before" : "
+        SELECT 1
+    ",
+
     "GET" : "
         SELECT 1
     ",
     "POST" : "",
     "PUT" : "",
-    "DELETE" : ""
+    "DELETE" : "",
+
+    "after" : "
+        SELECT 1
+    "
 }

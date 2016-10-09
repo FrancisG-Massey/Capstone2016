@@ -1,4 +1,7 @@
 {
+    "before" : "
+        SELECT 1
+    ",
     "GET" : "
         WITH logged_user AS (
             SELECT
@@ -29,5 +32,8 @@
     ",
     "POST" : "", 
     "PUT" : "",
-    "DELETE" : ""
+    "DELETE" : "",
+    "after" : "
+        SELECT 1
+    "
 }
