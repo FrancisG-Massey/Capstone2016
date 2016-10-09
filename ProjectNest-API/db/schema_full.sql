@@ -425,7 +425,7 @@ CREATE TABLE public.trap
     trap_status integer NOT NULL DEFAULT 1,
     trap_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
     trap_lastresettimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
-    trap_baitid bigint,
+    trap_baitid bigint NOT NULL,
     CONSTRAINT trap_pkey PRIMARY KEY (trap_id),
 
     -- Ensure that two traps cannot exist in the same location.
@@ -622,6 +622,26 @@ $BODY$
         -- Check that all catch fields with defaults have values
         IF NEW.catch_loggedtimestamp IS NULL THEN
             NEW.catch_loggedtimestamp := now()::timestamp;
+        END IF;
+        IF NEW.catch_baitid IS NULL THEN
+            NEW.catch_baitid := (
+                SELECT
+                    t.trap_baitid
+                FROM
+                    trap t
+                WHERE
+                    t.trap_id = NEW.catch_trapid
+            );
+        END IF;
+        IF NEW.catch_traptypeid IS NULL THEN
+            NEW.catch_traptypeid := (
+                SELECT
+                    t.trap_traptypeid
+                FROM
+                    trap t
+                WHERE
+                    t.trap_id = NEW.catch_trapid
+            );
         END IF;
         RETURN NEW;
     END;
