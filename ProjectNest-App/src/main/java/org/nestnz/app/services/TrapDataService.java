@@ -71,7 +71,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final Map<Integer, Region> regions = new HashMap<>();
     
-    private final Map<Trapline, TraplineUpdateService> apiUpdateMonitors = new HashMap<>();
+    private final Map<Trapline, TraplineMonitorService> apiUpdateMonitors = new HashMap<>();
     
     private final LoginService loginService;
     
@@ -130,16 +130,22 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			Trap trap = new Trap(pTrap.getId(), pTrap.getNumber(), 
 					pTrap.getCoordLat(), pTrap.getCoordLong(), 
 					status, created, reset);
-			for (ParserCatch pCatch : pTrap.getCatches()) {
-				CatchType cType = catchTypes.getData().get(pCatch.getTypeId());			
-				LocalDateTime timestamp = LocalDateTime.parse(pCatch.getTimestamp());
-				trap.getCatches().add(new Catch(cType, timestamp));
+			if (pTrap.getCatches() != null) {
+				for (ParserCatch pCatch : pTrap.getCatches()) {
+					CatchType cType = catchTypes.getData().get(pCatch.getTypeId());			
+					LocalDateTime timestamp = LocalDateTime.parse(pCatch.getTimestamp());
+					trap.getCatches().add(new Catch(cType, timestamp));
+				}
+			} else {
+				LOG.log(Level.WARNING, "getCatches() is returning null for trapline "+pLine.getId()+", trap "+pTrap.getId());
 			}
 			t.getTraps().add(trap);
 		}
-		for (long catchTypeId : pLine.getCatchTypes()) {
-			CatchType cType = catchTypes.getData().get(Integer.valueOf((int) catchTypeId));			
-			t.getCatchTypes().add(Objects.requireNonNull(cType, "Catch type "+catchTypeId+" for trapline "+t.getId()+" does not exist!"));
+		if (pLine.getCatchTypes() != null) {
+			for (long catchTypeId : pLine.getCatchTypes()) {
+				CatchType cType = catchTypes.getData().get(Integer.valueOf((int) catchTypeId));			
+				t.getCatchTypes().add(Objects.requireNonNull(cType, "Catch type "+catchTypeId+" for trapline "+t.getId()+" does not exist!"));
+			}
 		}
 		if (pLine.getLastUpdated() != null) {
 			t.setLastUpdated(LocalDateTime.parse(pLine.getLastUpdated()));
@@ -266,35 +272,40 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	loadingProperty.set(true);
     	
     	RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/trap").header("Session-Token", loginService.getSessionToken());
+    			.path("/trap").queryParam("trapline-id", Integer.toString(trapline.getId()))
+    			.header("Session-Token", loginService.getSessionToken());
     	
     	RestDataSource dataSource = trapsClient.createRestDataSource();
     	BackgroundTasks.runInBackground(() -> {
     		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
-    			JsonArray array = reader.readArray();
-    			LOG.log(Level.INFO, "Response: "+array.toString());
     			Platform.runLater(() -> {
-    				for (JsonValue value : array) {
-        				JsonObject trapJson = (JsonObject) value;
-        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
-        					continue;//If the trap doesn't belong to the specified trapline, ignore it
-        				}
-        				int id = trapJson.getInt("id");
-        				int number = trapJson.getInt("number");
-        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
-        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
-        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
-        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
-        				Trap trap = trapline.getTrap(id);
-        				if (trap == null) {
-        					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
-        					trapline.getTraps().add(trap);
-        				} else {
-        					trap.setNumber(number);
-        					trap.setLatitude(latitude);
-        					trap.setLongitude(longitude);
-        					trap.setLastReset(lastReset);
-        				}
+        			if (dataSource.getResponseCode() == 204) {
+	        			LOG.log(Level.INFO, "Trapline "+trapline.getId()+" currently has no traps!");        				
+        			} else {
+	        			JsonArray array = reader.readArray();
+	        			LOG.log(Level.INFO, "Response: "+array.toString());
+	    				for (JsonValue value : array) {
+	        				JsonObject trapJson = (JsonObject) value;
+	        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
+	        					continue;//If the trap doesn't belong to the specified trapline, ignore it
+	        				}
+	        				int id = trapJson.getInt("id");
+	        				int number = trapJson.getInt("number");
+	        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
+	        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
+	        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
+	        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
+	        				Trap trap = trapline.getTrap(id);
+	        				if (trap == null) {
+	        					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
+	        					trapline.getTraps().add(trap);
+	        				} else {
+	        					trap.setNumber(number);
+	        					trap.setLatitude(latitude);
+	        					trap.setLongitude(longitude);
+	        					trap.setLastReset(lastReset);
+	        				}
+	        			}
         			}
     				trapline.setLastUpdated(LocalDateTime.now());
     				loadingProperty.set(false);
@@ -411,7 +422,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			if (c.wasAdded()) {
 				for (Trapline t : c.getAddedSubList()) {
 					updatedTraplines.add(t);
-					TraplineUpdateService s = new TraplineUpdateService(t, networkService);
+					TraplineMonitorService s = new TraplineMonitorService(t, networkService);
 					t.getTraps().addListener(s);
 					apiUpdateMonitors.put(t, s);
 				}

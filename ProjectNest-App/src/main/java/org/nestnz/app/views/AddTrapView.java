@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
@@ -65,7 +66,7 @@ public class AddTrapView extends View {
 		super(NAME);
 		addTrapButton.getStyleClass().add("large-button");
 		addTrapButton.setVisible(false);//Hide the 'add trap' button until we've set the trapline
-		map.setZoom(17);		
+		map.setZoom(MapLoadingService.ZOOM_LEVEL);		
 		
 		map.addLayer(trapPositionLayer);
 

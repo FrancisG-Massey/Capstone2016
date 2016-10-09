@@ -19,12 +19,31 @@ package org.nestnz.app.services;
 import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.Trap;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+
 /**
- * 
+ * The NetworkService is used to communicate data between the app and the back-end API. 
+ * Most implementations of NetworkService are asynchronous, and therefore return a status property which will be updated when they complete (either successfully or unsuccessfully).
  */
 public interface NetworkService {
-
-	public void sendLoggedCatch(int trapId, Catch loggedCatch);
 	
-	public void sendCreatedTrap(int traplineId, Trap trap);
+	public static enum UpdateStatus { PENDING, SUCCESS, FAILED };
+
+	/**
+	 * Submits a logged catch in a trap to the API. 
+	 * After the request completes successfully, {@link Catch#idProperty()} will be set to the server id of the newly created catch log
+	 * @param trapId The ID of the trap in which this catch was logged
+	 * @param loggedCatch The information about the newly logged catch
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<UpdateStatus> sendLoggedCatch(int trapId, Catch loggedCatch);
+	
+	/**
+	 * Submits a new trap within a trapline to the API. 
+	 * After the request completes successfully, {@link Trap#idProperty()} will be set to the server id of the newly created trap
+	 * @param traplineId The ID of the trapline in which this trap was created
+	 * @param trap The information of the newly created trap.
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<UpdateStatus> sendCreatedTrap(int traplineId, Trap trap);
 }

@@ -30,6 +30,7 @@ import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
 import com.gluonhq.charm.down.common.PlatformFactory;
@@ -173,7 +174,7 @@ public class NavigationView extends View {
 
         trapPositionLayer.activeTrapProperty().bind(trapProperty);
 
-		map.setZoom(17);
+		map.setZoom(MapLoadingService.ZOOM_LEVEL);
 		map.addLayer(trapPositionLayer);
 		setCenter(map);
     	
