@@ -35,6 +35,9 @@ import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
 import com.gluonhq.impl.connect.provider.RestObjectDataWriterAndRemover;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+
 /**
  * 
  */
@@ -52,7 +55,9 @@ public class RestNetworkService implements NetworkService {
 	 * @see org.nestnz.app.services.NetworkService#sendLoggedCatch(int, org.nestnz.app.model.Catch)
 	 */
 	@Override
-	public void sendLoggedCatch(int trapId, Catch loggedCatch) {
+	public ReadOnlyObjectProperty<UpdateStatus> sendLoggedCatch(int trapId, Catch loggedCatch) {
+		ReadOnlyObjectWrapper<UpdateStatus> status = new ReadOnlyObjectWrapper<>(UpdateStatus.PENDING);
+		
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
     			.path("/catch").header("Session-Token", loginService.getSessionToken())
     			.contentType("application/json");
@@ -75,19 +80,23 @@ public class RestNetworkService implements NetworkService {
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
 						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for catch "+apiCatch);
+						status.set(UpdateStatus.FAILED);
 					} else {
 						int id;
 						try {
 							id = extractIdFromRedirect(locationHeaders.get(0));
 						} catch (RuntimeException ex) {
 							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
+							status.set(UpdateStatus.FAILED);
 							return;
 						}
 						LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);
 						loggedCatch.setId(id);
+						status.set(UpdateStatus.SUCCESS);
 					}
 				} else {
 					LOG.log(Level.WARNING, "Failed to send catch to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
+					status.set(UpdateStatus.FAILED);
 				}
 				break;
 			case READY:
@@ -97,13 +106,16 @@ public class RestNetworkService implements NetworkService {
 				break;    		
     		}
     	});
+    	return status.getReadOnlyProperty();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.nestnz.app.services.NetworkService#sendCreatedTrap(int, org.nestnz.app.model.Trap)
 	 */
 	@Override
-	public void sendCreatedTrap(int traplineId, Trap trap) {
+	public ReadOnlyObjectProperty<UpdateStatus> sendCreatedTrap(int traplineId, Trap trap) {
+		ReadOnlyObjectWrapper<UpdateStatus> status = new ReadOnlyObjectWrapper<>(UpdateStatus.PENDING);
+		
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
     			.path("/trap").header("Session-Token", loginService.getSessionToken())
     			.contentType("application/json");
@@ -126,19 +138,23 @@ public class RestNetworkService implements NetworkService {
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
 						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for trap "+apiTrap);
+						status.set(UpdateStatus.FAILED);
 					} else {
 						int id;
 						try {
 							id = extractIdFromRedirect(locationHeaders.get(0));
 						} catch (RuntimeException ex) {
 							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
+							status.set(UpdateStatus.FAILED);
 							return;
 						}
 						LOG.log(Level.INFO, "Successfully created trap: "+apiTrap);
 						trap.setId(id);
+						status.set(UpdateStatus.SUCCESS);
 					}
 				} else {
 					LOG.log(Level.WARNING, "Failed to send trap to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
+					status.set(UpdateStatus.FAILED);
 				}
 				break;
 			case READY:
@@ -148,6 +164,7 @@ public class RestNetworkService implements NetworkService {
 				break;    		
     		}
     	});
+    	return status.getReadOnlyProperty();
 	}
 	
 	public int extractIdFromRedirect (String location) {

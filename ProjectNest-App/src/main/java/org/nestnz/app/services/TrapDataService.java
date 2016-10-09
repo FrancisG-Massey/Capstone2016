@@ -71,7 +71,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     private final Map<Integer, Region> regions = new HashMap<>();
     
-    private final Map<Trapline, TraplineUpdateService> apiUpdateMonitors = new HashMap<>();
+    private final Map<Trapline, TraplineMonitorService> apiUpdateMonitors = new HashMap<>();
     
     private final LoginService loginService;
     
@@ -422,7 +422,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			if (c.wasAdded()) {
 				for (Trapline t : c.getAddedSubList()) {
 					updatedTraplines.add(t);
-					TraplineUpdateService s = new TraplineUpdateService(t, networkService);
+					TraplineMonitorService s = new TraplineMonitorService(t, networkService);
 					t.getTraps().addListener(s);
 					apiUpdateMonitors.put(t, s);
 				}

@@ -32,9 +32,9 @@ import javafx.collections.ListChangeListener;
  * This service is used to monitor traps in a trapline for changes (such as logged catches & changes to trap coords).
  * Whenever a trap is added or updated on the monitored list, the change is either sent directly to the API (if internet is available) or added to a queue to be sent to the server when it becomes available.
  */
-public class TraplineUpdateService implements ListChangeListener<Trap> {
+public class TraplineMonitorService implements ListChangeListener<Trap> {
 
-    private static final Logger LOG = Logger.getLogger(TraplineUpdateService.class.getName());
+    private static final Logger LOG = Logger.getLogger(TraplineMonitorService.class.getName());
     
     private final Trapline trapline;
     
@@ -44,9 +44,9 @@ public class TraplineUpdateService implements ListChangeListener<Trap> {
      * Represents catches which have been sent to the network service to be logged in the server, to prevent duplicate requests
      * FIXME: At the moment catches added here are never removed - a possible memory leak. 
      */
-    private final Set<Catch> sentCatches = new HashSet<>();
+    private final Set<Catch> pendingCatches = new HashSet<>();
     
-    public TraplineUpdateService (Trapline trapline, NetworkService networkService) {
+    public TraplineMonitorService (Trapline trapline, NetworkService networkService) {
     	this.trapline = Objects.requireNonNull(trapline);
     	this.networkService = networkService;
     }
@@ -60,8 +60,8 @@ public class TraplineUpdateService implements ListChangeListener<Trap> {
 			if (change.wasUpdated()) {
 				for (Trap trap : change.getList().subList(change.getFrom(), change.getTo())) {
 					for (Catch c : trap.getCatches()) {
-						if (!c.getId().isPresent() && !sentCatches.contains(c)) {
-							sentCatches.add(c);
+						if (!c.getId().isPresent() && !pendingCatches.contains(c)) {
+							pendingCatches.add(c);
 							networkService.sendLoggedCatch(trap.getId(), c);
 							LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
 						}

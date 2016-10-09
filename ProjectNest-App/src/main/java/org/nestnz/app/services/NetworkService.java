@@ -19,12 +19,16 @@ package org.nestnz.app.services;
 import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.Trap;
 
+import javafx.beans.property.ReadOnlyObjectProperty;
+
 /**
  * 
  */
 public interface NetworkService {
-
-	public void sendLoggedCatch(int trapId, Catch loggedCatch);
 	
-	public void sendCreatedTrap(int traplineId, Trap trap);
+	public static enum UpdateStatus { PENDING, SUCCESS, FAILED };
+
+	public ReadOnlyObjectProperty<UpdateStatus> sendLoggedCatch(int trapId, Catch loggedCatch);
+	
+	public ReadOnlyObjectProperty<UpdateStatus> sendCreatedTrap(int traplineId, Trap trap);
 }
