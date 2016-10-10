@@ -30,21 +30,11 @@ public class LoadingLayer extends Layer {
 	private final int radius = 30;
 	
     public LoadingLayer() { 
-    	setAutoHide(false);//Prevent users from removing the hiding screen by pressing anywhere
+    	setAutoHide(false);//Prevent users from removing the loading screen by pressing anywhere
     	spinner.setRadius(radius);
     	getChildren().add(spinner);
     	MobileApplication.getInstance().getGlassPane().getLayers().add(this);
     	setBackgroundFade(GlassPane.DEFAULT_BACKGROUND_FADE_LEVEL);
-    }
-
-    @Override
-    public void show() {
-        super.show();
-    }
-
-    @Override
-    public void hide() {
-        super.hide();
     }
     
     @Override 

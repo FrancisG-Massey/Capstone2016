@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +35,7 @@ import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
 import com.gluonhq.charm.down.common.Service;
+import com.gluonhq.charm.down.common.services.VibrationService;
 import com.gluonhq.charm.down.common.services.position.Position;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
@@ -64,9 +66,9 @@ public class NavigationView extends View {
 	
 	private static enum Distance {
 		FAR(100, "far"),
-		NORMAL(20, null),
-		CLOSE(10, "close"),
-		CLOSER(5, "closer"),
+		NORMAL(30, null),
+		CLOSE(20, "close"),
+		CLOSER(10, "closer"),
 		CLOSEST(0, "closest");
 		
 		double lowerBound;
@@ -189,12 +191,17 @@ public class NavigationView extends View {
     		}
     	});
     	
+    	Optional<VibrationService> vibrationService = Service.VIBRATION.getInstance();
+    	
     	distanceToTrap.addListener((obs, oldDist, newDist) -> {
     		Distance oldDistance = Distance.getForDistance(oldDist.doubleValue());
     		Distance newDistance = Distance.getForDistance(newDist.doubleValue());
     		if (oldDistance != newDistance) {
     			distanceLabel.pseudoClassStateChanged(oldDistance.cssPseudoClass, false);
     			distanceLabel.pseudoClassStateChanged(newDistance.cssPseudoClass, true);
+    			if (oldDist.doubleValue() > newDist.doubleValue()) {
+    				vibrationService.ifPresent(service -> service.vibrate());
+    			}
     		}
     	});
     }
