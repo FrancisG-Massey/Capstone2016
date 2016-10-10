@@ -364,6 +364,14 @@ ALTER TABLE public.catchtype
     OWNER TO nestnz;
 
 
+-- Add the default hard-coded catch-type of 'other' to the table
+INSERT INTO public.catchtype
+    (catchtype_id, catchtype_name)
+VALUES
+    (10000, 'Other');
+
+
+
 -- Table: public.trapline_user
 -- DROP TABLE public.trapline_user;
 

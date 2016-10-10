@@ -29,6 +29,9 @@
                 JOIN catchtype ct ON ct.catchtype_id = c.catch_catchtypeid
                 JOIN trap t ON t.trap_id = c.catch_trapid
                 JOIN trapline tl ON tl.trapline_id = t.trap_traplineid
+            WHERE
+                -- Exclude 'other' from becoming a common catch-type
+                c.catch_catchtypeid <> 10000
             GROUP BY
                 tl.trapline_id,
                 c.catch_catchtypeid,
