@@ -21,7 +21,9 @@ import org.junit.runners.Suite;
     org.nestnz.api.ConfigFileTests.class,
     org.nestnz.api.SimpleTests.class,
     //org.nestnz.api.DBConnectTests.class,
-    org.nestnz.api.DBInterfaceTests.class
+    org.nestnz.api.DBInterfaceTests.class,
+    org.nestnz.api.NestHttpSessionTests.class,
+    org.nestnz.api.NestHttpGetTests.class
 })
 public class AllTests {
     // Run the test suite to impose a bit nicer execution order on test classes
@@ -49,5 +51,9 @@ public class AllTests {
         catch (URISyntaxException ex) {
             return null;
         }
+    }
+    
+    public static String getTestServerBaseUrl() {
+        return "http://localhost:8084/api";
     }
 }

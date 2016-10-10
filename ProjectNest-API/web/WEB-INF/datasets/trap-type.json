@@ -1,4 +1,8 @@
 {
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+    ",
     "GET" : "
         WITH logged_user AS (
             SELECT
@@ -26,7 +30,7 @@
         GROUP BY
             tt.traptype_id
         ORDER BY
-            tt.traptype_id
+            tt.traptype_id;
     ",
     "POST" : "
         INSERT INTO traptype (
@@ -42,7 +46,7 @@
             (#bigint:id# IS NULL) AND
             (NOT (traptype_model IS NULL AND traptype_name IS NULL))
         RETURNING
-            traptype_id
+            traptype_id;
     ",
     "PUT" : "",
     "DELETE" : ""

@@ -1,4 +1,8 @@
 {
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+    ",
     "GET" : "
         WITH logged_user AS (
             SELECT
@@ -30,7 +34,7 @@
         GROUP BY
             r.region_id
         ORDER BY
-            r.region_id
+            r.region_id;
     ",
     "POST" : "
         INSERT INTO region (
@@ -42,7 +46,7 @@
             (#bigint:id# IS NULL) AND
             (#string:name# IS NOT NULL)
         RETURNING
-            region_id
+            region_id;
     ",
     "PUT" : "",
     "DELETE" : ""

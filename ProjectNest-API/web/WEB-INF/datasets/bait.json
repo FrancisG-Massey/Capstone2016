@@ -1,4 +1,8 @@
 {
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+    ",
     "GET" : "
         WITH logged_user AS (
             SELECT
@@ -26,7 +30,7 @@
         GROUP BY
             b.bait_id
         ORDER BY
-            b.bait_id
+            b.bait_id;
     ",
     "POST" : "
         INSERT INTO bait (
@@ -42,7 +46,7 @@
             (#bigint:id# IS NULL) AND 
             (#string:name# IS NOT NULL)
         RETURNING
-            bait_id
+            bait_id;
     ",
     "PUT" : "",
     "DELETE" : ""

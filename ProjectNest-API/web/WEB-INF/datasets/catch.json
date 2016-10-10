@@ -1,4 +1,8 @@
 {
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+    ",
     "GET" : "
         WITH logged_user AS (
             SELECT
@@ -40,15 +44,11 @@
         GROUP BY
             c.catch_id
         ORDER BY
-            c.catch_loggedtimestamp DESC
+            c.catch_loggedtimestamp DESC;
     ",
     "POST" : "
-        WITH trap_ref AS (
-            SELECT * FROM trap t WHERE t.trap_id = #bigint:trap_id# LIMIT 1
-        )
         INSERT INTO catch (
             catch_trapid,
-            catch_traptypeid,
             catch_userid,
             catch_catchtypeid,
             catch_baitid,
@@ -58,10 +58,10 @@
         )
         SELECT
             #bigint:trap_id#,
-            (SELECT t.trap_traptypeid FROM trap_ref t),
+            #bigint:traptype_id#,
             1,
             #bigint:catchtype_id#,
-            (SELECT t.trap_baitid FROM trap_ref t),
+            #bigint:bait_id#,
             #string:note#,
             #timestamp:logged#,
             #string:img_filename#
@@ -69,7 +69,7 @@
             (#bigint:id# IS NULL) AND 
             (#bigint:trap_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL)
         RETURNING
-            catch_id
+            catch_id;
     ",
     "PUT" : "",
     "DELETE" : ""

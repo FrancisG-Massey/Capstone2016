@@ -1,4 +1,8 @@
 {
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+    ",
     "GET" : "
         WITH logged_user AS (
             SELECT
@@ -25,6 +29,9 @@
                 JOIN catchtype ct ON ct.catchtype_id = c.catch_catchtypeid
                 JOIN trap t ON t.trap_id = c.catch_trapid
                 JOIN trapline tl ON tl.trapline_id = t.trap_traplineid
+            WHERE
+                -- Exclude 'other' from becoming a common catch-type
+                c.catch_catchtypeid <> 10000
             GROUP BY
                 tl.trapline_id,
                 c.catch_catchtypeid,
@@ -42,7 +49,9 @@
             tl.trapline_imagefilename AS img_filename,
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 0) AS common_ct_id_1,
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 1) AS common_ct_id_2,
-            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3,
+            tl.trapline_defaultbaitid AS default_bait_id,
+            tl.trapline_defaulttraptypeid AS default_traptype_id
         FROM
             logged_user lu,
             trapline tl
@@ -57,7 +66,7 @@
         GROUP BY
             tl.trapline_id
         ORDER BY
-            tl.trapline_id
+            tl.trapline_id;
     ",
     "POST" : "
         INSERT INTO trapline (
@@ -65,19 +74,23 @@
             trapline_regionid,
             trapline_starttag,
             trapline_endtag,
-            trapline_imagefilename
+            trapline_imagefilename,
+            trapline_defaultbaitid,
+            default_traptype_id
         )
         SELECT
             #string:name#,
             #bigint:region_id#,
             #string:start_tag#,
             #string:end_tag#,
-            #string:img_filename#
+            #string:img_filename#,
+            #bigint:default_bait_id#,
+            #bigint:default_traptype_id#
         WHERE
             (#bigint:id# IS NULL) AND
             (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL)
         RETURNING
-            trapline_id
+            trapline_id;
     ",
     "PUT" : "",
     "DELETE" : ""

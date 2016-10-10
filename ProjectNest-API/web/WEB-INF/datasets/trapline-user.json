@@ -1,4 +1,8 @@
 {
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+    ",
     "GET" : "
         WITH logged_user AS (
             SELECT
@@ -29,7 +33,7 @@
         GROUP BY
             tlu.traplineuser_id
         ORDER BY
-            tlu.traplineuser_id
+            tlu.traplineuser_id;
     ",
     "POST" : "
         INSERT INTO traplineuser (
@@ -45,7 +49,7 @@
             (#bigint:id# IS NULL) AND 
             (#bigint:user_id# IS NOT NULL) AND (#bigint:trapline_id# IS NOT NULL)
         RETURNING
-            traplineuser_id
+            traplineuser_id;
     ",
     "PUT" : "",
     "DELETE" : ""

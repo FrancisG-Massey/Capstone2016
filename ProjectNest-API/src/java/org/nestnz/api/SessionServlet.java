@@ -11,7 +11,6 @@ import com.berry.BCrypt;
 import java.sql.*;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.logging.Level;
@@ -80,62 +79,6 @@ public class SessionServlet extends HttpServlet {
             LOG.log(Level.INFO, "Connection to datasource successfully closed");
         } catch (SQLException ex) {
             LOG.log(Level.WARNING, "Unable to close datasource object", ex);
-        }
-    }
-    
-    /**
-     * Display session debug info in a get for now
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        // TODO: Remove this before production
-        
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("text/html;charset=UTF-8");
-        
-        try (PrintWriter out = response.getWriter()) {
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet NestSessionServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet NestSessionServlet at " + request.getContextPath() + "</h1>");
-            
-            
-            final String sqlQuery = "SELECT session_id, session_userid, substring(session_token from 1 for 31)||'xxxxx' AS session_token, session_createdtimestamp FROM session;";
-            //out.println("<p>dbconfig.properties filepath: \"" + propPath + "\"</p>");
-            out.println("<p>Querying: \"" + sqlQuery + "\"</p>");
-            
-            try (
-                Connection conn = Common.getNestDS(propPath).getConnection();
-                PreparedStatement st = conn.prepareStatement(sqlQuery);
-                ResultSet rs = st.executeQuery();
-            ) {
-                ResultSetMetaData rsmd = rs.getMetaData();
-                int columnsNumber = rsmd.getColumnCount();
-                out.println("<p>" + columnsNumber + " columns found!</p><p>");
-                while (rs.next()) {
-                    
-                    for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) out.print(",  ");
-                        out.println(rsmd.getColumnName(i) + ": " + rs.getString(i) );
-                    }
-                    out.println("<br/>");
-                }
-            } catch (IOException | SQLException ex) {
-            	LOG.log(Level.SEVERE, "Problem executing query", ex);
-                out.println("IO Error: " + ex.getMessage());
-            }
-            out.println("</p>");
-            out.println("</body>");
-            out.println("</html>");
         }
     }
 

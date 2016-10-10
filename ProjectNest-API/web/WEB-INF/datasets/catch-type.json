@@ -1,4 +1,8 @@
 {
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+    ",
     "GET" : "
         WITH logged_user AS (
             SELECT
@@ -25,7 +29,7 @@
         GROUP BY
             ct.catchtype_id
         ORDER BY
-            ct.catchtype_id
+            ct.catchtype_id;
     ",
     "POST" : "
         INSERT INTO catchtype (
@@ -39,7 +43,7 @@
             (#bigint:id# IS NULL) AND 
             (#string:name# IS NOT NULL)
         RETURNING
-            catchtype_id
+            catchtype_id;
     ",
     "PUT" : "",
     "DELETE" : ""
