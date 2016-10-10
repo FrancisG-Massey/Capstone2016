@@ -6,12 +6,13 @@
 <h1 class="text-center page-header">Trap Admin</h1>
 
 <div class="form-group">
+	<span ng-if="!(traps.length > 0)">No traps exist: </span>
 	<a href="#/trap-admin/{{trapline_id}}/add-new" id="addButton">
 		<span class="glyphicon glyphicon-plus"></span> Add Trap
 	</a>
 </div>
 		
-<div ng-if="" class="row">
+<div ng-if="traps.length > 0" class="row">
 	<div class="col-sm-7">
 		<table class="table table-condensed table-hover admin">
 			<thead>
@@ -155,7 +156,7 @@
 	</div>
 	</form>
 	
-	<div class="map" id="mapid"></div>
+	<div ng-show="showMap()" class="map" id="mapid"></div>
 
 
 	</div>

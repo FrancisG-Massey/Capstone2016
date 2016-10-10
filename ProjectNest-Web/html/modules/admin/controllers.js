@@ -86,7 +86,7 @@ angular.module('Admin')
 		// get all catch types
 		$scope.catch_types = catch_types;
 		console.log($scope.catch_types);
-
+		console.log($scope.traps.length);
 		// pagination
 	    var pageLength = 10,
 	    	numTraps = traps.length,
@@ -105,31 +105,31 @@ angular.module('Admin')
 		}
 		$scope.traps = trapPages;
 	    $scope.currentPage = 0;
-
-	    var mymap = L.map('mapid'), trap;
-	    
-	    var mapDefault = function() {
-	    	mymap.setView([traps[0].coord_lat, traps[0].coord_long], 13);	
-	    };
-
-	    mapDefault();
-			        
-        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery <a href="http://mapbox.com">Mapbox</a>',
-            maxZoom: 18,
-            id: 'mrmjlee.182flnof',
-            accessToken: 'pk.eyJ1IjoibXJtamxlZSIsImEiOiJjaXNlOTNwNDYwMDlnMnlydHViZ3dpMmt6In0.miWLZ3CSlid3NaTw1KtRDg'
-        }).addTo(mymap);
-        
-        var marker, popupText;
-	    for (var i = 0; i < traps.length; i++) {
-	    	trap = traps[i];
-	    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
-	    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
-		}
-   
-	    
+	    var mymap;
+	
+    	$scope.showMap = function() {
+    		if (!mymap) {
+    		    mymap = L.map('mapid'), trap;
+    		    
+    	    	mymap.setView([traps[0].coord_lat, traps[0].coord_long], 13);	
     	
+    				        
+    	        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+    	            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery <a href="http://mapbox.com">Mapbox</a>',
+    	            maxZoom: 18,
+    	            id: 'mrmjlee.182flnof',
+    	            accessToken: 'pk.eyJ1IjoibXJtamxlZSIsImEiOiJjaXNlOTNwNDYwMDlnMnlydHViZ3dpMmt6In0.miWLZ3CSlid3NaTw1KtRDg'
+    	        }).addTo(mymap);
+    	        
+    	        var marker, popupText;
+    		    for (var i = 0; i < traps.length; i++) {
+    		    	trap = traps[i];
+    		    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
+    		    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
+    			}
+    		}
+    		return true;
+    	}
     	
     	$scope.setSelected = function(item){
     	$scope.selected = this.trap;
@@ -169,21 +169,7 @@ angular.module('Admin')
         return dateOut;
     };
     
-    $scope.addNew = function() {
-    	$scope.selected = false;
-    	$scope.latitude = undefined;
-    	$scope.longtitude = undefined;
-    	$scope.baitId= undefined;
-    	$scope.typeId= undefined;
-    	$scope.trapNumber='';
-    	$scope.status=-1;
-    	if ($scope.selected) {
-    		$scope.selected.popup && $scope.selected.popup.closePopup();
-    	}
-    	
-    	$scope.selected = false;
-    	mapDefault();
-    };
+
     
     $scope.gap = 5;
     
