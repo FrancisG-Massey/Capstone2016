@@ -16,6 +16,11 @@
  *******************************************************************************/
 package org.nestnz.app.views;
 
+import static javafx.beans.binding.Bindings.createStringBinding;
+import static javafx.beans.binding.Bindings.format;
+import static javafx.beans.binding.Bindings.isNotEmpty;
+import static javafx.beans.binding.Bindings.size;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -35,8 +40,10 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
-import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -45,6 +52,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class TraplineInfoView extends View implements ChangeListener<Boolean> {
@@ -68,13 +76,23 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
     private Label lastUpdated = new Label();
     
     private Label mapLoaded = new Label();
+    
+    private Button preloadMap = new Button("Preload");
 	
 	private final SidePopupView menu;
 	
 	private final TrapDataService dataService;
 	
 	private final MapLoadingService mapService;
+	
+	private double minLat = Double.MAX_VALUE;
+    private double maxLat = Double.MIN_VALUE;
+    private double minLong = Double.MAX_VALUE;
+    private double maxLong = Double.MIN_VALUE;
 
+    private IntegerProperty mapTileTotalCount = new SimpleIntegerProperty();
+    private IntegerProperty mapTileLoadedCount = new SimpleIntegerProperty();
+    
 	public TraplineInfoView(TrapDataService dataService, MapLoadingService mapService) {
 		super(NAME);
 		this.dataService = Objects.requireNonNull(dataService);
@@ -95,8 +113,33 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         });
         
         VBox controls = new VBox();
-        controls.getChildren().addAll(traplineSize, lastUpdated, mapLoaded);
+        HBox mapLoadControls = new HBox();
+        preloadMap.setVisible(false);
+        preloadMap.setOnAction(evt -> {
+        	ReadOnlyIntegerProperty remaining = mapService.preloadMapTiles(minLat, maxLat, minLong, maxLong);
+        	getApplication().showLayer("loading");
+        	remaining.addListener((obs, oldVal, newVal) -> {
+        		mapTileLoadedCount.set(mapTileTotalCount.get()-newVal.intValue());
+        		if (newVal.intValue() <= 0) {
+        			getApplication().hideLayer("loading");
+        		}
+        	});
+        });
+        mapLoadControls.getChildren().addAll(mapLoaded, preloadMap);
+        controls.getChildren().addAll(traplineSize, lastUpdated, mapLoadControls);
         setCenter(controls);
+        
+        mapLoaded.textProperty().bind(createStringBinding(() -> {
+        	int loaded = mapTileLoadedCount.get();
+        	int total = mapTileTotalCount.get(); 
+        	if (total == Integer.MAX_VALUE) {
+        		return "Map Loaded: Unknown";
+        	} else if (total == 0) {
+        		return "Map Loaded: 0% (0/0)";
+        	} else {
+        		return String.format("Map Loaded: %.0f%% (%d/%d)", (loaded+0.0)/total*100, loaded, total);
+        	}
+        }, mapTileLoadedCount, mapTileTotalCount));
         
         start.getStyleClass().add("large-button");
 		start.setOnAction(evt -> {
@@ -111,10 +154,10 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	
 	public void setTrapline (Trapline trapline) {
 		traplineProperty.set(trapline);
-		start.visibleProperty().bind(Bindings.isNotEmpty(trapline.getTraps()));
-        traplineSize.textProperty().bind(Bindings.format("Traps: %d", Bindings.size(trapline.getTraps())));
+		start.visibleProperty().bind(isNotEmpty(trapline.getTraps()));
+        traplineSize.textProperty().bind(format("Traps: %d", size(trapline.getTraps())));
         
-        lastUpdated.textProperty().bind(Bindings.createStringBinding(() -> {
+        lastUpdated.textProperty().bind(createStringBinding(() -> {
         	String time;
         	if (trapline.getLastUpdated().isPresent()) {
         		LocalDateTime lastUpdated = trapline.getLastUpdated().get();
@@ -125,13 +168,15 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         	return String.format("Last fetched: %s", time);
         }, trapline.lastUpdatedProperty()));
         
+        preloadMap.setVisible(false);
         if (trapline.getTraps().isEmpty()) {
-	        mapLoaded.setText("Map Loaded: 0%");        	
+        	mapTileTotalCount.set(0);
+        	mapTileLoadedCount.set(0);
         } else {
-	        double minLat = Double.MAX_VALUE;
-	        double maxLat = Double.MIN_VALUE;
-	        double minLong = Double.MAX_VALUE;
-	        double maxLong = Double.MIN_VALUE;
+	        minLat = Double.MAX_VALUE;
+	        maxLat = Double.MIN_VALUE;
+	        minLong = Double.MAX_VALUE;
+	        maxLong = Double.MIN_VALUE;
 	        
 	        for (Trap t : trapline.getTraps()) {
 	        	minLat = absMin(minLat, t.getLatitude());
@@ -141,14 +186,18 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	        }
 	        LOG.log(Level.INFO, "Range: "+minLat+","+minLong+" to "+minLat+","+minLong);
 	        int totalTiles = mapService.getTotalTileCount(minLat, maxLat, minLong, maxLong);
-	        if (totalTiles < 10000) {
+	        if (totalTiles < MapLoadingService.MAX_TILES) {
 	        	int cachedTiles = mapService.getCachedTileCount(minLat, maxLat, minLong, maxLong);
-		        int mapLoadedPercent = (cachedTiles / totalTiles)*100;
+		        //int mapLoadedPercent = (int) ((cachedTiles+0.0) / totalTiles)*100;
+	        	mapTileTotalCount.set(totalTiles);
+	        	mapTileLoadedCount.set(cachedTiles);
 		        
-		        mapLoaded.setText("Map Loaded: "+mapLoadedPercent+"% ("+cachedTiles+"/"+totalTiles+")");
+		        //mapLoaded.setText("Map Loaded: "+mapLoadedPercent+"% ("+cachedTiles+"/"+totalTiles+")");
+	        	preloadMap.setVisible(cachedTiles < totalTiles);
 	        } else {
 	        	LOG.log(Level.WARNING, "Trapline "+trapline.getId()+" covers "+totalTiles+" map tiles!");
-	        	mapLoaded.setText("Map Loaded: Unknown");
+	        	mapTileTotalCount.set(Integer.MAX_VALUE);
+	        	mapTileLoadedCount.set(Integer.MAX_VALUE);
 	        }	        
         }
 	}

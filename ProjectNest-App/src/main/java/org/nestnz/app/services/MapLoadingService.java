@@ -31,6 +31,11 @@ public interface MapLoadingService {
 	public static final int ZOOM = 17;
 	
 	/**
+	 * The maximum number of tiles which can be preloaded via a call to {@link #preloadMapTiles(double, double, double, double)}
+	 */
+	public static final int MAX_TILES = 500;
+	
+	/**
 	 * Finds out the total number of map tiles needed to fill the box which includes the provided coordinate ranges.
 	 * The number returned by this method is the same number of tiles which will be loaded if {@link #preloadMapTiles(double, double, double, double)} is called with the same arguments.
 	 * @param minLatitude The lowest latitude to include in the calculation

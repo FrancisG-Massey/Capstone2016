@@ -17,13 +17,19 @@
 package org.nestnz.app.services.impl;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.services.MapLoadingService;
+import org.nestnz.app.util.BackgroundTasks;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.ReadOnlyIntegerWrapper;
 
 /**
  * 
@@ -31,6 +37,8 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 public class GluonMapLoadingService implements MapLoadingService {
 
     private static final Logger LOG = Logger.getLogger(GluonMapLoadingService.class.getName());
+    
+    private static final String TILE_HOST = "http://tile.openstreetmap.org/";
 	
 	private static int getTileX (final double lon, final int zoom) {
 		int xtile = (int) Math.floor((lon + 180) / 360 * (1<<zoom));
@@ -116,14 +124,60 @@ public class GluonMapLoadingService implements MapLoadingService {
 	 * @see org.nestnz.app.services.MapLoadingService#preloadMapTiles(double, double, double, double)
 	 */
 	@Override
-	public ReadOnlyIntegerProperty preloadMapTiles(double minLatitude, double maxLatitude, double minLongitude,
-			double maxLongitude) {
-		// TODO Auto-generated method stub
-		return null;
+	public ReadOnlyIntegerProperty preloadMapTiles(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
+		ReadOnlyIntegerWrapper remainingCount = new ReadOnlyIntegerWrapper();
+		int minX = getTileX(minLongitude, ZOOM);
+		int maxX = getTileX(maxLongitude, ZOOM);
+		int minY = getTileY(minLatitude, ZOOM);
+		int maxY = getTileY(maxLatitude, ZOOM);
+		int totalCount = (maxX-minX+1)*(maxY-minY+1);
+		if (totalCount > MAX_TILES) {
+			throw new IllegalArgumentException("The number of tiles required ("+totalCount+") is greater than the maximum allowed ("+MAX_TILES+")");
+		}
+		int remaining = 0;
+		for (int x = minX; x <= maxX; x++) {
+			for (int y = minY; y <= maxY; y++) {
+				File f = getCacheFile(ZOOM, x, y);
+				if (!f.exists()) {
+					remaining++;
+					fetchAndStoreTile(remainingCount, ZOOM, x, y);
+				}
+			}
+		}
+		remainingCount.set(remaining);
+		return remainingCount;
 	}
 	
 	protected File getCacheFile (int zoom, int x, int y) {
 		return new File(cacheRoot, zoom + File.separator + x + File.separator + y + ".png");
 	}
+	
+	private void fetchAndStoreTile(ReadOnlyIntegerWrapper remaining, int zoom, int x, int y) {
+		BackgroundTasks.runInBackground(() -> {
+			try {
+	        	String urlString = TILE_HOST+zoom+"/"+x+"/"+y+".png";
+	            URL url = new URL(urlString);
+	            try (InputStream inputStream = url.openConnection().getInputStream()) {
+	                File candidate = getCacheFile(zoom, x, y);
+	                candidate.getParentFile().mkdirs();
+	                try (FileOutputStream fos = new FileOutputStream(candidate)) {
+	                    byte[] buff = new byte[4096];
+	                    int len = inputStream.read(buff);
+	                    while (len > 0) {
+	                        fos.write(buff, 0, len);
+	                        len = inputStream.read(buff);
+	                    }
+	                    fos.close();
+	                }
+	            }
+	        } catch (IOException ex) {
+	            LOG.log(Level.SEVERE, "Failed to fetch & store map tile "+x+","+y, ex);
+	        } finally {
+	        	Platform.runLater(() -> {
+	        		remaining.set(remaining.get()-1);//Identify it as loaded regardless
+	        	});	        	
+	        }
+		});        
+    }
 
 }
