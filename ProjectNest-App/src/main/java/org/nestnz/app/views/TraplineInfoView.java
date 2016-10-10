@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Trap;
@@ -46,6 +48,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.VBox;
 
 public class TraplineInfoView extends View implements ChangeListener<Boolean> {
+
+    private static final Logger LOG = Logger.getLogger(TraplineInfoView.class.getName());
 	
 	/**
 	 * Represents the number of hours between automatically fetching the trapline data from the server.
@@ -121,22 +125,32 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         	return String.format("Last fetched: %s", time);
         }, trapline.lastUpdatedProperty()));
         
-        double minLat = Double.MAX_VALUE;
-        double maxLat = Double.MIN_VALUE;
-        double minLong = Double.MAX_VALUE;
-        double maxLong = Double.MIN_VALUE;
-        
-        for (Trap t : trapline.getTraps()) {
-        	minLat = Math.min(minLat, t.getLatitude());
-        	maxLat = Math.max(maxLat, t.getLatitude());
-        	minLong = Math.min(minLong, t.getLongitude());
-        	maxLong = Math.max(maxLong, t.getLongitude());
+        if (trapline.getTraps().isEmpty()) {
+	        mapLoaded.setText("Map Loaded: 0%");        	
+        } else {
+	        double minLat = Double.MAX_VALUE;
+	        double maxLat = Double.MIN_VALUE;
+	        double minLong = Double.MAX_VALUE;
+	        double maxLong = Double.MIN_VALUE;
+	        
+	        for (Trap t : trapline.getTraps()) {
+	        	minLat = absMin(minLat, t.getLatitude());
+	        	maxLat = absMax(maxLat, t.getLatitude());
+	        	minLong = absMin(minLong, t.getLongitude());
+	        	maxLong = absMax(maxLong, t.getLongitude());
+	        }
+	        LOG.log(Level.INFO, "Range: "+minLat+","+minLong+" to "+minLat+","+minLong);
+	        int totalTiles = mapService.getTotalTileCount(minLat, maxLat, minLong, maxLong);
+	        if (totalTiles < 10000) {
+	        	int cachedTiles = mapService.getCachedTileCount(minLat, maxLat, minLong, maxLong);
+		        int mapLoadedPercent = (cachedTiles / totalTiles)*100;
+		        
+		        mapLoaded.setText("Map Loaded: "+mapLoadedPercent+"% ("+cachedTiles+"/"+totalTiles+")");
+	        } else {
+	        	LOG.log(Level.WARNING, "Trapline "+trapline.getId()+" covers "+totalTiles+" map tiles!");
+	        	mapLoaded.setText("Map Loaded: Unknown");
+	        }	        
         }
-        int totalTiles = mapService.getTotalTileCount(minLat, maxLat, minLong, maxLong);
-        int cachedTiles = 0;
-        int mapLoadedPercent = 0;
-        
-        mapLoaded.setText("Map Loaded: "+mapLoadedPercent+"% ("+cachedTiles+"/"+totalTiles+")");
 	}
 	
 	private SidePopupView buildMenu () {
@@ -172,6 +186,14 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		} else {
 			this.getApplication().hideLayer("loading");
 		}
+	}
+	
+	private static final double absMax (double val1, double val2) {
+		return Math.abs(val1) < Math.abs(val2) ? val2 : val1;
+	}
+	
+	private static final double absMin (double val1, double val2) {
+		return Math.abs(val1) > Math.abs(val2) ? val2 : val1;
 	}
 
 }
