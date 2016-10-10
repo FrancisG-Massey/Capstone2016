@@ -1,11 +1,14 @@
 <div class="page-header">
 <h1 class="text-center" style="margin-top: -50px; ">Available Regions</h1>
 </div>
- <div class="row"> 
+
+<div class="form-group">
+   <a ng-click="addNew()" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap Line</a>  
+</div>
+
+<div class="row"> 
     <div class="col-sm-7">  
-    <div style="padding-bottom: 20px;">
-    <a ng-click="addNew()" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap Line</a>  
-	</div>
+
 	<div ng-if="region.traplines.length > 0"ng-repeat="region in regions" ng-init="parentIndex = region">
       <table style="table-layout:fixed" class="table table-condensed table-hover admin" >
       	<caption class="text-left"><strong>{{region.name}}</strong></caption>
