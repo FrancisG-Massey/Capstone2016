@@ -1,0 +1,69 @@
+<ul class="breadcrumb">
+  <li><a href="#/trap-admin/{{trapline_id}}">Trapline {{trapline_id}}</a></li>
+  <li class="active">Add new trap</li>  
+</ul>
+
+<div class="add-new-trap">
+  <h1 class="text-center page-header">Add New Trap</h1>
+  <form>
+    <div class="clearfix">
+      <div class="btn-group pull-right" data-toggle="buttons" >
+        <label
+          ng-class="{ 'btn btn-default': true, 'active': status }">
+          <input ng-model="status" value="1" type="radio" autocomplete="off"
+          >Active
+        </label> <label
+          ng-class="{ 'btn btn-default': true, 'active': !status}">
+          <input ng-model="status" value="0" type="radio" autocomplete="off"
+          >Inactive
+        </label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-group">
+        <label>Latitude</label>
+        <div class="input-group">
+          <input type="number" class="form-control" ng-model="latitude">
+          <span class="input-group-addon">S</span>
+        </div>
+      </div>
+      <div class="col-md-6 form-group">
+        <label>Longitude</label>
+        <div class="input-group">
+          <input type="number" class="form-control" ng-model="longtitude"> 
+          <span class="input-group-addon">E</span>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-group">
+        <label>Bait type</label>
+        <select class="form-control" ng-model="baitId" >
+          <option data-ng-selected="bait.id == baitId" 
+             data-ng-repeat="bait in baits" ng-value="{{bait.id}}">{{bait.name}}</option>
+        </select>
+      </div>
+      <div class="col-md-6 form-group">
+        <label>Trap type</label>
+        <select class="form-control" ng-model="typeId" >
+          <option data-ng-selected="type.id == typeId" 
+             data-ng-repeat="type in trap_type" ng-value="{{type.id}}">{{type.name}}</option> 
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div ng-if="!selected" class="col-md-6 form-group">
+              <label>Trap Number</label>
+              <div>
+                <input type="text" name ="trapNumber" class="form-control"  ng-model= "trapNumber">
+              </div>
+      </div>
+    </div>
+    <div class="clearfix" style="margin-top:8px; margin-bottom: 20px">
+      <div class = "pull-right" style="margin-top: 10px;">
+        <button class="btn btn-success" type="button" ng-click="Save()">Save</button>
+      </div>
+    </div>
+  </form>
+</div>
+  
