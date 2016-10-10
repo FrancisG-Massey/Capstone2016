@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.util;
 
-import com.gluonhq.charm.down.common.Position;
+import com.gluonhq.charm.down.common.services.position.Position;
 
 public final class NavigationTools {
     

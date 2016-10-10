@@ -33,9 +33,8 @@ import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
-import com.gluonhq.charm.down.common.PlatformFactory;
-import com.gluonhq.charm.down.common.Position;
-import com.gluonhq.charm.down.common.PositionService;
+import com.gluonhq.charm.down.common.Service;
+import com.gluonhq.charm.down.common.services.position.Position;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Dialog;
@@ -201,13 +200,13 @@ public class NavigationView extends View {
     }
     
     private void initMonitors () {
-    	PositionService gpsService = PlatformFactory.getPlatform().getPositionService();
-    	
-    	trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty());
-    	
-    	distanceToTrap.bind(Bindings.createDoubleBinding(() -> gpsService.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
-    				getDistance(gpsService.getPosition(), targetCoordsProperty.get()), 
-    					gpsService.positionProperty(), targetCoordsProperty));
+    	Service.POSITION.getInstance().ifPresent(gpsService -> {
+    		trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty());
+        	
+        	distanceToTrap.bind(Bindings.createDoubleBinding(() -> gpsService.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
+        				getDistance(gpsService.getPosition(), targetCoordsProperty.get()), 
+        					gpsService.positionProperty(), targetCoordsProperty));
+    	});
     }
     
     /**

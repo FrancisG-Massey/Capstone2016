@@ -25,10 +25,9 @@ import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
-import com.gluonhq.charm.down.common.PlatformFactory;
-import com.gluonhq.charm.down.common.Position;
+import com.gluonhq.charm.down.common.Service;
+import com.gluonhq.charm.down.common.services.position.Position;
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
@@ -69,9 +68,6 @@ public class AddTrapView extends View {
 		map.setZoom(MapLoadingService.ZOOM);		
 		
 		map.addLayer(trapPositionLayer);
-
-		getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
-				e -> System.out.println("Info")));
 		
 		initPositionMonitor();
 		setCenter(map);
@@ -102,7 +98,8 @@ public class AddTrapView extends View {
 	}
 	
 	private void initPositionMonitor () {
-		currentPosition.bind(PlatformFactory.getPlatform().getPositionService().positionProperty());
+		Service.POSITION.getInstance().ifPresent(gpsService -> 
+			currentPosition.bind(gpsService.positionProperty()));
 		currentPosition.addListener((obs, oldPos, newPos) -> {
 			if (newPos != null) {
 				LOG.log(Level.INFO, String.format("Found coords: %1$.6f, %2$.6f", newPos.getLatitude(), newPos.getLongitude()));

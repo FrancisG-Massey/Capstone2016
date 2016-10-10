@@ -33,7 +33,7 @@ import org.nestnz.app.views.NavigationView;
 import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
 
-import com.gluonhq.charm.down.common.PlatformFactory;
+import com.gluonhq.charm.down.common.Service;
 import com.gluonhq.charm.glisten.application.GlassPane;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.ProgressIndicator;
@@ -55,7 +55,7 @@ public class NestApplication extends MobileApplication {
 
     @Override
     public void init() throws IOException {
-        appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
+    	appStoragePath = Service.STORAGE.getInstance().get().getPrivateStorage().orElseThrow(() -> new RuntimeException("No local storage found on this device!"));
         setupServices();
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
@@ -77,13 +77,13 @@ public class NestApplication extends MobileApplication {
 
             @Override
             public void show() {
-                getGlassPane().setBackgroundFade(GlassPane.DEFAULT_BACKGROUND_FADE_LEVEL);
+                //getGlassPane().setBackgroundFade(GlassPane.DEFAULT_BACKGROUND_FADE_LEVEL);
                 super.show();
             }
 
             @Override
             public void hide() {
-                getGlassPane().setBackgroundFade(0.0);
+                //getGlassPane().setBackgroundFade(0.0);
                 super.hide();
             }
 		    

@@ -20,13 +20,14 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.util.BackgroundTasks;
 
-import com.gluonhq.charm.down.common.PlatformFactory;
-import com.gluonhq.charm.down.common.SettingService;
+import com.gluonhq.charm.down.common.Service;
+import com.gluonhq.charm.down.common.services.SettingService;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
 
@@ -62,10 +63,10 @@ public class LoginService {
     
     private final ReadOnlyStringWrapper sessionTokenProperty = new ReadOnlyStringWrapper();
     
-    private final SettingService settingService;
+    private final Optional<SettingService> settingService;
     
     private LoginService () {
-    	settingService = PlatformFactory.getPlatform().getSettingService();
+    	settingService = Service.SETTINGS.getInstance();
     }
     
     /**
@@ -73,13 +74,17 @@ public class LoginService {
      * @return true if credentials were found & used, false if no credentials were found
      */
     public boolean checkSavedCredentials () {
-    	String email = settingService.retrieve("api.email");
-    	String password = settingService.retrieve("api.password");
-    	if (email == null || password == null) {
+    	if (settingService.isPresent()) {
+	    	String email = settingService.get().retrieve("api.email");
+	    	String password = settingService.get().retrieve("api.password");
+	    	if (email == null || password == null) {
+	    		return false;
+	    	}
+	    	login(email, password);
+	    	return true;
+    	} else {
     		return false;
     	}
-    	login(email, password);
-    	return true;
     }
     
     public void login (String username, String password) {
@@ -113,8 +118,10 @@ public class LoginService {
 							sessionTokenProperty.set(sessionHeaders.get(0));
 							
 							//Save the email & password for future use
-							settingService.store("api.email", username);
-							settingService.store("api.password", password);
+							if (settingService.isPresent()) {
+								settingService.get().store("api.email", username);
+								settingService.get().store("api.password", password);
+							}
 							loginStatusProperty.set(LoginStatus.LOGGED_IN);
 						}					
 						break;
@@ -149,8 +156,10 @@ public class LoginService {
     	loginStatusProperty.set(LoginStatus.PENDING_LOGOUT);
     	
     	//Clear the saved email & password
-    	settingService.remove("api.email");
-    	settingService.remove("api.password");
+    	if (settingService.isPresent()) {
+    		settingService.get().remove("api.email");
+    		settingService.get().remove("api.password");
+    	}
     	
     	RestClient loginClient = RestClient.create().method("DELETE").host("https://api.nestnz.org")
     			.path("/session/").queryParam("Session-Token", getSessionToken());
