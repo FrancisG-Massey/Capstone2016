@@ -1,6 +1,7 @@
 {
-    "before" : "
-        SELECT 1
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
     ",
     "GET" : "
         WITH logged_user AS (
@@ -62,7 +63,7 @@
         GROUP BY
             tl.trapline_id
         ORDER BY
-            tl.trapline_id
+            tl.trapline_id;
     ",
     "POST" : "
         INSERT INTO trapline (
@@ -86,11 +87,8 @@
             (#bigint:id# IS NULL) AND
             (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL)
         RETURNING
-            trapline_id
+            trapline_id;
     ",
     "PUT" : "",
-    "DELETE" : "",
-    "after" : "
-        SELECT 1
-    "
+    "DELETE" : ""
 }

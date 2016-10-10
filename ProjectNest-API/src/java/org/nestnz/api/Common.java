@@ -46,6 +46,7 @@ public class Common {
     public final static String DATASETPARAM_REGEX = "(#[\\w-]+:[\\w-]+#)";
 
     public final static int BCRYPT_COST = 12;
+    public final static int SESSION_TIMEOUT = 30;
 
     // This is a better regex which captures only strictly typed dataset parameters
     // except we can't test for invalid uncaptured params easily and these will go straight to the db...
@@ -96,6 +97,9 @@ public class Common {
      * @param datasetParamOrder 
      */
     public static void parseDatasetParameters(String dirtySQL, Map<String, String> datasetParams, List<String> datasetParamOrder) {
+        if (dirtySQL == null) {
+            return;
+        }
         // Find all parameters including their datatypes
         Matcher m = Pattern.compile(Common.DATASETPARAM_REGEX).matcher(dirtySQL.toLowerCase());
         while (m.find()) {

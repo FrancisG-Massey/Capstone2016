@@ -1,6 +1,7 @@
 {
-    "before" : "
-        SELECT 1
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
     ",
     "GET" : "
         WITH logged_user AS (
@@ -38,7 +39,7 @@
         GROUP BY
             u.user_id
         ORDER BY
-            u.user_id
+            u.user_id;
     ",
     "POST" : "
         INSERT INTO users (
@@ -66,11 +67,8 @@
             (#bigint:id# IS NULL) AND 
             (#string:username# IS NOT NULL) AND (#string:password# IS NOT NULL)
         RETURNING
-            user_id
+            user_id;
     ",
     "PUT" : "",
-    "DELETE" : "",
-    "after" : "
-        SELECT 1
-    "
+    "DELETE" : ""
 }

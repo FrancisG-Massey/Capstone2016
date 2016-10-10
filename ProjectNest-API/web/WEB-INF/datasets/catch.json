@@ -1,6 +1,7 @@
 {
-    "before" : "
-        SELECT 1
+    "before": "
+        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
+        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
     ",
     "GET" : "
         WITH logged_user AS (
@@ -43,7 +44,7 @@
         GROUP BY
             c.catch_id
         ORDER BY
-            c.catch_loggedtimestamp DESC
+            c.catch_loggedtimestamp DESC;
     ",
     "POST" : "
         INSERT INTO catch (
@@ -68,11 +69,8 @@
             (#bigint:id# IS NULL) AND 
             (#bigint:trap_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL)
         RETURNING
-            catch_id
+            catch_id;
     ",
     "PUT" : "",
-    "DELETE" : "",
-    "after" : "
-        SELECT 1
-    "
+    "DELETE" : ""
 }
