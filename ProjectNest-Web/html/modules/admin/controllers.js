@@ -336,10 +336,11 @@ angular.module('Admin')
     $scope.catch_types = catch_types;
     $scope.trapline_id = $route.current.params.traplineId;
     
+    
+    
     $scope.Save = function () {
-    	console.log($scope);
-
-        var data = {
+        // as json object
+    	var data = {
             "trapline_id":  parseInt($scope.trapline_id),
             "number": $scope.trapNumber,
             "coord_long": $scope.longtitude,
