@@ -351,13 +351,7 @@ angular.module('Admin')
     $scope.trapline_id = $route.current.params.traplineId;
     
     $scope.Save = function () {
-        console.log($scope.typeId+" type-id");
-        console.log($scope.baitId+" bait-id");
-        console.log($scope.trapline_id+" trapline-id");
-        console.log($scope.longtitude+" longtitude");
-        console.log($scope.latitude+" latitude");
-        console.log($scope.status+ " status");
-        console.log($scope.trapNumber+" trapNumber");
+    	console.log($scope);
 
         var data = {
             "trapline_id":  parseInt($scope.trapline_id),

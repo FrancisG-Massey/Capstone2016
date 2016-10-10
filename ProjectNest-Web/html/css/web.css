@@ -108,7 +108,14 @@ footer>.container {
   margin-bottom: 30px;
 }
 
-#mapid { height: 250px; }
+.map {
+  height: 250px;
+}
+
+.map.big-map {
+  height: 500px;
+}
+
 
 .admin td,
 .admin th {

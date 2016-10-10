@@ -1,22 +1,20 @@
 <ul class="breadcrumb">
+  <li><a href="/#/trapline-admin" >Admin</a></li>
   <li><a href="#/trap-admin/{{trapline_id}}">Trapline {{trapline_id}}</a></li>
   <li class="active">Add new trap</li>  
 </ul>
 
 <div class="add-new-trap">
   <h1 class="text-center page-header">Add New Trap</h1>
-  <form>
+  <form  ng-submit="Save()">
     <div class="clearfix">
-      <div class="btn-group pull-right" data-toggle="buttons" >
-        <label
-          ng-class="{ 'btn btn-default': true, 'active': status }">
-          <input ng-model="status" value="1" type="radio" autocomplete="off"
-          >Active
-        </label> <label
-          ng-class="{ 'btn btn-default': true, 'active': !status}">
-          <input ng-model="status" value="0" type="radio" autocomplete="off"
-          >Inactive
-        </label>
+      <div class="pull-right" >
+      	<label class="radio-inline">
+		  <input type="radio" ng-model="status" value="1" checked> Active
+		</label>
+		<label class="radio-inline">
+		  <input type="radio" ng-model="status" value="0"> Inactive
+		</label>
       </div>
     </div>
     <div class="row">
@@ -52,16 +50,15 @@
       </div>
     </div>
     <div class="row">
-      <div ng-if="!selected" class="col-md-6 form-group">
-              <label>Trap Number</label>
-              <div>
-                <input type="text" name ="trapNumber" class="form-control"  ng-model= "trapNumber">
-              </div>
+      <div class="col-md-6 form-group">
+        <label>Trap Number</label>
+        <input type="text" name="trapNumber" id="trapNumber" class="form-control" ng-model="trapNumber" required />
+        <span ng-show="form.trapNumber.$dirty && form.trapNumber.$error.required" class="help-block">Trap number is required</span>
       </div>
     </div>
     <div class="clearfix" style="margin-top:8px; margin-bottom: 20px">
       <div class = "pull-right" style="margin-top: 10px;">
-        <button class="btn btn-success" type="button" ng-click="Save()">Save</button>
+        <button class="btn btn-success" type="submit">Save</button>
       </div>
     </div>
   </form>
