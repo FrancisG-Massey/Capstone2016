@@ -66,7 +66,7 @@ public class AddTrapView extends View {
 		super(NAME);
 		addTrapButton.getStyleClass().add("large-button");
 		addTrapButton.setVisible(false);//Hide the 'add trap' button until we've set the trapline
-		map.setZoom(MapLoadingService.ZOOM_LEVEL);		
+		map.setZoom(MapLoadingService.ZOOM);		
 		
 		map.addLayer(trapPositionLayer);
 

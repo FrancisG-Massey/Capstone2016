@@ -20,7 +20,7 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 
 /**
  * The MapLoadingService is used to keep track of preloaded map tiles. 
- * NOTE: All methods here are based on tiles at the specified {@link #ZOOM_LEVEL}. This service will not work for any other zoom level. 
+ * NOTE: All methods here are based on tiles at the specified {@link #ZOOM}. This service will not work for any other zoom level. 
  */
 public interface MapLoadingService {
 	
@@ -28,7 +28,12 @@ public interface MapLoadingService {
 	 * The fixed zoom level used for all map tile pre-loading.
 	 * NOTE: If a map uses any zoom level other than this one, the tiles pre-loaded here will <em>NOT WORK</em>
 	 */
-	public static final int ZOOM_LEVEL = 17;
+	public static final int ZOOM = 17;
+	
+	/**
+	 * The maximum number of tiles which can be preloaded via a call to {@link #preloadMapTiles(double, double, double, double)}
+	 */
+	public static final int MAX_TILES = 500;
 	
 	/**
 	 * Finds out the total number of map tiles needed to fill the box which includes the provided coordinate ranges.

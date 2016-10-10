@@ -174,7 +174,7 @@ public class NavigationView extends View {
 
         trapPositionLayer.activeTrapProperty().bind(trapProperty);
 
-		map.setZoom(MapLoadingService.ZOOM_LEVEL);
+		map.setZoom(MapLoadingService.ZOOM);
 		map.addLayer(trapPositionLayer);
 		setCenter(map);
     	

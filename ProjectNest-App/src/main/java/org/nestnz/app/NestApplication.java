@@ -21,9 +21,11 @@ import java.io.IOException;
 
 import org.nestnz.app.services.CachingService;
 import org.nestnz.app.services.LoginService;
+import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.services.NetworkService;
 import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.services.impl.DefaultCachingService;
+import org.nestnz.app.services.impl.GluonMapLoadingService;
 import org.nestnz.app.services.impl.RestNetworkService;
 import org.nestnz.app.views.AddTrapView;
 import org.nestnz.app.views.LoginView;
@@ -48,21 +50,18 @@ public class NestApplication extends MobileApplication {
     public static final String MENU_LAYER = "Side Menu";
     
     private TrapDataService trapDataService;
+    private MapLoadingService mapLoadingService;
     private File appStoragePath;
 
     @Override
     public void init() throws IOException {
         appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
-        LoginService loginService = LoginService.getInstance();
-        CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
-        NetworkService networkService = new RestNetworkService(loginService);
-        trapDataService = new TrapDataService(cachingService, loginService, networkService);
-        trapDataService.initialise();
+        setupServices();
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));
         addViewFactory(NavigationView.NAME, () -> new NavigationView());
-        addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService));
+        addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService, mapLoadingService));
         addViewFactory(AddTrapView.NAME, () -> new AddTrapView());
         
     	addLayerFactory("loading", () -> new Layer() {
@@ -100,10 +99,17 @@ public class NestApplication extends MobileApplication {
 		    }
 		});
     }
-	
-	public TrapDataService getTrapDataService() {
-		return trapDataService;
-	}
+    
+    private void setupServices () throws IOException {
+    	LoginService loginService = LoginService.getInstance();
+        CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
+        NetworkService networkService = new RestNetworkService(loginService);
+        trapDataService = new TrapDataService(cachingService, loginService, networkService);
+        
+        mapLoadingService = new GluonMapLoadingService(appStoragePath);
+        
+        trapDataService.initialise();
+    }
     
     /**
      * Retrieves a view registered on this application by name

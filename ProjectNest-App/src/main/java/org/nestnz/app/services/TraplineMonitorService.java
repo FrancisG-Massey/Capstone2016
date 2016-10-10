@@ -69,8 +69,10 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
 				}
 			} else if (change.wasAdded()) {
 				for (Trap trap : change.getAddedSubList()) {
-					networkService.sendCreatedTrap(trapline.getId(), trap);
-					LOG.log(Level.INFO, String.format("Detected newly created trap: %s", trap));					
+					if (trap.getId() == 0) {//Only try to create traps if they haven't yet been created
+						networkService.sendCreatedTrap(trapline.getId(), trap);
+						LOG.log(Level.INFO, String.format("Detected newly created trap: %s", trap));
+					}
 				}
 			}
 		}

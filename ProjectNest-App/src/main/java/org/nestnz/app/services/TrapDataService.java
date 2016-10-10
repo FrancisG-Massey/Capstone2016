@@ -278,11 +278,15 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	RestDataSource dataSource = trapsClient.createRestDataSource();
     	BackgroundTasks.runInBackground(() -> {
     		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
-    			Platform.runLater(() -> {
-        			if (dataSource.getResponseCode() == 204) {
-	        			LOG.log(Level.INFO, "Trapline "+trapline.getId()+" currently has no traps!");        				
-        			} else {
-	        			JsonArray array = reader.readArray();
+    			if (dataSource.getResponseCode() == 204) {
+        			LOG.log(Level.INFO, "Trapline "+trapline.getId()+" currently has no traps!");
+        			Platform.runLater(() -> {
+	    				trapline.setLastUpdated(LocalDateTime.now());
+	    				loadingProperty.set(false);        				
+        			});
+    			} else {
+        			JsonArray array = reader.readArray();
+	    			Platform.runLater(() -> {
 	        			LOG.log(Level.INFO, "Response: "+array.toString());
 	    				for (JsonValue value : array) {
 	        				JsonObject trapJson = (JsonObject) value;
@@ -306,10 +310,10 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	        					trap.setLastReset(lastReset);
 	        				}
 	        			}
-        			}
-    				trapline.setLastUpdated(LocalDateTime.now());
-    				loadingProperty.set(false);
-    			});
+	    				trapline.setLastUpdated(LocalDateTime.now());
+	    				loadingProperty.set(false);
+	    			});
+	    		}
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting traps for trapline "+trapline+". Response: "+dataSource.getResponseMessage(), ex);
 				loadingProperty.set(false);
