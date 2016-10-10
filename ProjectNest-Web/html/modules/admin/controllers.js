@@ -82,6 +82,7 @@ angular.module('Admin')
 		console.log($scope.baits);
 		$scope.trap_type = trap_type;
 		console.log($scope.trap_type);
+		$scope.status= -1;
 		// get all catch types
 		$scope.catch_types = catch_types;
 		console.log($scope.catch_types);
@@ -123,7 +124,7 @@ angular.module('Admin')
         var marker, popupText;
 	    for (var i = 0; i < traps.length; i++) {
 	    	trap = traps[i];
-	    	popupText = "<strong>Trap: " + trap.number + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
+	    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
 	    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
 		}
    
@@ -339,4 +340,38 @@ angular.module('Admin')
         window.history.back();
       };
 
+}])
+.controller('AdminNewTrapController',['$scope','$rootScope','baits','trap_type','$route','$http','catch_types',function ($scope, $rootScope,baits,trap_type,$route,$http,catch_types) {
+    //var traplineId = $routeParams.traplineId;
+    $rootScope.wrapClass = undefined;
+    $scope.trapline_id = $route.current.params.traplineId;
+    $scope.baits = baits;
+    $scope.trap_type = trap_type;
+    $scope.catch_types = catch_types;
+    $scope.trapline_id = $route.current.params.traplineId;
+    
+    $scope.Save = function () {
+        console.log($scope.typeId+" type-id");
+        console.log($scope.baitId+" bait-id");
+        console.log($scope.trapline_id+" trapline-id");
+        console.log($scope.longtitude+" longtitude");
+        console.log($scope.latitude+" latitude");
+        console.log($scope.status+ " status");
+        console.log($scope.trapNumber+" trapNumber");
+
+        var data = {
+            "trapline_id":  parseInt($scope.trapline_id),
+            "number": $scope.trapNumber,
+            "coord_long": $scope.longtitude,
+            "coord_lat": $scope.latitude,
+            "traptype_id": $scope.typeId,
+            "status": $scope.status,
+            "bait_id": $scope.baitId
+        };  
+            
+        $http.post('https://www.nestnz.org/api/trap',data)
+        .then(function(data,status,header,config) {
+            $route.reload();
+        });         
+     };
 }]);
