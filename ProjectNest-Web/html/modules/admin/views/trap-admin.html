@@ -9,7 +9,7 @@
 <div class="row">
 	<div class="col-sm-7">
 	<div style="padding-bottom: 20px;">
-		<a ng-click="addNew()" id="addButton"><span
+		<a href="#/trap-admin/{{trapline_id}}/add-new" id="addButton"><span
 			class="glyphicon glyphicon-plus"></span> Add Trap</a>
 			</div>
 		<table class="table table-condensed table-hover admin">
@@ -50,19 +50,19 @@
 			</ul>
 		</nav>
 	</div>
-
+	<form>
 	<div class="col-sm-5">
 		<div class="well clearfix">
 			<h3 style="margin-top: 0; margin-bottom: 25px">
 				{{selected.id ? 'Trap Number: ' + selected.number : 'Add New Trap'}}
 				<div class="btn-group pull-right" data-toggle="buttons" >
 					<label
-						ng-class="{ 'btn btn-default': true, 'active': status==1 }">
-						<input ng-model="status" type="radio" autocomplete="off"
+						ng-class="{ 'btn btn-default': true, 'active': status }">
+						<input ng-model="status" value="1" type="radio" autocomplete="off"
 						>Active
 					</label> <label
-						ng-class="{ 'btn btn-default': true, 'active': status==0}">
-						<input ng-model="status" type="radio" autocomplete="off"
+						ng-class="{ 'btn btn-default': true, 'active': !status}">
+						<input ng-model="status" value="0" type="radio" autocomplete="off"
 						>Inactive
 					</label>
 				</div>
@@ -166,5 +166,6 @@
 	</div>
 	</div>
 	</div>
+	</form>
 	</div>
 	
