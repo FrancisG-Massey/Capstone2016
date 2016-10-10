@@ -34,10 +34,7 @@ import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
 
 import com.gluonhq.charm.down.common.Service;
-import com.gluonhq.charm.glisten.application.GlassPane;
 import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.charm.glisten.control.ProgressIndicator;
-import com.gluonhq.charm.glisten.layout.Layer;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.Swatch;
 
@@ -64,41 +61,7 @@ public class NestApplication extends MobileApplication {
         addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService, mapLoadingService));
         addViewFactory(AddTrapView.NAME, () -> new AddTrapView());
         
-    	addLayerFactory("loading", () -> new Layer() {
-    		private final ProgressIndicator spinner = new ProgressIndicator();
-    		private final int radius = 30;
-    		
-		    { 
-		    	setAutoHide(false);//Prevent users from removing the hiding screen by pressing anywhere
-		    	spinner.setRadius(radius);
-		    	getChildren().add(spinner);
-		    	getGlassPane().getLayers().add(this);
-		    }
-
-            @Override
-            public void show() {
-                //getGlassPane().setBackgroundFade(GlassPane.DEFAULT_BACKGROUND_FADE_LEVEL);
-                super.show();
-            }
-
-            @Override
-            public void hide() {
-                //getGlassPane().setBackgroundFade(0.0);
-                super.hide();
-            }
-		    
-		    @Override 
-		    public void layoutChildren() {
-		    	spinner.setVisible(isShowing());
-                if (!isShowing()) {
-                    return;
-                }
-		        spinner.resizeRelocate(
-		        		(getGlassPane().getWidth() - radius*2)/2, 
-		        		(getGlassPane().getHeight()- radius*2)/2, 
-		        		radius*2, radius*2);
-		    }
-		});
+    	addLayerFactory("loading", () -> new LoadingLayer());
     }
     
     private void setupServices () throws IOException {
