@@ -100,6 +100,33 @@ var myApp = angular
                 }
             }
         })
+        .when('/trap-admin/:traplineId/add-new', {
+            controller: 'AdminNewTrapController',
+            templateUrl: 'modules/admin/views/new_trap.html',
+            resolve: {
+                baits:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/bait')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+                trap_type:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/trap-type')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+                catch_types:function($http,$route){
+                    return $http
+                    .get('https://www.nestnz.org/api/catch-type')
+                    .then(function(response){
+                        return response.data;
+                    })
+                }
+            }
+        })
         .when('/volunteer-admin/:traplineId', {
             controller: 'AdminVolunteerController',
             templateUrl: 'modules/admin/views/volunteer-admin.html',
