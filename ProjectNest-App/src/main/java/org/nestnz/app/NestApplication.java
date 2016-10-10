@@ -69,6 +69,7 @@ public class NestApplication extends MobileApplication {
     		private final int radius = 30;
     		
 		    { 
+		    	setAutoHide(false);//Prevent users from removing the hiding screen by pressing anywhere
 		    	spinner.setRadius(radius);
 		    	getChildren().add(spinner);
 		    	getGlassPane().getLayers().add(this);
