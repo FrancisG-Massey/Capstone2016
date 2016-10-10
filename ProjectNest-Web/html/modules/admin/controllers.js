@@ -209,30 +209,7 @@ angular.module('Admin')
     $scope.$back = function() { 
         window.history.back();
       };
-      $scope.Save = function () {
-      console.log($scope.typeId+" type-id");
-      console.log($scope.baitId+" bait-id");
-      console.log($scope.trapline_id+" trapline-id");
-      console.log($scope.longtitude+" longtitude");
-      console.log($scope.latitude+" latitude");
-      console.log($scope.status+ " status");
-      console.log($scope.trapNumber+" trapNumber");
-      
-    		var data = {
-    				"trapline_id":  parseInt($scope.trapline_id),
-    				"number": $scope.trapNumber,
-    				"coord_long": $scope.longtitude,
-    				"coord_lat": $scope.latitude,
-    				"traptype_id": $scope.typeId,
-    				"status": $scope.status,
-    				"bait_id": $scope.baitId
-    				};	
-        	
-         	$http.post('https://www.nestnz.org/api/trap',data)
-            .then(function(data,status,header,config) {
-                $route.reload();
-            });         
-         };      
+    
 
     }])
 
@@ -322,9 +299,6 @@ angular.module('Admin')
     	//console.log(this.n);
         $scope.currentPage = this.n;
     };
-    $scope.$back = function() { 
-        window.history.back();
-      };
 
 }])
 .controller('AdminNewTrapController',['$scope','$rootScope','baits','trap_type','$route','$http','catch_types',function ($scope, $rootScope,baits,trap_type,$route,$http,catch_types) {
@@ -334,7 +308,6 @@ angular.module('Admin')
     $scope.baits = baits;
     $scope.trap_type = trap_type;
     $scope.catch_types = catch_types;
-    $scope.trapline_id = $route.current.params.traplineId;
     
     
     
@@ -355,4 +328,33 @@ angular.module('Admin')
             $route.reload();
         });         
      };
+}])
+.controller('AdminNewTraplineController',['$scope', '$rootScope','$http','region','baits','trap_type','$route',function ($scope,$rootScope,$http,region,baits,trap_type,$route) {
+	$rootScope.wrapClass = undefined;
+    $scope.regions = region.data;
+    $scope.baits = baits;
+    $scope.trap_types = trap_type;
+	
+    $scope.Save = function () {
+    	console.log($scope.region_id);
+    	console.log($scope.line_name);
+    	console.log($scope.startTag);
+    	console.log($scope.endTag);
+    	
+  	
+		var data = {
+				 "name": $scope.line_name,
+	             "region_id": parseInt($scope.region_id),
+	             "start_tag": $scope.startTag,
+	             "end_tag": $scope.endTag,
+	             "img_filename": "hello"
+
+		};	
+    	
+     	$http.post('https://www.nestnz.org/api/trapline',data)
+        .then(function(data,status,header,config) {
+            $route.reload();
+        });         
+     };
+			
 }]);

@@ -66,6 +66,28 @@ var myApp = angular
                     }
         }
         })
+        .when('/trapline-admin/add-newtrapline',{
+            controller: 'AdminNewTraplineController',
+            templateUrl: 'modules/admin/views/new_trapline.html',
+            resolve: {
+                region: ['$http', function($http) {
+                    return $http.get('https://www.nestnz.org/api/region');}],
+                baits:function($http, $route){
+                        return $http
+                        .get('https://www.nestnz.org/api/bait')
+                        .then(function(response){
+                            return response.data;
+                    })
+                    },
+                trap_type:function($http, $route){
+                        return $http
+                        .get('https://www.nestnz.org/api/trap-type')
+                        .then(function(response){
+                            return response.data;
+                    })
+                    }
+        }
+        })
         .when('/trap-admin/:traplineId', {
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html',
