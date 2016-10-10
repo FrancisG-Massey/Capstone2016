@@ -22,7 +22,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.nestnz.app.NestApplication;
+import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.services.TrapDataService;
 
 import com.gluonhq.charm.glisten.control.AppBar;
@@ -60,14 +62,19 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
     private Label traplineSize = new Label();
 	
     private Label lastUpdated = new Label();
+    
+    private Label mapLoaded = new Label();
 	
 	private final SidePopupView menu;
 	
 	private final TrapDataService dataService;
+	
+	private final MapLoadingService mapService;
 
-	public TraplineInfoView(TrapDataService dataService) {
+	public TraplineInfoView(TrapDataService dataService, MapLoadingService mapService) {
 		super(NAME);
 		this.dataService = Objects.requireNonNull(dataService);
+		this.mapService = Objects.requireNonNull(mapService);
 		
         this.setOnShown(evt -> {
     		dataService.loadingProperty().addListener(this);
@@ -84,7 +91,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         });
         
         VBox controls = new VBox();
-        controls.getChildren().addAll(traplineSize, lastUpdated);
+        controls.getChildren().addAll(traplineSize, lastUpdated, mapLoaded);
         setCenter(controls);
         
         start.getStyleClass().add("large-button");
@@ -113,6 +120,23 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         	}
         	return String.format("Last fetched: %s", time);
         }, trapline.lastUpdatedProperty()));
+        
+        double minLat = Double.MAX_VALUE;
+        double maxLat = Double.MIN_VALUE;
+        double minLong = Double.MAX_VALUE;
+        double maxLong = Double.MIN_VALUE;
+        
+        for (Trap t : trapline.getTraps()) {
+        	minLat = Math.min(minLat, t.getLatitude());
+        	maxLat = Math.max(maxLat, t.getLatitude());
+        	minLong = Math.min(minLong, t.getLongitude());
+        	maxLong = Math.max(maxLong, t.getLongitude());
+        }
+        int totalTiles = mapService.getTotalTileCount(minLat, maxLat, minLong, maxLong);
+        int cachedTiles = 0;
+        int mapLoadedPercent = 0;
+        
+        mapLoaded.setText("Map Loaded: "+mapLoadedPercent+"% ("+cachedTiles+"/"+totalTiles+")");
 	}
 	
 	private SidePopupView buildMenu () {
