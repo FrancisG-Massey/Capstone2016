@@ -122,8 +122,12 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         		mapTileLoadedCount.set(mapTileTotalCount.get()-newVal.intValue());
         		if (newVal.intValue() <= 0) {
         			getApplication().hideLayer("loading");
+        			preloadMap.setVisible(false);
         		}
         	});
+        	if (remaining.get() <= 0) {
+        		getApplication().hideLayer("loading");
+        	}
         });
         mapLoadControls.getChildren().addAll(mapLoaded, preloadMap);
         controls.getChildren().addAll(traplineSize, lastUpdated, mapLoadControls);
