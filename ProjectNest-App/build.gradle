@@ -65,7 +65,6 @@ dependencies {
     compile 'com.gluonhq:charm-glisten:3.0.1-b7'
     compile 'com.gluonhq:connect:1.0.2-SNAPSHOT'
     compile 'com.gluonhq:maps:1.0.1-b5'
-    //compile 'com.gluonhq:charm-down-common:3.0.0-b8'
     
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.+'
@@ -79,7 +78,7 @@ dependencies {
     //charm-down-core
     compile 'com.gluonhq:down-core:3.0.1-b1'
     androidRuntime 'com.gluonhq:down-core-android:3.0.1-b1'
-    iosRuntime 'com.gluonhq:down-core-ios:3.0.1-b1'
+    iosCompile 'com.gluonhq:down-core-ios:3.0.1-b1'
     
     //position
     compile 'com.gluonhq:down-plugin-position:3.0.1-b1'
