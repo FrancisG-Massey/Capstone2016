@@ -313,6 +313,17 @@ public class RequestServlet extends HttpServlet {
                                 break;
                                 
                             case "PUT":
+                                if (rsh.isBeforeFirst()) {
+                                    // Success. Generate a location header for the client to find the (possibly moved) resource
+                                    rsh.next();
+                                    final String newEntity = "/" + requestEntity + "/" + rsh.getString(1);
+                                    LOG.log(Level.INFO, "Entity modified on server: {0}", newEntity);
+                                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                                    response.addHeader("Location", newEntity);
+                                } else {
+                                    LOG.log(Level.INFO, "Unable to modify specified {0} on server.", requestEntity);
+                                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                }
                                 break;
                                 
                             case "DELETE":
