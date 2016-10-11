@@ -1,8 +1,9 @@
 'use strict';
  
 angular.module('Admin')
-.controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline','baits','trap_type','$route',function ($scope,$rootScope,$http,region,trapline,baits,trap_type,$route) {
-	$rootScope.wrapClass = undefined;
+.controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline','baits','trap_type','$route', '$location',function ($scope,$rootScope,$http,region,trapline,baits,trap_type,$route, $location) {
+	console.log($scope.currentPath);
+	$rootScope.hideHeader = true;
     $scope.regions = region.data;
     $scope.traplines = trapline.data;
     $scope.baits = baits;
@@ -39,54 +40,18 @@ angular.module('Admin')
     	console.log($scope.endTag);
     	console.log($scope.region_id);
     };
-
-    $scope.addNew = function() {  	
-    	$scope.selected = false;
-    	$rootScope.region_selected = undefined;
-    	$scope.line_name = undefined;
-    	$scope.region_id = undefined;
-    	$scope.startTag = undefined;
-    	$scope.endTag = undefined;
-    };
-    
-    $scope.Save = function () {
-    	console.log($scope.region_id);
-    	console.log($scope.line_name);
-    	console.log($scope.startTag);
-    	console.log($scope.endTag);
-    	
-  	
-		var data = {
-				 "name": $scope.line_name,
-	             "region_id": parseInt($scope.region_id),
-	             "start_tag": $scope.startTag,
-	             "end_tag": $scope.endTag,
-	             "img_filename": "hello"
-
-		};	
-    	
-     	$http.post('https://www.nestnz.org/api/trapline',data)
-        .then(function(data,status,header,config) {
-            $route.reload();
-        });         
-     };
-			
 }])
 .controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route','$http','catch_types',function ($scope, $rootScope,traps,baits,trap_type,$route,$http,catch_types) {
 		//var traplineId = $routeParams.traplineId;
-		$rootScope.wrapClass = undefined;
+		$rootScope.hideHeader = true;
 		$scope.trapline_id = $route.current.params.traplineId;
 		$scope.traps = traps;
 		console.log(traps)
 		$scope.baits = baits;
-		console.log($scope.baits);
 		$scope.trap_type = trap_type;
-		console.log($scope.trap_type);
 		$scope.status= -1;
 		// get all catch types
 		$scope.catch_types = catch_types;
-		console.log($scope.catch_types);
-		console.log($scope.traps.length);
 		// pagination
 	    var pageLength = 10,
 	    	numTraps = traps.length,
@@ -215,7 +180,7 @@ angular.module('Admin')
 
 .controller('AdminVolunteerController', ['$scope','$rootScope','trapline_users','users','$route',function ($scope, $rootScope,trapline_users,users,$route) {
 	//var traplineId = $routeParams.traplineId;
-	$rootScope.wrapClass = undefined;
+	$rootScope.hideHeader = true;
 	$scope.trapline_id = $route.current.params.traplineId;
     $scope.trapline_users = trapline_users;
     console.log($scope.trapline_users);
@@ -303,7 +268,7 @@ angular.module('Admin')
 }])
 .controller('AdminNewTrapController',['$scope','$rootScope','baits','trap_type','$route','$http','catch_types',function ($scope, $rootScope,baits,trap_type,$route,$http,catch_types) {
     //var traplineId = $routeParams.traplineId;
-    $rootScope.wrapClass = undefined;
+    $rootScope.hideHeader = true;
     $scope.trapline_id = $route.current.params.traplineId;
     $scope.baits = baits;
     $scope.trap_type = trap_type;
@@ -330,7 +295,7 @@ angular.module('Admin')
      };
 }])
 .controller('AdminNewTraplineController',['$scope', '$rootScope','$http','region','baits','trap_type','$route',function ($scope,$rootScope,$http,region,baits,trap_type,$route) {
-	$rootScope.wrapClass = undefined;
+	$rootScope.hideHeader = true;
     $scope.regions = region.data;
     $scope.baits = baits;
     $scope.trap_types = trap_type;
@@ -340,14 +305,17 @@ angular.module('Admin')
     	console.log($scope.line_name);
     	console.log($scope.startTag);
     	console.log($scope.endTag);
-    	
+    	console.log($scope.baitId);
+    	console.log($scope.traptypeId);
   	
 		var data = {
 				 "name": $scope.line_name,
 	             "region_id": parseInt($scope.region_id),
 	             "start_tag": $scope.startTag,
 	             "end_tag": $scope.endTag,
-	             "img_filename": "hello"
+	             "img_filename": null,
+	             "default_bait_id": $scope.baitId,
+	             "default_traptype_id": $scope.traptypeId
 
 		};	
     	
