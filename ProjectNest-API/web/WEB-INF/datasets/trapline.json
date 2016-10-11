@@ -76,7 +76,7 @@
             trapline_endtag,
             trapline_imagefilename,
             trapline_defaultbaitid,
-            default_traptype_id
+            trapline_defaulttraptypeid
         )
         SELECT
             #string:name#,
