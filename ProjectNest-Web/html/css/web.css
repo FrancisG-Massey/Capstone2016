@@ -18,8 +18,9 @@ html, body {
   background: url("main.jpg") center center no-repeat scroll;
   -webkit-background-size: cover;
   -moz-background-size: cover;
-   background-size: cover;
-   -o-background-size: cover;
+  background-size: cover;
+  -o-background-size: cover;
+
 }
 
 footer {
@@ -28,7 +29,7 @@ footer {
 }
 
 .wrap>.container {
-  padding-top: 60px;
+  padding-top: 90px;
 }
 
 footer>.container {
@@ -56,13 +57,22 @@ footer>.container {
 
 /* Header Image Background - Change the URL below to your image path (example: ../images/background.jpg) */
 
+.business-header-wrap {
+  margin-top: 270px;
+}
+
 .business-header {
-    height: 300px;
-    background: url("main.jpg") center center no-repeat scroll;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
-    -o-background-size: cover;
+  height: 300px;
+  background: url("main.jpg") center center no-repeat scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+  -o-background-size: cover;
+  position: absolute;
+  width: 100%;
+  top: 60px;
+  left: 0;
+  right: 0;
 }
 
 /* Customize the text color and shadow color and to optimize text legibility. */
@@ -129,6 +139,18 @@ footer>.container {
 	
 }
 
+.the-legend {
+    border-style: none;
+    border-width: 0;
+    font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 0;
+}
+.the-fieldset {
+    border: 2px groove threedface #444;
+    -webkit-box-shadow:  0px 0px 0px 0px #000;
+            box-shadow:  0px 0px 0px 0px #000;
+}
 th, td{
 	text-align:center;
 }
