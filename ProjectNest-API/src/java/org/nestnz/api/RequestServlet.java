@@ -320,7 +320,7 @@ public class RequestServlet extends HttpServlet {
             }
             
             // Execute the post-request dataset entry if one exists
-            if (cleanSQL_before != null) {
+            if (cleanSQL_after != null) {
                 try (
                     PreparedStatement st = conn.prepareStatement(cleanSQL_after);
                 ) {
