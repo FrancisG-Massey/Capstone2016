@@ -1,7 +1,6 @@
 {
     "before": "
-        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
-        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
     ",
     "GET" : "
         WITH logged_user AS (
@@ -72,7 +71,7 @@
             #bigint:bait_id#
         WHERE
             (#bigint:id# IS NULL) AND
-            (#bigint:trapline_id# IS NOT NULL) AND (#bigint:traptype_id# IS NOT NULL)
+            (#bigint:trapline_id# IS NOT NULL)
         RETURNING
             trap_id;
     ",

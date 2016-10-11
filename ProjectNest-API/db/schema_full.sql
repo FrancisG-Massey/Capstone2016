@@ -221,6 +221,7 @@ CREATE TABLE public.session
     session_userid bigint NOT NULL,
     session_token text NOT NULL,
     session_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
+    session_expirestimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp + interval '30 minutes',
     CONSTRAINT session_pkey PRIMARY KEY (session_id),
     CONSTRAINT session_token_unique UNIQUE (session_token),
     CONSTRAINT session_session_userid_fkey FOREIGN KEY (session_userid)
@@ -797,3 +798,54 @@ CREATE TRIGGER traplineuser_defaults_trigger
     ON public.traplineuser
     FOR EACH ROW
     EXECUTE PROCEDURE public.traplineuser_defaults();
+
+
+-- Functions called to handle session 
+
+
+-- Delete all expired sessions whenever called
+
+-- Function: public.clean_sessions()
+-- DROP FUNCTION public.clean_sessions();
+
+CREATE OR REPLACE FUNCTION public.clean_sessions()
+    RETURNS void AS
+$BODY$
+    BEGIN
+        DELETE FROM public.session
+        WHERE session_expirestimestamp < now()::timestamp;
+    END;
+$BODY$
+    LANGUAGE plpgsql VOLATILE
+    COST 100;
+ALTER FUNCTION public.clean_sessions()
+    OWNER TO postgres;
+
+
+-- Clean all old sessions, then extend the specified session if it exists.
+
+-- Function: public.clean_sessions()
+-- DROP FUNCTION public.clean_sessions();
+
+CREATE OR REPLACE FUNCTION public.extend_session(token text, length interval)
+    RETURNS timestamp AS
+$BODY$
+    DECLARE
+    new_expires timestamp;
+    BEGIN
+        PERFORM public.clean_sessions();
+
+        UPDATE session
+        SET session_expirestimestamp = now()::timestamp + length
+        WHERE session_token = token
+        RETURNING session_expirestimestamp
+
+        INTO new_expires;
+
+        RETURN new_expires;
+    END;
+$BODY$
+    LANGUAGE plpgsql VOLATILE
+    COST 100;
+ALTER FUNCTION public.extend_session(token text, length interval)
+    OWNER TO postgres;

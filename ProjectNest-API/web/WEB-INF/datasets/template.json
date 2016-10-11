@@ -1,6 +1,6 @@
 {
     "before" : "
-        SELECT 1;
+        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
     ",
 
     "GET" : "
