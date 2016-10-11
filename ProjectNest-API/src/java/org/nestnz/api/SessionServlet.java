@@ -220,8 +220,8 @@ public class SessionServlet extends HttpServlet {
             return;
         }
         
-        // Attempt to delete any sessions matching the session token        
-        final String sql = "DELETE FROM public.session WHERE session_token = ?;";
+        // Attempt to delete any sessions matching the session token plus any expired sessions
+        final String sql = "DELETE FROM public.session WHERE (session_token = ?) OR (session_expirestimestamp < now()::timestamp);";
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
             PreparedStatement sth = conn.prepareStatement(sql);

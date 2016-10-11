@@ -18,7 +18,8 @@
             s.session_id AS id,
             s.session_userid AS user_id, 
             substring(s.session_token from 1 for 31)||'xxxxx' AS token, 
-            s.session_createdtimestamp AS created
+            s.session_createdtimestamp AS created,
+            s.session_expirestimestamp AS expires
         FROM 
             logged_user lu,
             session s

@@ -836,7 +836,7 @@ $BODY$
         PERFORM public.clean_sessions();
 
         UPDATE session
-        SET session_expirestimestamp = now()::timestamp + length
+        SET session_expirestimestamp = GREATEST(now()::timestamp + length, session_expirestimestamp)
         WHERE session_token = token
         RETURNING session_expirestimestamp
 
