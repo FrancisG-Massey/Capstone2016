@@ -25,11 +25,12 @@ import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
-import com.gluonhq.charm.down.common.Service;
-import com.gluonhq.charm.down.common.services.position.Position;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import com.gluonhq.down.Services;
+import com.gluonhq.down.plugins.Position;
+import com.gluonhq.down.plugins.PositionService;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.property.IntegerProperty;
@@ -98,7 +99,7 @@ public class AddTrapView extends View {
 	}
 	
 	private void initPositionMonitor () {
-		Service.POSITION.getInstance().ifPresent(gpsService -> 
+		Services.get(PositionService.class).ifPresent(gpsService -> 
 			currentPosition.bind(gpsService.positionProperty()));
 		currentPosition.addListener((obs, oldPos, newPos) -> {
 			if (newPos != null) {

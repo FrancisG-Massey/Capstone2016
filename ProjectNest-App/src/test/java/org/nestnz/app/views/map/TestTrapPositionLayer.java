@@ -24,7 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.nestnz.app.model.Trap;
 
-import com.gluonhq.charm.down.common.services.position.Position;
+import com.gluonhq.down.plugins.Position;
 import com.gluonhq.maps.MapPoint;
 
 public class TestTrapPositionLayer {

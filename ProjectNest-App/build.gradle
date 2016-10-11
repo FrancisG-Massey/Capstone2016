@@ -49,6 +49,13 @@ repositories {
 		    	password gluonNexusPassword
 		  	} 
 		}
+	    maven {
+	    	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-private-releases/' 
+		  	credentials { 
+		    	username gluonNexusUsername
+		    	password gluonNexusPassword
+		  	} 
+		}
 	}
 }
 
@@ -58,17 +65,52 @@ dependencies {
     compile 'com.gluonhq:charm-glisten:3.0.1-b7'
     compile 'com.gluonhq:connect:1.0.2-SNAPSHOT'
     compile 'com.gluonhq:maps:1.0.1-b5'
-    compile 'com.gluonhq:charm-down-common:3.0.0-b8'
+    //compile 'com.gluonhq:charm-down-common:3.0.0-b8'
     
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.+'
 
-    androidRuntime 'com.gluonhq:charm-android:3.0.1-b7'
-    iosRuntime 'com.gluonhq:charm-ios:3.0.1-b7'
-    desktopRuntime 'com.gluonhq:charm-desktop:3.0.1-b7'
+    androidRuntime 'com.gluonhq:charm-glisten-android:3.0.1-b7'
+    
+    iosRuntime 'com.gluonhq:charm-glisten-ios:3.0.1-b7'
+    
+    desktopRuntime 'com.gluonhq:charm-glisten-desktop:3.0.1-b7'
+    
+    //charm-down-core
+    compile 'com.gluonhq:down-core:3.0.1-b1'
+    androidRuntime 'com.gluonhq:down-core-android:3.0.1-b1'
+    iosRuntime 'com.gluonhq:down-core-ios:3.0.1-b1'
+    
+    //position
+    compile 'com.gluonhq:down-plugin-position:3.0.1-b1'
+    androidRuntime 'com.gluonhq:down-plugin-position-android:3.0.1-b1'
+    iosRuntime 'com.gluonhq:down-plugin-position-ios:3.0.1-b1'
+    
+    //settings
+    compile 'com.gluonhq:down-plugin-settings:3.0.1-b1'
+    androidRuntime 'com.gluonhq:down-plugin-settings-android:3.0.1-b1'
+    iosRuntime 'com.gluonhq:down-plugin-settings-ios:3.0.1-b1'
+    desktopRuntime 'com.gluonhq:down-plugin-settings-desktop:3.0.1-b1'
+    
+    //storage
+    compile 'com.gluonhq:down-plugin-storage:3.0.1-b1'
+    androidRuntime 'com.gluonhq:down-plugin-storage-android:3.0.1-b1'
+    iosRuntime 'com.gluonhq:down-plugin-storage-ios:3.0.1-b1'
+    desktopRuntime 'com.gluonhq:down-plugin-storage-desktop:3.0.1-b1'
+    
+    //vibration
+    compile 'com.gluonhq:down-plugin-vibration:3.0.1-b1'
+    androidRuntime 'com.gluonhq:down-plugin-vibration-android:3.0.1-b1'
+    iosRuntime 'com.gluonhq:down-plugin-vibration-ios:3.0.1-b1'
+    
 }
 
 jfxmobile {
+	/*downConfig {
+        version '3.0.0-SNAPSHOT'
+        plugins 'position', 'settings', 'storage', 'vibration'
+    }*/
+
 	javafxportsVersion = hasGluonLogin ? '8.60.d161002' : '8.60.7'
 
     android {

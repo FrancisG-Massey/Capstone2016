@@ -33,10 +33,11 @@ import org.nestnz.app.views.NavigationView;
 import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
 
-import com.gluonhq.charm.down.common.Service;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.Swatch;
+import com.gluonhq.down.Services;
+import com.gluonhq.down.plugins.StorageService;
 
 import javafx.scene.Scene;
 
@@ -52,8 +53,10 @@ public class NestApplication extends MobileApplication {
 
     @Override
     public void init() throws IOException {
-    	appStoragePath = Service.STORAGE.getInstance().get().getPrivateStorage().orElseThrow(() -> new RuntimeException("No local storage found on this device!"));
-        setupServices();
+    	appStoragePath = Services.get(StorageService.class).orElseThrow(() -> new RuntimeException("Local storage not supported on this device!"))
+    		.getPrivateStorage().orElseThrow(() -> new RuntimeException("No local storage found on this device!"));
+    	
+    	setupServices();
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));
