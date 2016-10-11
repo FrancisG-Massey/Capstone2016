@@ -92,12 +92,18 @@ var myApp = angular
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html',
             resolve: {
-                traps: function($http, $route){
-                    return $http
-                        .get('https://www.nestnz.org/api/trap?trapline-id='+$route.current.params.traplineId)
-                        .then(function(response){
-                            return response.data;
+            	traps: function($http, $route){
+                    return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/trap',
+                        params: {
+                            '_': new Date().getTime(),
+                            'trapline-id': $route.current.params.traplineId
+                        }
                     })
+                    .then(function(response){
+                        return response.data;
+                    });
                 },
                 baits:function($http, $route){
                     return $http
