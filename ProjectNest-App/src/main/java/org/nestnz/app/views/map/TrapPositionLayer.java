@@ -31,7 +31,8 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape;
 
 public class TrapPositionLayer extends PositionLayer implements ListChangeListener<Trap> {
 	
@@ -42,9 +43,11 @@ public class TrapPositionLayer extends PositionLayer implements ListChangeListen
 	
 	private final ObjectProperty<Trap> activeTrapProperty = new SimpleObjectProperty<>();
 	
-    protected final Node activeTrapIcon = new Circle(10, Color.RED);
+    protected final Shape activeTrapIcon = new Polygon(12, 12, -12, 12, 0, -12);
 	
 	public TrapPositionLayer () {
+		activeTrapIcon.setFill(Color.RED);
+		
 		this.traps.addListener(this);
 		activeTrapProperty.addListener((obs, oldValue, newValue) -> {
 			removePoint(activeTrapIcon);
@@ -119,7 +122,9 @@ public class TrapPositionLayer extends PositionLayer implements ListChangeListen
 		}
 	}
 	
-	private Node makeTrapIcon () {
-		return new Circle(7, Color.BLUE);
+	private Shape makeTrapIcon () {
+		Shape icon = new Polygon(8, 8, -8, 8, 0, -8);
+		icon.setFill(Color.BLUE);
+		return icon;
 	}
 }
