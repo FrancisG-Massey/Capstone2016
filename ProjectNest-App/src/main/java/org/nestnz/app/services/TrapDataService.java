@@ -294,12 +294,15 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	    			Platform.runLater(() -> {
 	        			LOG.log(Level.FINE, "Response: "+array.toString());
 	        			try {
+	        				Set<Integer> validTrapIds = new HashSet<>();
+	        				validTrapIds.add(0);//0 = trap not yet created on server
 		    				for (JsonValue value : array) {
 		        				JsonObject trapJson = (JsonObject) value;
 		        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
 		        					continue;//If the trap doesn't belong to the specified trapline, ignore it
 		        				}
 		        				int id = trapJson.getInt("id");
+		        				validTrapIds.add(id);
 		        				int number = trapJson.getInt("number");
 		        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
 		        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
@@ -316,6 +319,14 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 		        					trap.setLastReset(lastReset);
 		        				}
 		        			}
+		    				
+		    				Iterator<Trap> iterator = trapline.getTraps().iterator();
+		    				while (iterator.hasNext()) {
+		    					Trap trap = iterator.next();
+		    					if (!validTrapIds.contains(trap.getId())) {
+		    						iterator.remove();
+		    					}
+		    				}
 		    				trapline.setLastUpdated(LocalDateTime.now());
 	        			} catch (RuntimeException ex) {
 	        				LOG.log(Level.WARNING, "Problem parsing traps for trapline "+trapline, ex);
