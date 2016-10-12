@@ -439,6 +439,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	}
 
 	private final Set<Trapline> updatedTraplines = new HashSet<>();
+	private final Set<Trapline> removedTraplines = new HashSet<>();
     
     private void watchForChanges () {
     	traplines.addListener(this);//Listen for changes to the traplines
@@ -453,6 +454,16 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	    			cachingService.storeTrapline(t);
 	    		}
 	    		LOG.log(Level.INFO, "Saved "+updatesCopy.size()+" traplines to file cache.");
+    		}
+    		if (!removedTraplines.isEmpty()) {
+	    		Set<Trapline> removedCopy = new HashSet<>(removedTraplines);
+	    		removedTraplines.clear();
+	    		
+	    		for (Trapline t : removedCopy) {
+	    			cachingService.removeTrapline(t);
+	    		}
+
+	    		LOG.log(Level.INFO, "Removed "+removedCopy.size()+" old traplines from the file cache.");
     		}
     	}, 5, TimeUnit.SECONDS);
     }
@@ -480,6 +491,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 					if (apiUpdateMonitors.containsKey(t)) {
 						t.getTraps().removeListener(apiUpdateMonitors.remove(t));
 					}
+					removedTraplines.add(t);
+					updatedTraplines.remove(t);
 				}
 			}
 		}

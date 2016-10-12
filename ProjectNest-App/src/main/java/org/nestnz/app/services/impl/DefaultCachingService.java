@@ -222,4 +222,16 @@ public class DefaultCachingService implements CachingService {
     	return result;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.CachingService#removeTrapline(org.nestnz.app.model.Trapline)
+	 */
+	@Override
+	public void removeTrapline(Trapline trapline) {
+		File savedFile = new File(traplineCachePath, Integer.toString(trapline.getId())+".json");
+		
+		if (savedFile.exists()) {
+			savedFile.delete();
+		}
+	}
+
 }
