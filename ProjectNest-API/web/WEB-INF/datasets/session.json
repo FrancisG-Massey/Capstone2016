@@ -30,5 +30,5 @@
             s.session_id
         ORDER BY
             s.session_id;
-    ",
+    "
 }
