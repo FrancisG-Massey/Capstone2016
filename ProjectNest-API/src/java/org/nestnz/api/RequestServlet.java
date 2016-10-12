@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -99,8 +100,6 @@ public class RequestServlet extends HttpServlet {
      */
     protected void doRequest(HttpServletRequest request, HttpServletResponse response, String httpMethod)
             throws ServletException, IOException {
-        LOG.log(Level.INFO, "Received incoming request:\n{0}\n", request.toString());
-
         String dirtySQL_before, dirtySQL_main, dirtySQL_after;
         
         // Parse out the requested entity type and id from the request URL
@@ -110,8 +109,16 @@ public class RequestServlet extends HttpServlet {
         String requestEntity = m.find() ? m.group().substring(1) : "";
         String requestEntityID = m.find() ? m.group().substring(1) : "";
         
+        LOG.log(Level.INFO, "Received incoming {0} request for {1} Entity\n",
+                new Object[]{httpMethod, requestEntity});
+        
         if (httpMethod.equals("POST") && !requestEntityID.equals("")) {
-            LOG.log(Level.INFO, "Bad request syntax: Entity id supplied to POST request: {0}", requestEntityID);        
+            LOG.log(Level.INFO, "Bad request syntax: Entity id supplied in POST request URL: {0}", requestEntityID);        
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        if (httpMethod.equals("PUT") && requestEntityID.equals("")) {
+            LOG.log(Level.INFO, "Bad request syntax: No entity id supplied in PUT request URL");        
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -160,8 +167,8 @@ public class RequestServlet extends HttpServlet {
         Common.parseDatasetParameters(dirtySQL_before, datasetParams_before, datasetParamOrder_before);
         Common.parseDatasetParameters(dirtySQL_main, datasetParams_main, datasetParamOrder_main);
         Common.parseDatasetParameters(dirtySQL_after, datasetParams_after, datasetParamOrder_after);
-        LOG.log(Level.INFO, "Dataset accepts the following parameters:\n{0}\n{1}\n{2}", 
-                new Object[]{datasetParams_before.toString(), datasetParams_main.toString(), datasetParams_after.toString()});
+        //LOG.log(Level.INFO, "Dataset accepts the following parameters:\n{0}\n{1}\n{2}", 
+        //        new Object[]{datasetParams_before.toString(), datasetParams_main.toString(), datasetParams_after.toString()});
 
         
         
@@ -173,7 +180,7 @@ public class RequestServlet extends HttpServlet {
             // Fill the datasetParams map with values if they are provided in the request
             // Note if a query string parameter has multiple mappings, its undefined behaviour as to which one will be used.
             Enumeration<String> parameterNames = request.getParameterNames();
-            LOG.log(Level.INFO, "Request supplies the following parameters:\n{0}", parameterNames.toString());
+            //LOG.log(Level.INFO, "Request supplies the following parameters:\n{0}", parameterNames.toString());
             while (parameterNames.hasMoreElements()) {
                 final String paramName = (String) parameterNames.nextElement();
                 if (datasetParams_before.containsKey(paramName)) {
@@ -196,7 +203,7 @@ public class RequestServlet extends HttpServlet {
                 requestJSON = Common.BufferedReaderToString(request.getReader());
                 Type stringStringMap = new TypeToken<Map<String, String>>(){}.getType();
                 requestObjectParams = new Gson().fromJson(requestJSON, stringStringMap);
-                LOG.log(Level.INFO, "Request supplies the following parameters:\n{0}", requestObjectParams.toString());
+                //LOG.log(Level.INFO, "Request supplies the following parameters:\n{0}", requestObjectParams.toString());
             } 
             catch (JsonSyntaxException | MalformedJsonException ex) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -219,18 +226,20 @@ public class RequestServlet extends HttpServlet {
             }
         }
         // Add the session token as a parameter (we've already validated its format above)
-        LOG.log(Level.INFO, "Using session token from header: {0}", sessionToken);
         datasetParams_before.put("session-token", sessionToken);
         datasetParams_main.put("session-token", sessionToken);
         datasetParams_after.put("session-token", sessionToken);
+        // Pass the config session expiry into the first dataset to extend the session etc.
+        datasetParams_before.put("session-timeout", String.valueOf(Common.SESSION_TIMEOUT) + " minutes");
         
         // If a subroute was provided specifying the entity id, use it with preference to an id in the body
         if (!requestEntityID.isEmpty()) {
-            LOG.log(Level.INFO, "Using entity id from URL path: {0}", requestEntityID);
             datasetParams_before.put("id", requestEntityID);
             datasetParams_main.put("id", requestEntityID);
             datasetParams_after.put("id", requestEntityID);
         }
+        LOG.log(Level.INFO, "Sending request with the following parameters:\n1: {0}\n2: {1}\n3: {2}", 
+                new Object[]{datasetParams_before.toString(), datasetParams_main.toString(), datasetParams_after.toString()});
 
         // Replace the placeholders in the retrieved SQL with the values supplied by the request
         final String cleanSQL_before = (dirtySQL_before != null) ? dirtySQL_before.replaceAll(Common.DATASETPARAM_REGEX, "?") : null;
@@ -238,7 +247,7 @@ public class RequestServlet extends HttpServlet {
         final String cleanSQL_after = (dirtySQL_after != null) ? dirtySQL_after.replaceAll(Common.DATASETPARAM_REGEX, "?") : null;
 
         // Get the DB response and convert it to JSON
-        String jsonArray = null;
+        String responseBody = null;
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
         ) {
@@ -246,18 +255,17 @@ public class RequestServlet extends HttpServlet {
             // Execute the pre-request dataset entry for session handling if one exists
             if (cleanSQL_before != null) {
                 try (
-                    PreparedStatement st = conn.prepareStatement(cleanSQL_before);
+                    PreparedStatement st = conn.prepareStatement(cleanSQL_before, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 ) {
-                    // Pass the config session expiry into the dataset in case it wants to extend a session etc.
-                    datasetParams_before.put("session-timeout", String.valueOf(Common.SESSION_TIMEOUT) + " minutes");
                     Common.bindDynamicParameters(st, datasetParams_before, datasetParamOrder_before);
+                    LOG.log(Level.INFO, "Executing query:\n{0}", st.toString());
 
                     try (ResultSet rsh = st.executeQuery();) {
                         if (rsh.isBeforeFirst()) {
                             response.addHeader("Session-Token", sessionToken);
                             // Instead of getting the exact time from the db we can compensate for latency somewhat by calculating it here
                             response.addDateHeader("Expires", System.currentTimeMillis() + Common.SESSION_TIMEOUT * 60000L);
-                            LOG.log(Level.INFO, "ResultSet retrieved from database!");
+                            rsh.last(); LOG.log(Level.INFO, "{0} rows retrieved from database.", rsh.getRow());
                         } else {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
                             LOG.log(Level.INFO, "Unable to find session");
@@ -271,26 +279,39 @@ public class RequestServlet extends HttpServlet {
             // Execute the main request
             if (cleanSQL_main != null) {
                 try (
-                    PreparedStatement st = conn.prepareStatement(cleanSQL_main);
+                    PreparedStatement st = conn.prepareStatement(cleanSQL_main, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 ) {
                     Common.bindDynamicParameters(st, datasetParams_main, datasetParamOrder_main);
+                    LOG.log(Level.INFO, "Executing query:\n{0}", st.toString());
 
                     try (ResultSet rsh = st.executeQuery();) {
                         switch (httpMethod) {
                             case "GET":
+                                boolean formatCSV = Pattern.compile("text/csv").matcher(request.getHeader("Accept")).find();
                                 if (rsh.isBeforeFirst()) {
-                                   response.setStatus(HttpServletResponse.SC_OK);
-                                    jsonArray = Common.resultSetAsJSON(rsh);
-                                    LOG.log(Level.INFO, "ResultSet retrieved from database!");
+                                    response.setStatus(HttpServletResponse.SC_OK);
+                                    if (formatCSV) {
+                                        String timeid = String.valueOf(Calendar.getInstance().getTimeInMillis());
+                                        final String filename = "\"" + requestEntity + "_" + timeid + ".csv\"";
+                                        response.setHeader("Content-Description","File Transfer");
+                                        response.setHeader("Content-Type","application/octet-stream");
+                                        response.setHeader("Content-disposition","attachment; filename=" + filename);
+                                        response.setHeader("Content-Transfer-Encoding","binary");
+                                        responseBody = Common.resultSetAsCSV(rsh);
+                                    } else {
+                                        response.setContentType("application/json");
+                                        responseBody = Common.resultSetAsJSON(rsh);
+                                    }
+                                    rsh.last(); LOG.log(Level.INFO, "{0} rows retrieved from database.", rsh.getRow());
                                 } else {
                                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                                    jsonArray = "[]";
+                                    responseBody = (formatCSV) ? "" : "[]";
                                     LOG.log(Level.INFO, "Empty ResultSet received from database");
                                 }
-                                response.setContentType("application/json");
-                                response.setContentLength(jsonArray.length());
+                                
+                                response.setContentLength(responseBody.length());
                                 try (PrintWriter out = response.getWriter()) {
-                                    out.print(jsonArray);
+                                    out.print(responseBody);
                                 }
                                 break;
                                 
@@ -309,6 +330,17 @@ public class RequestServlet extends HttpServlet {
                                 break;
                                 
                             case "PUT":
+                                if (rsh.isBeforeFirst()) {
+                                    // Success. Generate a location header for the client to find the (possibly moved) resource
+                                    rsh.next();
+                                    final String newEntity = "/" + requestEntity + "/" + rsh.getString(1);
+                                    LOG.log(Level.INFO, "Entity modified on server: {0}", newEntity);
+                                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                                    response.addHeader("Location", newEntity);
+                                } else {
+                                    LOG.log(Level.INFO, "Unable to modify specified {0} on server.", requestEntity);
+                                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                }
                                 break;
                                 
                             case "DELETE":
@@ -322,9 +354,10 @@ public class RequestServlet extends HttpServlet {
             // Execute the post-request dataset entry if one exists
             if (cleanSQL_after != null) {
                 try (
-                    PreparedStatement st = conn.prepareStatement(cleanSQL_after);
+                    PreparedStatement st = conn.prepareStatement(cleanSQL_after, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 ) {
                     Common.bindDynamicParameters(st, datasetParams_after, datasetParamOrder_after);
+                    LOG.log(Level.INFO, "Executing query:\n{0}", st.toString());
                     st.execute();
                     st.close();
                 }

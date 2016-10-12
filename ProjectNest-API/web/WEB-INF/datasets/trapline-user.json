@@ -1,7 +1,6 @@
 {
     "before": "
-        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
-        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
     ",
     "GET" : "
         WITH logged_user AS (
@@ -51,6 +50,16 @@
         RETURNING
             traplineuser_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE traplineuser
+        SET
+            traplineuser_userid = #bigint:user_id#,
+            traplineuser_traplineid = #bigint:trapline_id#,
+            traplineuser_isadmin = #boolean:admin#
+        WHERE 
+            traplineuser_id = #bigint:id#
+        RETURNING
+            traplineuser_id;
+    ",
     "DELETE" : ""
 }

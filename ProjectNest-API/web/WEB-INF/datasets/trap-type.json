@@ -1,7 +1,6 @@
 {
     "before": "
-        SELECT user_id FROM users u JOIN session s ON u.user_id = s.session_userid
-        WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#);
+        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
     ",
     "GET" : "
         WITH logged_user AS (
@@ -48,6 +47,16 @@
         RETURNING
             traptype_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE traptype
+        SET
+            traptype_name = #string:name#,
+            traptype_model = #string:model#,
+            traptype_note = #string:note#
+        WHERE 
+            traptype_id = #bigint:id#
+        RETURNING
+            traptype_id;
+    ",
     "DELETE" : ""
 }
