@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -246,7 +247,7 @@ public class RequestServlet extends HttpServlet {
         final String cleanSQL_after = (dirtySQL_after != null) ? dirtySQL_after.replaceAll(Common.DATASETPARAM_REGEX, "?") : null;
 
         // Get the DB response and convert it to JSON
-        String jsonArray = null;
+        String responseBody = null;
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
         ) {
@@ -286,20 +287,31 @@ public class RequestServlet extends HttpServlet {
                     try (ResultSet rsh = st.executeQuery();) {
                         switch (httpMethod) {
                             case "GET":
+                                boolean formatCSV = Pattern.compile("text/csv").matcher(request.getHeader("Accept")).find();
                                 if (rsh.isBeforeFirst()) {
-                                   response.setStatus(HttpServletResponse.SC_OK);
-                                    jsonArray = Common.resultSetAsJSON(rsh);
-                                    
+                                    response.setStatus(HttpServletResponse.SC_OK);
+                                    if (formatCSV) {
+                                        String timeid = String.valueOf(Calendar.getInstance().getTimeInMillis());
+                                        final String filename = "\"" + requestEntity + "_" + timeid + ".csv\"";
+                                        response.setHeader("Content-Description","File Transfer");
+                                        response.setHeader("Content-Type","application/octet-stream");
+                                        response.setHeader("Content-disposition","attachment; filename=" + filename);
+                                        response.setHeader("Content-Transfer-Encoding","binary");
+                                        responseBody = Common.resultSetAsCSV(rsh);
+                                    } else {
+                                        response.setContentType("application/json");
+                                        responseBody = Common.resultSetAsJSON(rsh);
+                                    }
                                     rsh.last(); LOG.log(Level.INFO, "{0} rows retrieved from database.", rsh.getRow());
                                 } else {
                                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                                    jsonArray = "[]";
+                                    responseBody = (formatCSV) ? "" : "[]";
                                     LOG.log(Level.INFO, "Empty ResultSet received from database");
                                 }
-                                response.setContentType("application/json");
-                                response.setContentLength(jsonArray.length());
+                                
+                                response.setContentLength(responseBody.length());
                                 try (PrintWriter out = response.getWriter()) {
-                                    out.print(jsonArray);
+                                    out.print(responseBody);
                                 }
                                 break;
                                 

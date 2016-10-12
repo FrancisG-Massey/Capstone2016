@@ -108,6 +108,24 @@ public class DBInterfaceTests {
         
         assertTrue(true);
     }
+    
+    /**
+     * Test of resultSetAsCSV method, of class Common.
+     * @throws java.sql.SQLException
+     * @throws java.io.IOException
+     */
+    @Test
+    public void ResultSetAsCSVReturnsString() throws SQLException, IOException {
+        
+        Statement st = conn.createStatement();
+        ResultSet rsh = st.executeQuery("SELECT 1::bigint AS test, 2::text as test2");
+        
+        // Call the method
+        String result = Common.resultSetAsCSV(rsh);
+        
+        // An exception will be thrown here if the dataset cannot be parsed as JSON.
+        assertTrue("Returned CSV string has null length!", result.length() > 0);
+    }
 
     /**
      * Test of resultSetAsJSON method, of class Common.

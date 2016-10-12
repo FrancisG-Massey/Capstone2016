@@ -112,6 +112,36 @@ public class Common {
     }
     
     /**
+     * Return a resultset as a csv formatted string with control chars removed.
+     * @param rsh
+     * @return
+     * @throws SQLException
+     * @throws IOException 
+     */
+    public static String resultSetAsCSV(ResultSet rsh) throws SQLException, IOException {
+        StringBuilder sb = new StringBuilder();
+        ResultSetMetaData rsmd = rsh.getMetaData();
+        int numColumns = rsmd.getColumnCount();
+        String dataHeaders = "\"" + rsmd.getColumnName(1).replace("\"", "").replace(",", "") + "\"";
+        for (int i = 2; i < numColumns + 1; i++) { 
+                dataHeaders += ",\"" + rsmd.getColumnName(i).replace("\"", "").replace(",", "") + "\"";
+        }
+        sb.append(dataHeaders).append("\n");
+        System.out.println(sb.toString());
+        while (rsh.next()) {
+            String row = "\"" + rsh.getString(1).replace("\"", "").replace(",", "") + "\""; 
+            for (int i = 2; i < numColumns + 1; i++) {
+                String val = rsh.getString(i);
+                row += ",\"" + ((val==null)?"":val).replace("\"", "").replace(",", "") + "\"";
+            }
+            sb.append(row).append("\n");
+            System.out.println(row);
+        }
+        System.out.println(sb.toString());
+        return sb.toString();
+    }
+    
+    /**
      * Convert a JDBC result set into a JSON array string
      * @param rsh The JDBC query result-set object
      * @return the JSON string equivalent of the table
