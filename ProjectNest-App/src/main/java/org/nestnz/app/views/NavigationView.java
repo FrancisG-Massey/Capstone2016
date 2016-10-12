@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.nestnz.app.NestApplication;
 import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
@@ -369,7 +368,7 @@ public class NavigationView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
+        //appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
         trapProperty.addListener((obs, oldV, newV) -> {
         	if (newV != null) {
                 appBar.setTitleText("Trap "+newV.getNumber());        		

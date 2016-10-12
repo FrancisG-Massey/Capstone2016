@@ -129,7 +129,7 @@ public class AddTrapView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-		appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> LOG.log(Level.INFO, "Open menu pressed...")));
+		//appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> LOG.log(Level.INFO, "Open menu pressed...")));
 		appBar.setTitleText("Add Trap "+nextTrapNumber.intValue());
 		nextTrapNumber.addListener((obs, oldV, newV) -> {
         	if (newV != null) {
