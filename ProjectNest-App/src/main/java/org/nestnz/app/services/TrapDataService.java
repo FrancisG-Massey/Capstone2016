@@ -259,6 +259,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	        				//Then add whatever's left over
 	        				trapline.getCatchTypes().addAll(catchTypeCopy.values());
 	        			}
+	    				LOG.log(Level.INFO, "Loaded "+validLineIds.size()+" valid traplines: "+validLineIds);
 	    				
 	    				Iterator<Trapline> iterator = traplines.iterator();
 	    				while (iterator.hasNext()) {
@@ -273,7 +274,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     					loadingProperty.set(false);//Signal loading is complete
     				}
     			});
-    		} catch (IOException ex) {
+    		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting traplines. Response: "+dataSource.getResponseMessage(), ex);
 				loadingProperty.set(false);
 			}
@@ -381,7 +382,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     					appDataLoading.release();
     				}
     			});
-    		} catch (IOException ex) {
+    		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting regions. Response: "+dataSource.getResponseMessage(), ex);
     			appDataLoading.release();
 			}
@@ -423,7 +424,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     					appDataLoading.release();
     				}
     			});
-    		} catch (IOException ex) {
+    		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.WARNING, "Problem requesting catch types. Response: "+dataSource.getResponseMessage(), ex);
     			appDataLoading.release();
 			}
