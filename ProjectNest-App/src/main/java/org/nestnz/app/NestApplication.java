@@ -19,6 +19,7 @@ package org.nestnz.app;
 import java.io.File;
 import java.io.IOException;
 
+import org.nestnz.app.services.AudioServiceFactory;
 import org.nestnz.app.services.CachingService;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.MapLoadingService;
@@ -68,6 +69,7 @@ public class NestApplication extends MobileApplication {
     }
     
     private void setupServices () throws IOException {
+    	Services.registerServiceFactory(new AudioServiceFactory());
     	LoginService loginService = LoginService.getInstance();
         CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
         NetworkService networkService = new RestNetworkService(loginService);
