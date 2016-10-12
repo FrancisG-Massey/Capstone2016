@@ -47,6 +47,16 @@
         RETURNING
             traptype_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE traptype
+        SET
+            traptype_name = #string:name#,
+            traptype_model = #string:model#,
+            traptype_note = #string:note#
+        WHERE 
+            traptype_id = #bigint:id#
+        RETURNING
+            traptype_id;
+    ",
     "DELETE" : ""
 }

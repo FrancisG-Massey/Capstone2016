@@ -31,7 +31,4 @@
         ORDER BY
             s.session_id;
     ",
-    "POST" : "", 
-    "PUT" : "",
-    "DELETE" : ""
 }

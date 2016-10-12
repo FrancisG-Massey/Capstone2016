@@ -47,6 +47,16 @@
         RETURNING
             bait_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE bait
+        SET
+            bait_name = #string:name#,
+            bait_imagefilename = #string:img_filename#,
+            bait_note = #string:note#
+        WHERE
+            bait_id = #bigint:id#
+        RETURNING
+            bait_id;
+    ",
     "DELETE" : ""
 }

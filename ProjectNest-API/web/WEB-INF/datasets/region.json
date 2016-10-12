@@ -47,6 +47,14 @@
         RETURNING
             region_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE region
+        SET
+            region_name = #string:name#
+        WHERE 
+            region_id = #bigint:id#
+        RETURNING
+            region_id;
+    ",
     "DELETE" : ""
 }

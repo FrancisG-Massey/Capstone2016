@@ -50,6 +50,16 @@
         RETURNING
             traplineuser_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE traplineuser
+        SET
+            traplineuser_userid = #bigint:user_id#,
+            traplineuser_traplineid = #bigint:trapline_id#,
+            traplineuser_isadmin = #boolean:admin#
+        WHERE 
+            traplineuser_id = #bigint:id#
+        RETURNING
+            traplineuser_id;
+    ",
     "DELETE" : ""
 }

@@ -75,6 +75,21 @@
         RETURNING
             trap_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE trap
+        SET
+            trap_traplineid = #bigint:trapline_id#,
+            trap_number = #bigint:number#,
+            trap_coordx = #numeric:coord_long#,
+            trap_coordy = #numeric:coord_long#,
+            trap_traptypeid = #bigint:traptype_id#,
+            trap_status = #bigint:status#,
+            trap_lastresettimestamp = #timestamp:last_reset#,
+            trap_baitid = #bigint:bait_id#
+        WHERE 
+            trap_id = #bigint:id#
+        RETURNING
+            trap_id;
+    ",
     "DELETE" : ""
 }

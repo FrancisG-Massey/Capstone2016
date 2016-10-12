@@ -68,6 +68,20 @@
         RETURNING
             user_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE users
+        SET
+            user_name = #string:username#,
+            user_password = #string-bcrypt:password#,
+            user_contactfullname = #string:fullname#,
+            user_contactphone = #string:phone#,
+            user_contactemail = #string:email#,
+            user_isadmin = #boolean:admin#,
+            user_isinactive = #boolean:inactive#
+        WHERE 
+            user_id = #bigint:id#
+        RETURNING
+            user_id;
+    ",
     "DELETE" : ""
 }

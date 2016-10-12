@@ -91,6 +91,20 @@
         RETURNING
             trapline_id;
     ",
-    "PUT" : "",
+    "PUT" : "
+        UPDATE trapline
+        SET
+            trapline_name = #string:name#,
+            trapline_regionid = #bigint:region_id#,
+            trapline_starttag = #string:start_tag#,
+            trapline_endtag = #string:end_tag#,
+            trapline_imagefilename = #string:img_filename#,
+            trapline_defaultbaitid = #bigint:default_bait_id#,
+            trapline_defaulttraptypeid = #bigint:default_traptype_id#
+        WHERE 
+            trapline_id = #bigint:id#
+        RETURNING
+            trapline_id;
+    ",
     "DELETE" : ""
 }
