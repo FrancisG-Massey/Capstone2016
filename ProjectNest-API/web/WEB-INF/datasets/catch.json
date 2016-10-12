@@ -48,6 +48,7 @@
     "POST" : "
         INSERT INTO catch (
             catch_trapid,
+            catch_traptypeid,
             catch_userid,
             catch_catchtypeid,
             catch_baitid,
@@ -69,7 +70,5 @@
             (#bigint:trap_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL)
         RETURNING
             catch_id;
-    ",
-    "PUT" : "",
-    "DELETE" : ""
+    "
 }
