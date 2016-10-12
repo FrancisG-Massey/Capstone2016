@@ -153,6 +153,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		});
 		this.setBottom(start);
 		menu = buildMenu();
+		getApplication().addLayerFactory("trapline-info-menu", () -> menu);
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
 	
@@ -211,7 +212,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		final MenuItem addTraps = new MenuItem("Add Traps", MaterialDesignIcon.ADD.graphic());
 		
 		addTraps.setOnAction(evt -> {
-			this.menu.hide();
+			this.getApplication().hideLayer("trapline-info-menu");
 			AddTrapView addTrapView = ((NestApplication) getApplication()).lookupView(AddTrapView.NAME);
 			addTrapView.setTrapline(traplineProperty.get());
 			getApplication().switchView(AddTrapView.NAME);
@@ -223,7 +224,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-		appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> menu.show()));
+		appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> this.getApplication().showLayer("trapline-info-menu")));
 		appBar.setTitleText(traplineProperty.get().getName());
         appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
         appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.loadTrapline(traplineProperty.get())));
