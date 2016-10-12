@@ -437,6 +437,10 @@ CREATE TABLE public.trap
     trap_baitid bigint NOT NULL,
     CONSTRAINT trap_pkey PRIMARY KEY (trap_id),
 
+    -- Ensure that latitude and longitude values are within valid ranges
+    CONSTRAINT valid_latitude CHECK ((trap_coordy >= -90) AND (trap_coordy <= 90)),
+    CONSTRAINT valid_longitude CHECK ((trap_coordx >= -180) AND (trap_coordx <= 180)),
+
     -- Ensure that two traps cannot exist in the same location.
     CONSTRAINT trap_coords_unique UNIQUE (trap_coordx, trap_coordy),
 
