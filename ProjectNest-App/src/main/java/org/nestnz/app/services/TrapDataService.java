@@ -217,9 +217,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				}
     			Platform.runLater(() -> {
     				try {
+        				Set<Integer> validLineIds = new HashSet<>();
 	    				for (JsonValue value : array) {
 	        				JsonObject traplineJson = (JsonObject) value;
 	        				int id = traplineJson.getInt("id");
+	        				validLineIds.add(id);
 	        				Trapline trapline = getTrapline(id);
 	        				if (trapline == null) {
 	        					trapline = new Trapline(id);
@@ -257,6 +259,14 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	        				//Then add whatever's left over
 	        				trapline.getCatchTypes().addAll(catchTypeCopy.values());
 	        			}
+	    				
+	    				Iterator<Trapline> iterator = traplines.iterator();
+	    				while (iterator.hasNext()) {
+	    					Trapline line = iterator.next();
+	    					if (!validLineIds.contains(line.getId())) {
+	    						iterator.remove();
+	    					}
+	    				}
     				} catch (RuntimeException ex) {
     					LOG.log(Level.SEVERE, "Problem parsing traplines from API.", ex);
     				} finally {
