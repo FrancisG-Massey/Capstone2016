@@ -246,13 +246,12 @@ public class RequestServlet extends HttpServlet {
         final String cleanSQL_main = (dirtySQL_main != null) ? dirtySQL_main.replaceAll(Common.DATASETPARAM_REGEX, "?") : null;
         final String cleanSQL_after = (dirtySQL_after != null) ? dirtySQL_after.replaceAll(Common.DATASETPARAM_REGEX, "?") : null;
 
-        // Get the DB response and convert it to JSON
-        String responseBody = null;
+        // Execute the pre-request
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
         ) {
             
-            // Execute the pre-request dataset entry for session handling if one exists
+            // Execute the pre-request dataset entry for session handling if one exists.
             if (cleanSQL_before != null) {
                 try (
                     PreparedStatement st = conn.prepareStatement(cleanSQL_before, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -276,7 +275,9 @@ public class RequestServlet extends HttpServlet {
                 }
             }
             
-            // Execute the main request
+            // Execute the main request dataset entry if one exists.
+            String responseBody = null;
+            boolean formatCSV = false;
             if (cleanSQL_main != null) {
                 try (
                     PreparedStatement st = conn.prepareStatement(cleanSQL_main, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -287,7 +288,9 @@ public class RequestServlet extends HttpServlet {
                     try (ResultSet rsh = st.executeQuery();) {
                         switch (httpMethod) {
                             case "GET":
-                                boolean formatCSV = Pattern.compile("text/csv").matcher(request.getHeader("Accept")).find();
+                                if (request.getHeader("Accept") != null) {
+                                    formatCSV = Pattern.compile("text/csv").matcher(request.getHeader("Accept")).find();
+                                }
                                 if (rsh.isBeforeFirst()) {
                                     response.setStatus(HttpServletResponse.SC_OK);
                                     if (formatCSV) {
