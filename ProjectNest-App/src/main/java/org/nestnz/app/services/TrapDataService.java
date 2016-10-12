@@ -226,8 +226,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	        					addTrapline(trapline);
 	        				}
 	        				trapline.setName(traplineJson.getString("name"));
-	        				trapline.setStart(traplineJson.getString("start_tag"));
-	        				trapline.setEnd(traplineJson.getString("end_tag"));
+	        				trapline.setStart(traplineJson.getString("start_tag", null));
+	        				trapline.setEnd(traplineJson.getString("end_tag", null));
 	        				int regionId = traplineJson.getInt("region_id");
 	        				Region region = regions.get(regionId);
 	        				if (region == null) {
