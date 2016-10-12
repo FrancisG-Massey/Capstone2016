@@ -112,7 +112,12 @@ public class RequestServlet extends HttpServlet {
                 new Object[]{httpMethod, requestEntity});
         
         if (httpMethod.equals("POST") && !requestEntityID.equals("")) {
-            LOG.log(Level.INFO, "Bad request syntax: Entity id supplied to POST request: {0}", requestEntityID);        
+            LOG.log(Level.INFO, "Bad request syntax: Entity id supplied in POST request URL: {0}", requestEntityID);        
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        if (httpMethod.equals("PUT") && requestEntityID.equals("")) {
+            LOG.log(Level.INFO, "Bad request syntax: No entity id supplied in PUT request URL");        
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
