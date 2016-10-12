@@ -823,7 +823,7 @@ $BODY$
     LANGUAGE plpgsql VOLATILE
     COST 100;
 ALTER FUNCTION public.clean_sessions()
-    OWNER TO postgres;
+    OWNER TO nestnz;
 
 
 -- Clean all old sessions, then extend the specified session if it exists.
@@ -852,4 +852,4 @@ $BODY$
     LANGUAGE plpgsql VOLATILE
     COST 100;
 ALTER FUNCTION public.extend_session(token text, length interval)
-    OWNER TO postgres;
+    OWNER TO nestnz;
