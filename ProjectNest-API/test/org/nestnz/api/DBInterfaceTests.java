@@ -526,7 +526,7 @@ public class DBInterfaceTests {
         try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
             // Prepare the parameter map
             Map<String, String> datasetParams = new HashMap<>();
-            datasetParams.put("some-date", "28-09-2016");
+            datasetParams.put("some-date", "2016-09-28");
             datasetParams.put("some-null", null);
 
             // Prepare the parameter order store
