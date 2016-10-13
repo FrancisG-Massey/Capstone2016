@@ -49,7 +49,6 @@ angular.module('Admin')
 		console.log(traps)
 		$scope.baits = baits;
 		$scope.trap_type = trap_type;
-		$scope.status= -1;
 		// get all catch types
 		$scope.catch_types = catch_types;
 		// pagination
@@ -89,7 +88,7 @@ angular.module('Admin')
     	        var marker, popupText;
     		    for (var i = 0; i < traps.length; i++) {
     		    	trap = traps[i];
-    		    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
+    		    	popupText = "<strong>Trap: " + trap.number + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
     		    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
     			}
     		}
@@ -97,14 +96,13 @@ angular.module('Admin')
     	}
     	
     	$scope.setSelected = function(item){
-    	$scope.selected = this.trap;
-		$scope.selected.popup.openPopup();
-    	mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
-    	$scope.latitude = $scope.selected.coord_lat;
-    	$scope.longtitude = $scope.selected.coord_long;
-    	$scope.baitId= $scope.selected.bait_id;
-    	$scope.typeId= $scope.selected.traptype_id;
-    	$scope.status = $scope.selected.status;
+	    	$scope.selected = this.trap;
+			$scope.selected.popup.openPopup();
+	    	mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
+	    	
+	    	$scope.latitude = $scope.selected.coord_lat;
+	    	$scope.longtitude = $scope.selected.coord_long;
+	    	$scope.status = $scope.selected.status;
 
     	// get catch by passing trap id
     	$http.get('https://www.nestnz.org/api/catch?trap-id='+$scope.selected.id)
@@ -124,8 +122,6 @@ angular.module('Admin')
         	    }
         	};
         });
-    	console.log($scope.baitId);
-    	console.log($scope.typeId);
 
     };
     
@@ -171,9 +167,31 @@ angular.module('Admin')
         $scope.currentPage = this.n;
     };
     
-    $scope.$back = function() { 
-        window.history.back();
-      };
+
+    $scope.Edit = function () {
+    	console.log($scope.trapline_id+" lineID");
+    	console.log($scope.trapNumber+" trapNumber");
+    	console.log($scope.longtitude+" Long");
+    	console.log($scope.latitude+" Lat");
+    	console.log($scope.typeId+" trapTypeID");
+    	console.log($scope.status+" current Status");
+    	console.log($scope.baitId+" Bait type id");
+        // as json object
+    	var data = {
+            "trapline_id":  parseInt($scope.trapline_id),
+            "number": $scope.trapNumber,
+            "coord_long": $scope.longtitude,
+            "coord_lat": $scope.latitude,
+            "traptype_id": $scope.typeId,
+            "status": $scope.status,
+            "bait_id": $scope.baitId
+        };  
+            
+        /*$http.post('https://www.nestnz.org/api/trap',data)
+        .then(function(data,status,header,config) {
+            $route.reload();
+        });*/         
+     };
     
 
     }])
@@ -294,6 +312,41 @@ angular.module('Admin')
         });         
      };
 }])
+.controller('AdminEditTrapController',['$scope','$rootScope','baits','trap_type','$route','$http','trap',function ($scope, $rootScope,baits,trap_type,$route,$http,trap) {
+    //var traplineId = $routeParams.traplineId;
+    $rootScope.hideHeader = true;
+    $scope.trap = trap[0];
+    //$scope.trap.id = $route.current.params.trap_id;
+    $scope.trapline_id = $scope.trap.trapline_id;
+    $scope.baits = baits;
+    $scope.trap_type = trap_type;
+    console.log(trap);
+
+    $scope.Edit = function () {
+    	console.log($scope.trap.id +" id");
+    	console.log($scope.trap.coord_lat+" lati");
+    	console.log($scope.trap.coord_long+" long");
+    	console.log($scope.trap.status + " status");
+    	console.log($scope.trap.bait_id+ " bait id");
+    	console.log($scope.trap.traptype_id + " traptype id");
+    	console.log($scope.trap);
+        // as json object
+    	/*var data = {
+            "trapline_id":  parseInt($scope.trapline_id),
+            "number": $scope.trapNumber,
+            "coord_long": $scope.longtitude,
+            "coord_lat": $scope.latitude,
+            "traptype_id": $scope.typeId,
+            "status": $scope.status,
+            "bait_id": $scope.baitId
+        };*/  
+            
+        /*$http.post('https://www.nestnz.org/api/trap',data)
+        .then(function(data,status,header,config) {
+            $route.reload();
+        });*/         
+     };
+}])
 .controller('AdminNewTraplineController',['$scope', '$rootScope','$http','region','baits','trap_type','$route',function ($scope,$rootScope,$http,region,baits,trap_type,$route) {
 	$rootScope.hideHeader = true;
     $scope.regions = region.data;
@@ -325,4 +378,15 @@ angular.module('Admin')
         });         
      };
 			
+}])
+.controller('AdminNewVolunteerController', ['$scope','$rootScope','trapline_users','users','$route',function ($scope, $rootScope,trapline_users,users,$route) {
+	//var traplineId = $routeParams.traplineId;
+	$rootScope.hideHeader = true;
+	$scope.trapline_id = $route.current.params.traplineId;
+    $scope.trapline_users = trapline_users;
+    console.log($scope.trapline_users);
+    $scope.users = users.data;
+    console.log($scope.users);
+   
+
 }]);
