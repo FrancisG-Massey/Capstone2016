@@ -17,8 +17,6 @@
 package org.nestnz.app.views;
 
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
@@ -39,8 +37,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Button;
 
 public class AddTrapView extends View {
-
-    private static final Logger LOG = Logger.getLogger(AddTrapView.class.getName());
     
 	public static final String NAME = "add_trap";
 	
@@ -99,14 +95,7 @@ public class AddTrapView extends View {
 	
 	private void initPositionMonitor () {
 		Service.POSITION.getInstance().ifPresent(gpsService -> 
-			currentPosition.bind(gpsService.positionProperty()));
-		currentPosition.addListener((obs, oldPos, newPos) -> {
-			if (newPos != null) {
-				LOG.log(Level.INFO, String.format("Found coords: %1$.6f, %2$.6f", newPos.getLatitude(), newPos.getLongitude()));
-				trapPositionLayer.setCurrentPosition(newPos);
-				//map.setCenter(newPos.getLatitude(), newPos.getLongitude());
-        	}
-		});
+			trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty()));
 	}
 	
 	public void setTrapline (Trapline trapline) {
