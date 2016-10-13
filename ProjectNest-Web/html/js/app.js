@@ -155,6 +155,33 @@ var myApp = angular
                 }
             }
         })
+         .when('/trap-admin/:trap_id/edit-trap', {
+            controller: 'AdminEditTrapController',
+            templateUrl: 'modules/admin/views/edit_trap.html',
+            resolve: {
+                baits:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/bait')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+                trap_type:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/trap-type')
+                    .then(function(response){
+                        return response.data;
+                })
+                },                
+            	trap: function($http, $route){
+                    return $http
+                        .get('https://www.nestnz.org/api/trap/'+$route.current.params.trap_id)
+                        .then(function(response){
+                            return response.data;
+                    })
+                }
+            }
+        })
         .when('/volunteer-admin/:traplineId', {
             controller: 'AdminVolunteerController',
             templateUrl: 'modules/admin/views/volunteer-admin.html',
@@ -170,6 +197,10 @@ var myApp = angular
                     return $http.get('https://www.nestnz.org/api/user');}]
             }
         })
+        .when('/volunteer-admin/:traplineId/add-volunteer', {
+            controller: 'AdminNewVolunteerController',
+            templateUrl: 'modules/admin/views/new_volunteer.html'
+        })        
         .otherwise({
             templateUrl : 'templates/404.html'
         });
