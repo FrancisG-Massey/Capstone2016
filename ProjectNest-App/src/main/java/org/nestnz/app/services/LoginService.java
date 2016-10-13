@@ -26,10 +26,10 @@ import java.util.logging.Logger;
 
 import org.nestnz.app.util.BackgroundTasks;
 
-import com.gluonhq.charm.down.common.Service;
-import com.gluonhq.charm.down.common.services.SettingService;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.SettingsService;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -63,10 +63,10 @@ public class LoginService {
     
     private final ReadOnlyStringWrapper sessionTokenProperty = new ReadOnlyStringWrapper();
     
-    private final Optional<SettingService> settingService;
+    private final Optional<SettingsService> settingService;
     
     private LoginService () {
-    	settingService = Service.SETTINGS.getInstance();
+    	settingService = Services.get(SettingsService.class);
     }
     
     /**

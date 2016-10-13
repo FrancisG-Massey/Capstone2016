@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.gluonhq.charm.down.common.services.position.Position;
+import com.gluonhq.charm.down.plugins.Position;
 import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapPoint;
 
