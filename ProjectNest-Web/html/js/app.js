@@ -88,6 +88,30 @@ var myApp = angular
                     }
         }
         })
+         .when('/trapline-admin/:regionId/:traplineId/edit-trapline',{
+            controller: 'AdminEditTraplineController',
+            templateUrl: 'modules/admin/views/edit_trapline.html',
+            resolve: {
+                region: ['$http', function($http) {
+                    return $http.get('https://www.nestnz.org/api/region');}],
+            	baits:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/bait')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+            trap_type:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/trap-type')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+            	 trapline:['$http','$route', function($http,$route) {
+                     return $http.get('https://www.nestnz.org/api/trapline/'+$route.current.params.traplineId+'&'+$route.current.params.regionId);}]
+        }
+        })
         .when('/trap-admin/:traplineId', {
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html',
