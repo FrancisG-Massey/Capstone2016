@@ -194,7 +194,7 @@ public class Common {
         String nextParamValue = null;
 
         SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-        SimpleDateFormat NZSIMPLEDATEFORMAT = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat NZSIMPLEDATEFORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
         try {
             for (int i=1; i<=datasetParamOrder.size(); i++) {
