@@ -1,0 +1,53 @@
+<ul class="breadcrumb">
+  <li><a href="/#/trapline-admin" >Admin</a></li>
+  <li class="active">Edit trapline {{trapline_Id}}</li>  
+</ul>
+
+<div>
+  <h1>Add New Trapline</h1>
+  <div class="row">
+    <div class="col-sm-5">
+      <form ng-submit="Edit()">
+      <div class="col-lg-10 col-lg-offset-1">
+		<div class="well">
+		<!--<div class="well the-fieldset">
+		<legend class="the-legend text-center">Add New Trap</legend> -->
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" class="form-control"  ng-model="trapline.name" >
+        </div>
+        <div class="form-group">
+          <label>Region</label>
+          <select class="form-control" ng-model="trapline.region_id" >
+            <option ng-value="{{region.id}}" data-ng-selected="region.id === trapline.region_id" data-ng-repeat="region in regions">{{region.name}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Start</label>
+          <input type="text" class="form-control"  ng-model ="trapline.start_tag">
+        </div>
+        <div class="form-group">
+          <label>End</label>
+          <input type="text" class="form-control"  ng-model= "trapline.end_tag">
+        </div>
+        <div class="form-group">
+          <label>Default Bait type</label>
+          <select class="form-control" ng-model="trapline.default_bait_id">
+            <option ng-value="{{bait.id}}" data-ng-selected="bait.id == trapline.default_bait_id"  data-ng-repeat="bait in baits">{{bait.name}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Trap type</label>
+          <select class="form-control" ng-model="trapline.default_traptype_id">
+            <option ng-value="{{type.id}}" data-ng-selected="type.id==trapline.default_traptype_id" data-ng-repeat="type in trap_types">{{type.name}}</option>
+            </select>
+        </div>
+        <div class="clearfix form-group">
+          <button class="btn btn-success pull-right" type="submit">Save</button>
+        </div>
+        </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
