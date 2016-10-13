@@ -145,11 +145,7 @@ public class RequestServlet extends HttpServlet {
 
         // Check for a "Session-Token" header with regex validation
         final String sessionToken = request.getHeader("Session-Token");
-        if (sessionToken == null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            LOG.log(Level.WARNING, "No session token supplied!\nReturning 403...\n{0}", response.toString());
-            return;
-        } else if (!sessionToken.matches(Common.UUID_REGEX)) {
+        if ((sessionToken != null) && !sessionToken.matches(Common.UUID_REGEX)) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             LOG.log(Level.WARNING, "Session token is not a valid token format!\nReturning 400...\n{0}", response.toString());
             return;
