@@ -28,8 +28,8 @@ import org.nestnz.app.util.BackgroundTasks;
 
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
-import com.gluonhq.down.Services;
-import com.gluonhq.down.plugins.SettingsService;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.SettingsService;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;

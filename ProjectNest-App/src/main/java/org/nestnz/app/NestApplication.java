@@ -37,8 +37,8 @@ import org.nestnz.app.views.TraplineListView;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.Swatch;
-import com.gluonhq.down.Services;
-import com.gluonhq.down.plugins.StorageService;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.StorageService;
 
 import javafx.scene.Scene;
 

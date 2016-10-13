@@ -28,9 +28,9 @@ import org.nestnz.app.views.map.TrapPositionLayer;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.down.Services;
-import com.gluonhq.down.plugins.Position;
-import com.gluonhq.down.plugins.PositionService;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.Position;
+import com.gluonhq.charm.down.plugins.PositionService;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.property.IntegerProperty;

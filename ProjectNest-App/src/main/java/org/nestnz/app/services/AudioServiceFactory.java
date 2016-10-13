@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.services;
 
-import com.gluonhq.down.DefaultServiceFactory;
+import com.gluonhq.charm.down.DefaultServiceFactory;
 
 public class AudioServiceFactory extends DefaultServiceFactory<AudioService> {
 
