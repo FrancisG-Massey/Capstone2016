@@ -46,7 +46,6 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
 	/**
 	 * Represents the number of hours between automatically fetching the trapline list from the server.
 	 * This only occurs if the view is closed & re-opened after at least the frequency has passed since the last refresh.
-	 * This 
 	 */
 	public static final int REFRESH_FREQUENCY = 1;
 	
@@ -135,7 +134,7 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> this.menu.show()));
+        //appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> this.menu.show()));
         appBar.setTitleText("Nest NZ");
         appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.refreshTraplines()));
     }

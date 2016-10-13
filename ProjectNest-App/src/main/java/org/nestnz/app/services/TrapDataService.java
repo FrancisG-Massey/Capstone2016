@@ -208,7 +208,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	BackgroundTasks.runInBackground(() -> {
     		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
     			JsonArray array = reader.readArray();
-    			LOG.log(Level.INFO, "Response: "+array.toString());
+    			LOG.log(Level.FINE, "Response: "+array.toString());
     			try {
 					//Wait for regions & catch types to load
     				appDataLoading.acquire(2);
@@ -216,47 +216,63 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 					//Silently ignore the interrupt
 				}
     			Platform.runLater(() -> {
-    				for (JsonValue value : array) {
-        				JsonObject traplineJson = (JsonObject) value;
-        				int id = traplineJson.getInt("id");
-        				Trapline trapline = getTrapline(id);
-        				if (trapline == null) {
-        					trapline = new Trapline(id);
-        					addTrapline(trapline);
-        				}
-        				trapline.setName(traplineJson.getString("name"));
-        				trapline.setStart(traplineJson.getString("start_tag"));
-        				trapline.setEnd(traplineJson.getString("end_tag"));
-        				int regionId = traplineJson.getInt("region_id");
-        				Region region = regions.get(regionId);
-        				if (region == null) {
-        					region = new Region(regionId);
-        					regions.put(regionId, region);
-        				}
-        				trapline.setRegion(region);        				
-        				trapline.getCatchTypes().clear();
-        				
-        				Map<Integer, CatchType> catchTypeCopy = new HashMap<>(catchTypes.getData());
-        				
-        				//Add the most common catch types first
-        				CatchType ct;
-        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_1"));
-        				if (ct != null) {
-        					trapline.getCatchTypes().add(ct);
-        				}
-        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_2"));
-        				if (ct != null) {
-        					trapline.getCatchTypes().add(ct);
-        				}
-        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_3"));
-        				if (ct != null) {
-        					trapline.getCatchTypes().add(ct);
-        				}
-        				
-        				//Then add whatever's left over
-        				trapline.getCatchTypes().addAll(catchTypeCopy.values());
-        			}
-    				loadingProperty.set(false);
+    				try {
+        				Set<Integer> validLineIds = new HashSet<>();
+	    				for (JsonValue value : array) {
+	        				JsonObject traplineJson = (JsonObject) value;
+	        				int id = traplineJson.getInt("id");
+	        				validLineIds.add(id);
+	        				Trapline trapline = getTrapline(id);
+	        				if (trapline == null) {
+	        					trapline = new Trapline(id);
+	        					addTrapline(trapline);
+	        				}
+	        				trapline.setName(traplineJson.getString("name"));
+	        				trapline.setStart(traplineJson.getString("start_tag", null));
+	        				trapline.setEnd(traplineJson.getString("end_tag", null));
+	        				int regionId = traplineJson.getInt("region_id");
+	        				Region region = regions.get(regionId);
+	        				if (region == null) {
+	        					region = new Region(regionId);
+	        					regions.put(regionId, region);
+	        				}
+	        				trapline.setRegion(region);        				
+	        				trapline.getCatchTypes().clear();
+	        				
+	        				Map<Integer, CatchType> catchTypeCopy = new HashMap<>(catchTypes.getData());
+	        				
+	        				//Add the most common catch types first
+	        				CatchType ct;
+	        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_1"));
+	        				if (ct != null) {
+	        					trapline.getCatchTypes().add(ct);
+	        				}
+	        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_2"));
+	        				if (ct != null) {
+	        					trapline.getCatchTypes().add(ct);
+	        				}
+	        				ct = catchTypeCopy.remove(traplineJson.getInt("common_ct_id_3"));
+	        				if (ct != null) {
+	        					trapline.getCatchTypes().add(ct);
+	        				}
+	        				
+	        				//Then add whatever's left over
+	        				trapline.getCatchTypes().addAll(catchTypeCopy.values());
+	        			}
+	    				LOG.log(Level.INFO, "Loaded "+validLineIds.size()+" valid traplines: "+validLineIds);
+	    				
+	    				Iterator<Trapline> iterator = traplines.iterator();
+	    				while (iterator.hasNext()) {
+	    					Trapline line = iterator.next();
+	    					if (!validLineIds.contains(line.getId())) {
+	    						iterator.remove();
+	    					}
+	    				}
+    				} catch (RuntimeException ex) {
+    					LOG.log(Level.SEVERE, "Problem parsing traplines from API.", ex);
+    				} finally {
+    					loadingProperty.set(false);//Signal loading is complete
+    				}
     			});
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting traplines. Response: "+dataSource.getResponseMessage(), ex);
@@ -287,35 +303,51 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     			} else {
         			JsonArray array = reader.readArray();
 	    			Platform.runLater(() -> {
-	        			LOG.log(Level.INFO, "Response: "+array.toString());
-	    				for (JsonValue value : array) {
-	        				JsonObject trapJson = (JsonObject) value;
-	        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
-	        					continue;//If the trap doesn't belong to the specified trapline, ignore it
-	        				}
-	        				int id = trapJson.getInt("id");
-	        				int number = trapJson.getInt("number");
-	        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
-	        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
-	        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
-	        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
-	        				Trap trap = trapline.getTrap(id);
-	        				if (trap == null) {
-	        					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
-	        					trapline.getTraps().add(trap);
-	        				} else {
-	        					trap.setNumber(number);
-	        					trap.setLatitude(latitude);
-	        					trap.setLongitude(longitude);
-	        					trap.setLastReset(lastReset);
-	        				}
+	        			LOG.log(Level.FINE, "Response: "+array.toString());
+	        			try {
+	        				Set<Integer> validTrapIds = new HashSet<>();
+	        				validTrapIds.add(0);//0 = trap not yet created on server
+		    				for (JsonValue value : array) {
+		        				JsonObject trapJson = (JsonObject) value;
+		        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
+		        					continue;//If the trap doesn't belong to the specified trapline, ignore it
+		        				}
+		        				int id = trapJson.getInt("id");
+		        				validTrapIds.add(id);
+		        				int number = trapJson.getInt("number");
+		        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
+		        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
+		        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
+		        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
+		        				Trap trap = trapline.getTrap(id);
+		        				if (trap == null) {
+		        					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
+		        					trapline.getTraps().add(trap);
+		        				} else {
+		        					trap.setNumber(number);
+		        					trap.setLatitude(latitude);
+		        					trap.setLongitude(longitude);
+		        					trap.setLastReset(lastReset);
+		        				}
+		        			}
+		    				
+		    				Iterator<Trap> iterator = trapline.getTraps().iterator();
+		    				while (iterator.hasNext()) {
+		    					Trap trap = iterator.next();
+		    					if (!validTrapIds.contains(trap.getId())) {
+		    						iterator.remove();
+		    					}
+		    				}
+		    				trapline.setLastUpdated(LocalDateTime.now());
+	        			} catch (RuntimeException ex) {
+	        				LOG.log(Level.WARNING, "Problem parsing traps for trapline "+trapline, ex);
+	        			} finally {
+	        				loadingProperty.set(false);//Signal loading is complete
 	        			}
-	    				trapline.setLastUpdated(LocalDateTime.now());
-	    				loadingProperty.set(false);
 	    			});
 	    		}
-    		} catch (IOException | RuntimeException ex) {
-    			LOG.log(Level.SEVERE, "Problem requesting traps for trapline "+trapline+". Response: "+dataSource.getResponseMessage(), ex);
+    		} catch (IOException ex) {
+    			LOG.log(Level.WARNING, "Problem requesting traps for trapline "+trapline+". Response: "+dataSource.getResponseMessage(), ex);
 				loadingProperty.set(false);
 			}
     	});
@@ -332,22 +364,27 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     			JsonArray array = reader.readArray();
     			LOG.log(Level.INFO, "Response: "+array.toString());
     			Platform.runLater(() -> {
-    				for (JsonValue value : array) {
-        				JsonObject regionJson = (JsonObject) value;
-        				int id = regionJson.getInt("id");
-        				Region region = regions.get(id);
-        				if (region == null) {
-        					region = new Region(id);
-        					regions.put(id, region);
-        				}
-        				region.setName(regionJson.getString("name"));
-        			}
+    				try {
+	    				for (JsonValue value : array) {
+	        				JsonObject regionJson = (JsonObject) value;
+	        				int id = regionJson.getInt("id");
+	        				Region region = regions.get(id);
+	        				if (region == null) {
+	        					region = new Region(id);
+	        					regions.put(id, region);
+	        				}
+	        				region.setName(regionJson.getString("name"));
+	        			}
+    				} catch (RuntimeException ex) {
+    					LOG.log(Level.SEVERE, "Problem parsing regions.", ex);
+    				} finally {
+    					//Signal region data has been fetched
+    					appDataLoading.release();
+    				}
     			});
     		} catch (IOException | RuntimeException ex) {
     			LOG.log(Level.SEVERE, "Problem requesting regions. Response: "+dataSource.getResponseMessage(), ex);
-			} finally {
-				//Signal region data has been fetched
-				appDataLoading.release();
+    			appDataLoading.release();
 			}
     	});
     }
@@ -367,24 +404,29 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     			JsonArray array = reader.readArray();
     			LOG.log(Level.INFO, "Response: "+array.toString());
     			Platform.runLater(() -> {
-    				for (JsonValue value : array) {
-        				JsonObject regionJson = (JsonObject) value;
-        				int id = regionJson.getInt("id");
-        				CatchType catchType = catchTypes.getData().get(id);
-        				if (catchType == null) {
-        					catchType = new CatchType(id);
-        					catchTypes.getData().put(id, catchType);
-        				}
-        				catchType.setName(regionJson.getString("name"));
-        			}
-    				catchTypes.setLastServerFetch(LocalDateTime.now());
-    				cachingService.storeCatchTypes(catchTypes);
+    				try {
+	    				for (JsonValue value : array) {
+	        				JsonObject regionJson = (JsonObject) value;
+	        				int id = regionJson.getInt("id");
+	        				CatchType catchType = catchTypes.getData().get(id);
+	        				if (catchType == null) {
+	        					catchType = new CatchType(id);
+	        					catchTypes.getData().put(id, catchType);
+	        				}
+	        				catchType.setName(regionJson.getString("name"));
+	        			}
+	    				catchTypes.setLastServerFetch(LocalDateTime.now());
+	    				cachingService.storeCatchTypes(catchTypes);
+    				} catch (RuntimeException ex) {
+    					LOG.log(Level.WARNING, "Problem parsing catch types.", ex);
+    				} finally {
+    					//Signal catch type data has been fetched
+    					appDataLoading.release();
+    				}
     			});
     		} catch (IOException | RuntimeException ex) {
-    			LOG.log(Level.SEVERE, "Problem requesting catch types. Response: "+dataSource.getResponseMessage(), ex);
-			} finally {
-				//Signal catch type data has been fetched
-				appDataLoading.release();
+    			LOG.log(Level.WARNING, "Problem requesting catch types. Response: "+dataSource.getResponseMessage(), ex);
+    			appDataLoading.release();
 			}
     	});
     }
@@ -398,6 +440,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	}
 
 	private final Set<Trapline> updatedTraplines = new HashSet<>();
+	private final Set<Trapline> removedTraplines = new HashSet<>();
     
     private void watchForChanges () {
     	traplines.addListener(this);//Listen for changes to the traplines
@@ -412,6 +455,16 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	    			cachingService.storeTrapline(t);
 	    		}
 	    		LOG.log(Level.INFO, "Saved "+updatesCopy.size()+" traplines to file cache.");
+    		}
+    		if (!removedTraplines.isEmpty()) {
+	    		Set<Trapline> removedCopy = new HashSet<>(removedTraplines);
+	    		removedTraplines.clear();
+	    		
+	    		for (Trapline t : removedCopy) {
+	    			cachingService.removeTrapline(t);
+	    		}
+
+	    		LOG.log(Level.INFO, "Removed "+removedCopy.size()+" old traplines from the file cache.");
     		}
     	}, 5, TimeUnit.SECONDS);
     }
@@ -439,6 +492,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 					if (apiUpdateMonitors.containsKey(t)) {
 						t.getTraps().removeListener(apiUpdateMonitors.remove(t));
 					}
+					removedTraplines.add(t);
+					updatedTraplines.remove(t);
 				}
 			}
 		}

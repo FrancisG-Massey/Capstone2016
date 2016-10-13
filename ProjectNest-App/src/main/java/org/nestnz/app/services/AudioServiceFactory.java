@@ -14,10 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.android;
+package org.nestnz.app.services;
 
-import org.nestnz.app.services.NestNativePlatform;
+import com.gluonhq.charm.down.DefaultServiceFactory;
 
-public class AndroidNativePlatform extends NestNativePlatform {
-	
+public class AudioServiceFactory extends DefaultServiceFactory<AudioService> {
+
+	public AudioServiceFactory() {
+		super(AudioService.class);
+	}
+
 }

@@ -16,6 +16,16 @@
  *******************************************************************************/
 package org.nestnz.app.services;
 
-public abstract class NestNativePlatform {
+/**
+ * 
+ */
+public interface AudioService {
+
+	public void play (String audioName, double volume);
 	
+	public void stop ();
+	
+	public void pause ();
+	
+	public void resume ();
 }

@@ -19,6 +19,7 @@ package org.nestnz.app;
 import java.io.File;
 import java.io.IOException;
 
+import org.nestnz.app.services.AudioServiceFactory;
 import org.nestnz.app.services.CachingService;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.MapLoadingService;
@@ -33,13 +34,11 @@ import org.nestnz.app.views.NavigationView;
 import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
 
-import com.gluonhq.charm.down.common.PlatformFactory;
-import com.gluonhq.charm.glisten.application.GlassPane;
 import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.charm.glisten.control.ProgressIndicator;
-import com.gluonhq.charm.glisten.layout.Layer;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.Swatch;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.StorageService;
 
 import javafx.scene.Scene;
 
@@ -55,8 +54,10 @@ public class NestApplication extends MobileApplication {
 
     @Override
     public void init() throws IOException {
-        appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
-        setupServices();
+    	appStoragePath = Services.get(StorageService.class).orElseThrow(() -> new RuntimeException("Local storage not supported on this device!"))
+    		.getPrivateStorage().orElseThrow(() -> new RuntimeException("No local storage found on this device!"));
+    	
+    	setupServices();
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));
@@ -64,43 +65,11 @@ public class NestApplication extends MobileApplication {
         addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService, mapLoadingService));
         addViewFactory(AddTrapView.NAME, () -> new AddTrapView());
         
-    	addLayerFactory("loading", () -> new Layer() {
-    		private final ProgressIndicator spinner = new ProgressIndicator();
-    		private final int radius = 30;
-    		
-		    { 
-		    	spinner.setRadius(radius);
-		    	getChildren().add(spinner);
-		    	getGlassPane().getLayers().add(this);
-		    }
-
-            @Override
-            public void show() {
-                getGlassPane().setBackgroundFade(GlassPane.DEFAULT_BACKGROUND_FADE_LEVEL);
-                super.show();
-            }
-
-            @Override
-            public void hide() {
-                getGlassPane().setBackgroundFade(0.0);
-                super.hide();
-            }
-		    
-		    @Override 
-		    public void layoutChildren() {
-		    	spinner.setVisible(isShowing());
-                if (!isShowing()) {
-                    return;
-                }
-		        spinner.resizeRelocate(
-		        		(getGlassPane().getWidth() - radius*2)/2, 
-		        		(getGlassPane().getHeight()- radius*2)/2, 
-		        		radius*2, radius*2);
-		    }
-		});
+    	addLayerFactory("loading", () -> new LoadingLayer());
     }
     
     private void setupServices () throws IOException {
+    	Services.registerServiceFactory(new AudioServiceFactory());
     	LoginService loginService = LoginService.getInstance();
         CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
         NetworkService networkService = new RestNetworkService(loginService);

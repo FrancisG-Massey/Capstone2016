@@ -17,20 +17,18 @@
 package org.nestnz.app.views;
 
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
-import com.gluonhq.charm.down.common.PlatformFactory;
-import com.gluonhq.charm.down.common.Position;
 import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.layout.layer.FloatingActionButton;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.Position;
+import com.gluonhq.charm.down.plugins.PositionService;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.property.IntegerProperty;
@@ -40,8 +38,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Button;
 
 public class AddTrapView extends View {
-
-    private static final Logger LOG = Logger.getLogger(AddTrapView.class.getName());
     
 	public static final String NAME = "add_trap";
 	
@@ -69,9 +65,6 @@ public class AddTrapView extends View {
 		map.setZoom(MapLoadingService.ZOOM);		
 		
 		map.addLayer(trapPositionLayer);
-
-		getLayers().add(new FloatingActionButton(MaterialDesignIcon.INFO.text, 
-				e -> System.out.println("Info")));
 		
 		initPositionMonitor();
 		setCenter(map);
@@ -102,14 +95,8 @@ public class AddTrapView extends View {
 	}
 	
 	private void initPositionMonitor () {
-		currentPosition.bind(PlatformFactory.getPlatform().getPositionService().positionProperty());
-		currentPosition.addListener((obs, oldPos, newPos) -> {
-			if (newPos != null) {
-				LOG.log(Level.INFO, String.format("Found coords: %1$.6f, %2$.6f", newPos.getLatitude(), newPos.getLongitude()));
-				trapPositionLayer.setCurrentPosition(newPos);
-				//map.setCenter(newPos.getLatitude(), newPos.getLongitude());
-        	}
-		});
+		Services.get(PositionService.class).ifPresent(gpsService -> 
+			trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty()));
 	}
 	
 	public void setTrapline (Trapline trapline) {
@@ -132,7 +119,7 @@ public class AddTrapView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-		appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> LOG.log(Level.INFO, "Open menu pressed...")));
+		//appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> LOG.log(Level.INFO, "Open menu pressed...")));
 		appBar.setTitleText("Add Trap "+nextTrapNumber.intValue());
 		nextTrapNumber.addListener((obs, oldV, newV) -> {
         	if (newV != null) {
