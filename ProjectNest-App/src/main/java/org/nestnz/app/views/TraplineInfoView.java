@@ -41,10 +41,8 @@ import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Side;
@@ -67,7 +65,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	
 	public static final String NAME = "trapline_info";
 	
-	private final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
+	private Trapline trapline;
 	
 	private Button start = new Button("Start");
 	
@@ -100,10 +98,10 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		
         this.setOnShown(evt -> {
     		dataService.loadingProperty().addListener(this);
-    		if (traplineProperty.get() != null) {
-    			Optional<LocalDateTime> lastUpdated = traplineProperty.get().getLastUpdated();
+    		if (trapline != null) {
+    			Optional<LocalDateTime> lastUpdated = trapline.getLastUpdated();
     			if (!lastUpdated.isPresent() || lastUpdated.get().plusHours(REFRESH_FREQUENCY).isBefore(LocalDateTime.now())) {
-    				dataService.loadTrapline(traplineProperty.get());
+    				dataService.loadTrapline(trapline);
     			}
     		}
         });
@@ -148,7 +146,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         start.getStyleClass().add("large-button");
 		start.setOnAction(evt -> {
 			NavigationView navView = ((NestApplication) getApplication()).lookupView(NavigationView.NAME);
-			navView.setTrapline(traplineProperty.get());
+			navView.setTrapline(trapline);
 			getApplication().switchView(NavigationView.NAME);
 		});
 		this.setBottom(start);
@@ -158,7 +156,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	}
 	
 	public void setTrapline (Trapline trapline) {
-		traplineProperty.set(trapline);
+		this.trapline = trapline;
 		start.visibleProperty().bind(isNotEmpty(trapline.getTraps()));
         traplineSize.textProperty().bind(format("Traps: %d", size(trapline.getTraps())));
         
@@ -173,7 +171,11 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         	return String.format("Last fetched: %s", time);
         }, trapline.lastUpdatedProperty()));
         
-        preloadMap.setVisible(false);
+        updateMapLoadProgress();
+	}
+	
+	private void updateMapLoadProgress () {
+		preloadMap.setVisible(false);
         if (trapline.getTraps().isEmpty()) {
         	mapTileTotalCount.set(0);
         	mapTileLoadedCount.set(0);
@@ -214,7 +216,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		addTraps.setOnAction(evt -> {
 			this.getApplication().hideLayer("trapline-info-menu");
 			AddTrapView addTrapView = ((NestApplication) getApplication()).lookupView(AddTrapView.NAME);
-			addTrapView.setTrapline(traplineProperty.get());
+			addTrapView.setTrapline(trapline);
 			getApplication().switchView(AddTrapView.NAME);
 		});
 		
@@ -225,9 +227,9 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
     @Override
     protected void updateAppBar(AppBar appBar) {
 		appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> this.getApplication().showLayer("trapline-info-menu")));
-		appBar.setTitleText(traplineProperty.get().getName());
+		appBar.setTitleText(trapline.getName());
         appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
-        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.loadTrapline(traplineProperty.get())));
+        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.loadTrapline(trapline)));
     }
 
 	/* (non-Javadoc)
@@ -239,13 +241,26 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 			this.getApplication().showLayer("loading");
 		} else {
 			this.getApplication().hideLayer("loading");
+			updateMapLoadProgress();
 		}
 	}
 	
+	/**
+	 * Compares the provided values and returns the one furtherest from zero
+	 * @param val1 The first value
+	 * @param val2 The second value
+	 * @return Whichever of val1 and val2 is furtherest from zero
+	 */
 	private static final double absMax (double val1, double val2) {
 		return Math.abs(val1) < Math.abs(val2) ? val2 : val1;
 	}
 	
+	/**
+	 * Compares the provided values and returns the one closest to zero
+	 * @param val1 The first value
+	 * @param val2 The second value
+	 * @return Whichever of val1 and val2 is closest to zero
+	 */
 	private static final double absMin (double val1, double val2) {
 		return Math.abs(val1) > Math.abs(val2) ? val2 : val1;
 	}
