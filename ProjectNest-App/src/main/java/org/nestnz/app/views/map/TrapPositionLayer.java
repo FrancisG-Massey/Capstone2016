@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.views.map;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.nestnz.app.model.Trap;
@@ -39,7 +39,11 @@ public class TrapPositionLayer extends PositionLayer implements ListChangeListen
 	private final ObservableList<Trap> traps = FXCollections.observableArrayList(trap -> 
 		new Observable[]{ trap.latitudeProperty(), trap.longitudeProperty() });
 	
-	protected final Map<Trap, Node> trapIcons = new HashMap<>();
+	/**
+	 * A lookup map for the standard marker icons used for each trap on the map.
+	 * An IdentityHashMap is used here, as it removes the possibility of changing trap coordinates or IDs (such as when the trap is created on the server) causing future lookups to fail.
+	 */
+	protected final Map<Trap, Node> trapIcons = new IdentityHashMap<>();
 	
 	private final ObjectProperty<Trap> activeTrapProperty = new SimpleObjectProperty<>();
 	
