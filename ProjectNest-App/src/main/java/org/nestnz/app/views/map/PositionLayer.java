@@ -42,7 +42,7 @@ public class PositionLayer extends MapLayer {
 
     protected final ObservableList<Pair<MapPoint, Node>> points = FXCollections.observableArrayList();
     
-    protected final ObjectProperty<Position> currentPosition = new SimpleObjectProperty<>();
+    protected final ObjectProperty<Position> currentPositionProperty = new SimpleObjectProperty<>();
 	
 	/**
 	 * The icon indicating the user's current position on the map
@@ -50,7 +50,7 @@ public class PositionLayer extends MapLayer {
     protected final Node curPosIcon = new Circle(10, Color.YELLOW);
     
     public PositionLayer() {
-    	currentPosition.addListener((obs, oldVal, newVal) -> {
+    	currentPositionProperty.addListener((obs, oldVal, newVal) -> {
     		MapPoint curPoint = new MapPoint(newVal.getLatitude(), newVal.getLongitude());
     		removePoint(curPosIcon);
 			addPoint(curPoint, curPosIcon);
@@ -60,17 +60,21 @@ public class PositionLayer extends MapLayer {
     @Override
     protected void initialize() {
     	baseMap.prefCenterLat().bind(createDoubleBinding(() -> 
-    		currentPosition.get() == null ? 0.0 : currentPosition.get().getLatitude(), currentPosition));
+    		getCurrentPosition() == null ? 0.0 : getCurrentPosition().getLatitude(), currentPositionProperty));
     	baseMap.prefCenterLon().bind(createDoubleBinding(() -> 
-    		currentPosition.get() == null ? 0.0 : currentPosition.get().getLongitude(), currentPosition));
+    		getCurrentPosition() == null ? 0.0 : getCurrentPosition().getLongitude(), currentPositionProperty));
     }
     
     public final void setCurrentPosition (Position postition) {
-    	currentPosition.set(postition);
+    	currentPositionProperty.set(postition);
+    }
+    
+    public final Position getCurrentPosition () {
+    	return currentPositionProperty.get();
     }
     
     public final ObjectProperty<Position> currentPositionProperty () {
-    	return currentPosition;    	
+    	return currentPositionProperty;    	
     }
 
     public void addPoint(MapPoint p, Node icon) {

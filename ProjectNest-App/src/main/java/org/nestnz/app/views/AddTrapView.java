@@ -23,18 +23,16 @@ import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
-import com.gluonhq.charm.glisten.control.AppBar;
-import com.gluonhq.charm.glisten.mvc.View;
-import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.Position;
 import com.gluonhq.charm.down.plugins.PositionService;
+import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.mvc.View;
+import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.Button;
 
 public class AddTrapView extends View {
@@ -49,12 +47,7 @@ public class AddTrapView extends View {
 	
 	protected final TrapPositionLayer trapPositionLayer = new TrapPositionLayer();
 	
-	private Position lastTrapPosition;
-	
-	/**
-	 * Represents the current position of the device. Updates automatically when new location coordinates are received
-	 */
-	private final ObjectProperty<Position> currentPosition = new SimpleObjectProperty<>();
+	private Position lastTrapPosition;	
 	
 	private IntegerProperty nextTrapNumber = new SimpleIntegerProperty();
 	
@@ -71,10 +64,10 @@ public class AddTrapView extends View {
 		setBottom(addTrapButton);
 		
 		addTrapButton.setOnAction(evt -> {
-			if (currentPosition.get() == null) {
+			if (trapPositionLayer.getCurrentPosition() == null) {
 				this.getApplication().showMessage("We haven't figured out your location yet! Please wait a few seconds and try again.");
 			} else {
-				lastTrapPosition = currentPosition.get();
+				lastTrapPosition = trapPositionLayer.getCurrentPosition();
 				addTrap(lastTrapPosition);
 				this.getApplication().showMessage(
 						String.format("Created trap at %1$.6f, %2$.6f", lastTrapPosition.getLatitude(), lastTrapPosition.getLongitude()));
