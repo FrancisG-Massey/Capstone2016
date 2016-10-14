@@ -191,7 +191,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	        	minLong = absMin(minLong, t.getLongitude());
 	        	maxLong = absMax(maxLong, t.getLongitude());
 	        }
-	        LOG.log(Level.INFO, "Range: "+minLat+","+minLong+" to "+minLat+","+minLong);
+	        LOG.log(Level.INFO, "Map Range: "+minLat+","+minLong+" to "+minLat+","+minLong);
 	        int totalTiles = mapService.getTotalTileCount(minLat, maxLat, minLong, maxLong);
 	        if (totalTiles < MapLoadingService.MAX_TILES) {
 	        	int cachedTiles = mapService.getCachedTileCount(minLat, maxLat, minLong, maxLong);

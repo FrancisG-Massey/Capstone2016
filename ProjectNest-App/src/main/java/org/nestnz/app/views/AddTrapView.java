@@ -27,6 +27,7 @@ import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.Position;
 import com.gluonhq.charm.down.plugins.PositionService;
 import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
@@ -34,6 +35,7 @@ import com.gluonhq.maps.MapView;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 
 public class AddTrapView extends View {
     
@@ -68,18 +70,35 @@ public class AddTrapView extends View {
 				this.getApplication().showMessage("We haven't figured out your location yet! Please wait a few seconds and try again.");
 			} else {
 				lastTrapPosition = trapPositionLayer.getCurrentPosition();
-				addTrap(lastTrapPosition);
-				this.getApplication().showMessage(
-						String.format("Created trap at %1$.6f, %2$.6f", lastTrapPosition.getLatitude(), lastTrapPosition.getLongitude()));
+				confirmAddTrap(lastTrapPosition);
 			}
 		});
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
 	
-	private void addTrap (Position position) {
+	private void confirmAddTrap (Position position) {
 		Objects.requireNonNull(position);
 		
 		int number = nextTrapNumber.get();
+		
+		Dialog<Button> dialog = new Dialog<>();
+		dialog.setContent(new Label(String.format("Add trap #%d at coords %f.6, %f.6?", number, position.getLatitude(), position.getLongitude())));
+		Button yesButton = new Button("Yes");
+		yesButton.setOnAction(e -> {
+			addTrap(position, number);
+			dialog.hide();
+			this.getApplication().showMessage(
+					String.format("Created trap at %1$.6f, %2$.6f", lastTrapPosition.getLatitude(), lastTrapPosition.getLongitude()));
+		});
+		Button noButton = new Button("No");
+		noButton.setOnAction(e -> {
+			dialog.hide();
+		});
+		dialog.getButtons().addAll(yesButton, noButton);
+		dialog.showAndWait();
+	}
+	
+	private void addTrap(Position position, int number) {
 		Trap trap = new Trap(number, position.getLatitude(), position.getLongitude());
 		nextTrapNumber.set(number+1);
 		trapline.getTraps().add(trap);
