@@ -19,7 +19,7 @@
         <div class="form-group">
           <label>Region</label>
           <select class="form-control" ng-model="trapline.region_id" >
-            <option ng-value="{{region.id}}" data-ng-selected="region.id === trapline.region_id" data-ng-repeat="region in regions">{{region.name}}</option>
+            <option ng-value="{{region.id}}" data-ng-selected="region.id == trapline.region_id" data-ng-repeat="region in regions">{{region.name}}</option>
           </select>
         </div>
         <div class="form-group">
