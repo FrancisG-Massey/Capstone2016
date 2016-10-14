@@ -46,10 +46,20 @@ var myApp = angular
             controller: 'AdminTraplineController',
             templateUrl: 'modules/admin/views/trapline-admin.html',
             resolve: {
-                region: ['$http', function($http) {
+            	trapline: function($http, $route){
+                    return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/trapline',
+                        params: {
+                            '_': new Date().getTime()
+                        }
+                    })
+                    .then(function(response){
+                        return response.data;
+                    });
+                },
+            	region: ['$http', function($http) {
                     return $http.get('https://www.nestnz.org/api/region');}],
-                trapline:['$http', function($http) {
-                    return $http.get('https://www.nestnz.org/api/trapline');}],
                 baits:function($http, $route){
                         return $http
                         .get('https://www.nestnz.org/api/bait')
