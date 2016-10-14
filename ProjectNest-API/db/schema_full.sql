@@ -321,8 +321,8 @@ CREATE TABLE public.trapline
     trapline_starttag text,
     trapline_endtag text,
     trapline_imagefilename text,
-    trapline_defaulttraptypeid bigint,
-    trapline_defaultbaitid bigint,
+    trapline_defaulttraptypeid bigint NOT NULL,
+    trapline_defaultbaitid bigint NOT NULL,
     CONSTRAINT trapline_pkey PRIMARY KEY (trapline_id),
 
     -- Ensure that traplines have unique names.
