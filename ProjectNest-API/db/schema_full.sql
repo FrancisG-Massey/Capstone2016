@@ -169,7 +169,10 @@ CREATE TABLE public.region
     region_id bigint NOT NULL DEFAULT nextval('region_region_id_seq'::regclass),
     region_name text NOT NULL,
     CONSTRAINT region_pkey PRIMARY KEY (region_id),
-    CONSTRAINT region_unique UNIQUE (region_name)
+    CONSTRAINT region_unique UNIQUE (region_name),
+
+    -- Ensure that region names are short enough to be displayed in the app.
+    CONSTRAINT region_name_length CHECK (char_length(region_name) <= 30)
 )
 WITH (
     OIDS=FALSE
@@ -267,7 +270,10 @@ CREATE TABLE public.bait
     CONSTRAINT bait_pkey PRIMARY KEY (bait_id),
 
     -- Ensure multiple baits with the same name can't exist.
-    CONSTRAINT bait_unique UNIQUE (bait_name)
+    CONSTRAINT bait_unique UNIQUE (bait_name),
+
+    -- Ensure that bait names are short enough to be displayed in the app.
+    CONSTRAINT bait_name_length CHECK (char_length(bait_name) <= 30)
 )
 WITH (
     OIDS=FALSE
@@ -289,6 +295,9 @@ CREATE TABLE public.traptype
 
     -- Ensure multiple trap-types with the same name can't exist.
     CONSTRAINT traptype_unique UNIQUE (traptype_name),
+
+    -- Ensure that traptype names are short enough to be displayed in the app.
+    CONSTRAINT traptype_name_length CHECK (char_length(traptype_name) <= 30),
 
     -- Ensure that each trap-type has at least some form of textual identifier.
     CONSTRAINT traptype_valid_text_identifier 
@@ -318,6 +327,9 @@ CREATE TABLE public.trapline
 
     -- Ensure that traplines have unique names.
     CONSTRAINT trapline_unique UNIQUE (trapline_name),
+
+    -- Ensure that trapline names are short enough to be displayed in the app.
+    CONSTRAINT trapline_name_length CHECK (char_length(trapline_name) <= 30),
 
     CONSTRAINT trapline_trapline_regionid_fkey FOREIGN KEY (trapline_regionid)
         REFERENCES public.region (region_id) MATCH SIMPLE
@@ -356,7 +368,10 @@ CREATE TABLE public.catchtype
     CONSTRAINT catchtype_pkey PRIMARY KEY (catchtype_id),
 
     -- Ensure that catch-types have unique names.
-    CONSTRAINT catchtype_unique UNIQUE (catchtype_name)
+    CONSTRAINT catchtype_unique UNIQUE (catchtype_name),
+
+    -- Ensure that catchtype names are short enough to be displayed in the app.
+    CONSTRAINT catchtype_name_length CHECK (char_length(catchtype_name) <= 30)
 )
 WITH (
     OIDS=FALSE
