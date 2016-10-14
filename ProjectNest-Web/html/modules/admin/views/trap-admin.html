@@ -29,7 +29,7 @@
 				<tr data-ng-click="setSelected();"
 					class="{{trap == selected ? 'success' : ''}}">
 					<td scope="row">{{trap.number}}</td>
-					<td>{{trap.coord_lat + ' '}}<b>S</b><br>{{trap.coord_long +
+					<td>{{trap.coord_lat + ' '}}<b>N</b><br>{{trap.coord_long +
 						' '}}<b>E</b></td>
 					<td>{{trap.status? "active":"inactive"}}</td>
 					<td>{{formatDate(trap.created) | date:"dd MMMM yyyy"}}</td>
@@ -78,7 +78,7 @@
 					<div class="input-group">
 						<input type="number" class="form-control"
 							value="{{selected.coord_lat}}"> <span
-							class="input-group-addon">S</span>
+							class="input-group-addon">N</span>
 					</div>
 				</div>
 				<div class="col-md-6 form-group">

@@ -1,7 +1,7 @@
 <ul class="breadcrumb">
   <li><a href="/#/trapline-admin" >Admin</a></li>
   <li><a href="#/trap-admin/{{trapline_id}}">Trapline {{trapline_id}}</a></li>
-  <li class="active"> Edit trap {{trap.id}}</li>  
+  <li class="active"> Edit trap {{trap.number}}</li>  
 </ul>
 
   <h2 class="text-center page-header">Edit Trap</h2>
@@ -25,7 +25,7 @@
         <label>Latitude</label>
         <div class="input-group">
           <input type="number" class="form-control" ng-model="trap.coord_lat">
-          <span class="input-group-addon">S</span>
+          <span class="input-group-addon">N</span>
         </div>
       </div>
       <div class="col-md-6 form-group">
