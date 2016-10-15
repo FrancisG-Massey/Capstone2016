@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -745,11 +746,12 @@ public class DBInterfaceTests {
      * Test of bindDynamicParameters method, of class Common.
      * Ensure that non-timestamps in timestamp fields throw an exception.
      * @throws SQLException
+     * @throws java.time.format.DateTimeParseException
      * @throws java.text.ParseException
      * @throws java.lang.NumberFormatException
      */
-    @Test(expected=ParseException.class)
-    public void BindDynamicParametersBadTimestampsThrowsParseEx() throws SQLException, NumberFormatException, ParseException {
+    @Test(expected=DateTimeParseException.class)
+    public void BindDynamicParametersBadTimestampsThrowsParseEx() throws DateTimeParseException, SQLException, NumberFormatException, ParseException {
         String sqlQuery = "SELECT ? AS test";
         // Prepare the parameter map
         try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {

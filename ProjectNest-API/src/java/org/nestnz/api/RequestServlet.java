@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -362,7 +363,7 @@ public class RequestServlet extends HttpServlet {
                 }
             }
             
-        } catch (ParseException | NumberFormatException ex){
+        } catch (DateTimeParseException | ParseException | NumberFormatException ex){
             // Error is written to log lower down the stack so parameter values can be logged.
             LOG.log(Level.INFO, "Parse error while casting expected types:\n{0}\nReturning 400...\n{1}", 
                     new Object[]{ex.getMessage(), response.toString()});

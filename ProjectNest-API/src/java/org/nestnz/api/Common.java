@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -323,7 +324,7 @@ public class Common {
             LOG.log(Level.INFO, "An unexpected SQLException has occured. Unable to continue parsing: {0}", ex.getMessage());
             throw ex;
         } catch (
-            ParseException | NumberFormatException ex
+            DateTimeParseException | ParseException | NumberFormatException ex
         ) {
             // Write log within inner catch block so we still have params
             LOG.log(Level.INFO, "Supplied request parameter '" + nextParamValue + 
