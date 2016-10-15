@@ -1,24 +1,26 @@
-        <div class="row">
-            <div class="col-sm-4" data-ng-repeat="image in images">
-                <h2 class="text-center"><strong>{{image.header}}</strong></h2>
-                <a href="{{image.link}}">
-                <br>
-                <img class="img-circle img-responsive center-block" data-ng-src="{{image.photo}}" alt="">
-                </a>
-                <br>
-                <div class="text-center mast">
-				<p><strong>{{image.description}}</strong></p>
-				</div>
-				</div>
-            <!-- <div class="col-sm-4">
-                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
-                <h2>Data</h2>
-				<p>View the data from the traplines where DOC volunteers use our services.</p></div>
-            <div class="col-sm-4">
-                <img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
-                <h2>Volunteers</h2>
-				<p>View profiles of hardworker DOC volunteers from around New Zealand</p></div> -->
-        </div>
-        <!-- /.row -->
-		
-        <hr>
+<div class="business-header"></div>
+
+<div class="row business-header-wrap">
+  <div class="col-sm-4" data-ng-repeat="image in images">
+    <h2 class="text-center"><strong>{{image.header}}</strong></h2>
+    <a href="{{image.link}}">
+      <br>
+      <img class="img-circle img-responsive center-block" data-ng-src="{{image.photo}}" alt="">
+    </a>
+    <br>
+    <div class="text-center mast">
+    <p><strong>{{image.description}}</strong></p>
+    </div>
+  </div>
+<!-- <div class="col-sm-4">
+<img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
+<h2>Data</h2>
+<p>View the data from the traplines where DOC volunteers use our services.</p></div>
+<div class="col-sm-4">
+<img class="img-circle img-responsive img-center" data-ng-src="{{image.photo}}" alt="">
+<h2>Volunteers</h2>
+<p>View profiles of hardworker DOC volunteers from around New Zealand</p></div> -->
+  </div>
+<!-- /.row -->
+
+<hr>

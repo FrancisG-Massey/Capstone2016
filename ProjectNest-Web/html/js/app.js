@@ -46,10 +46,20 @@ var myApp = angular
             controller: 'AdminTraplineController',
             templateUrl: 'modules/admin/views/trapline-admin.html',
             resolve: {
-                region: ['$http', function($http) {
+            	trapline: function($http, $route){
+                    return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/trapline',
+                        params: {
+                            '_': new Date().getTime()
+                        }
+                    })
+                    .then(function(response){
+                        return response.data;
+                    });
+                },
+            	region: ['$http', function($http) {
                     return $http.get('https://www.nestnz.org/api/region');}],
-                trapline:['$http', function($http) {
-                    return $http.get('https://www.nestnz.org/api/trapline');}],
                 baits:function($http, $route){
                         return $http
                         .get('https://www.nestnz.org/api/bait')
@@ -66,16 +76,68 @@ var myApp = angular
                     }
         }
         })
+        .when('/trapline-admin/add-newtrapline',{
+            controller: 'AdminNewTraplineController',
+            templateUrl: 'modules/admin/views/new_trapline.html',
+            resolve: {
+                region: ['$http', function($http) {
+                    return $http.get('https://www.nestnz.org/api/region');}],
+                baits:function($http, $route){
+                        return $http
+                        .get('https://www.nestnz.org/api/bait')
+                        .then(function(response){
+                            return response.data;
+                    })
+                    },
+                trap_type:function($http, $route){
+                        return $http
+                        .get('https://www.nestnz.org/api/trap-type')
+                        .then(function(response){
+                            return response.data;
+                    })
+                    }
+        }
+        })
+         .when('/trapline-admin/:regionId/:traplineId/edit-trapline',{
+            controller: 'AdminEditTraplineController',
+            templateUrl: 'modules/admin/views/edit_trapline.html',
+            resolve: {
+                region: ['$http', function($http) {
+                    return $http.get('https://www.nestnz.org/api/region');}],
+            	baits:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/bait')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+            trap_type:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/trap-type')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+            	 trapline:['$http','$route', function($http,$route) {
+                     return $http.get('https://www.nestnz.org/api/trapline/'+$route.current.params.traplineId+'&'+$route.current.params.regionId);}]
+        }
+        })
         .when('/trap-admin/:traplineId', {
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html',
             resolve: {
-                traps: function($http, $route){
-                    return $http
-                        .get('https://www.nestnz.org/api/trap?trapline-id='+$route.current.params.traplineId)
-                        .then(function(response){
-                            return response.data;
+            	traps: function($http, $route){
+                    return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/trap',
+                        params: {
+                            '_': new Date().getTime(),
+                            'trapline-id': $route.current.params.traplineId
+                        }
                     })
+                    .then(function(response){
+                        return response.data;
+                    });
                 },
                 baits:function($http, $route){
                     return $http
@@ -100,6 +162,60 @@ var myApp = angular
                 }
             }
         })
+        .when('/trap-admin/:traplineId/add-new', {
+            controller: 'AdminNewTrapController',
+            templateUrl: 'modules/admin/views/new_trap.html',
+            resolve: {
+                baits:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/bait')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+                trap_type:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/trap-type')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+                catch_types:function($http,$route){
+                    return $http
+                    .get('https://www.nestnz.org/api/catch-type')
+                    .then(function(response){
+                        return response.data;
+                    })
+                }
+            }
+        })
+         .when('/trap-admin/:trap_id/edit-trap', {
+            controller: 'AdminEditTrapController',
+            templateUrl: 'modules/admin/views/edit_trap.html',
+            resolve: {
+                baits:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/bait')
+                    .then(function(response){
+                        return response.data;
+                })
+                },
+                trap_type:function($http, $route){
+                    return $http
+                    .get('https://www.nestnz.org/api/trap-type')
+                    .then(function(response){
+                        return response.data;
+                })
+                },                
+            	trap: function($http, $route){
+                    return $http
+                        .get('https://www.nestnz.org/api/trap/'+$route.current.params.trap_id)
+                        .then(function(response){
+                            return response.data;
+                    })
+                }
+            }
+        })
         .when('/volunteer-admin/:traplineId', {
             controller: 'AdminVolunteerController',
             templateUrl: 'modules/admin/views/volunteer-admin.html',
@@ -115,6 +231,10 @@ var myApp = angular
                     return $http.get('https://www.nestnz.org/api/user');}]
             }
         })
+        .when('/volunteer-admin/:traplineId/add-volunteer', {
+            controller: 'AdminNewVolunteerController',
+            templateUrl: 'modules/admin/views/new_volunteer.html'
+        })        
         .otherwise({
             templateUrl : 'templates/404.html'
         });
