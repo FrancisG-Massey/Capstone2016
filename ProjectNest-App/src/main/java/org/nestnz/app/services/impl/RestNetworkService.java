@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.nestnz.app.services.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.Consumer;
@@ -23,11 +26,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.model.Catch;
+import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
+import org.nestnz.app.model.TrapStatus;
+import org.nestnz.app.model.Trapline;
 import org.nestnz.app.net.model.ApiCatch;
+import org.nestnz.app.net.model.ApiCatchType;
 import org.nestnz.app.net.model.ApiRegion;
 import org.nestnz.app.net.model.ApiTrap;
+import org.nestnz.app.net.model.ApiPostTrap;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.NetworkService;
 
@@ -130,13 +138,13 @@ public class RestNetworkService implements NetworkService {
 		
 		String created = trap.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
-		ApiTrap apiTrap = new ApiTrap(traplineId, trap.getNumber(), trap.getLatitude(), trap.getLongitude(), created);
+		ApiPostTrap apiTrap = new ApiPostTrap(traplineId, trap.getNumber(), trap.getLatitude(), trap.getLongitude(), created);
 		
 		RestDataSource dataSource = apiClient.createRestDataSource();
 		
-		ObjectDataWriter<ApiTrap> writer = new RestObjectDataWriterAndRemover<>(dataSource, ApiTrap.class);
+		ObjectDataWriter<ApiPostTrap> writer = new RestObjectDataWriterAndRemover<>(dataSource, ApiPostTrap.class);
     	
-		GluonObservableObject<ApiTrap> result = DataProvider.storeObject(apiTrap, writer);
+		GluonObservableObject<ApiPostTrap> result = DataProvider.storeObject(apiTrap, writer);
 
     	result.stateProperty().addListener((obs, oldValue, newValue) -> {
     		switch (newValue) {
@@ -192,9 +200,55 @@ public class RestNetworkService implements NetworkService {
 			loadCallback.accept(region);
 		});
 	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#loadCatchTypes(java.util.function.Consumer)
+	 */
+	@Override
+	public ReadOnlyObjectProperty<RequestStatus> loadCatchTypes(Consumer<CatchType> loadCallback) {
+		RestClient catchTypeClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/catch-type").header("Session-Token", loginService.getSessionToken());
+		return processReadRequest(ApiCatchType.class, catchTypeClient, apiCatchType -> {
+			URL imageUrl = null;
+			if (apiCatchType.getImageUrl() != null) {
+				try {
+					imageUrl = new URL(apiCatchType.getImageUrl());
+				} catch (MalformedURLException ex) {
+					LOG.log(Level.WARNING, "Error decoding image url: "+apiCatchType.getImageUrl(), ex);
+				}
+			}
+			CatchType catchType = new CatchType(apiCatchType.getId(), apiCatchType.getName(), imageUrl);
+			loadCallback.accept(catchType);
+		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#loadTrapline(org.nestnz.app.services.Trapline, java.util.function.Consumer)
+	 */
+	@Override
+	public ReadOnlyObjectProperty<RequestStatus> loadTrapline(Trapline trapline, Consumer<Trap> loadCallback) {
+		RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/trap").queryParam("trapline-id", Integer.toString(trapline.getId()))
+    			.header("Session-Token", loginService.getSessionToken());
+		
+		return processReadRequest(ApiTrap.class, trapsClient, apiTrap -> {
+			if (apiTrap.getTraplineId() != trapline.getId()) {
+				LOG.log(Level.WARNING, apiTrap+" was returned in a request for trapline "+trapline.getId());
+				return;
+			}
+			
+			LocalDateTime created = LocalDateTime.parse(apiTrap.getCreated().replace(' ', 'T'));
+			LocalDateTime lastReset = apiTrap.getLastReset() == null ? null : LocalDateTime.parse(apiTrap.getLastReset().replace(' ', 'T'));
+			
+			Trap trap  = new Trap(apiTrap.getId(), apiTrap.getNumber(), 
+					apiTrap.getLatitude(), apiTrap.getLongitude(), TrapStatus.ACTIVE, created, lastReset);
+			
+			loadCallback.accept(trap);			
+		});
+	}
 	
 	
-	private <T> ReadOnlyObjectProperty<RequestStatus>  processReadRequest (Class<T> type, RestClient client, Consumer<T> callback) {
+	private <T> ReadOnlyObjectProperty<RequestStatus> processReadRequest (Class<T> type, RestClient client, Consumer<T> callback) {
 		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
 		    	
     	RestDataSource dataSource = client.createRestDataSource();

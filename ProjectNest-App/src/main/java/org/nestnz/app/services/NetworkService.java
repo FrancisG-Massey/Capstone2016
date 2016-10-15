@@ -19,8 +19,10 @@ package org.nestnz.app.services;
 import java.util.function.Consumer;
 
 import org.nestnz.app.model.Catch;
+import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
+import org.nestnz.app.model.Trapline;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 
@@ -56,4 +58,20 @@ public interface NetworkService {
 	 * @return A status property which will change to SUCCESS or FAILED when the request completes
 	 */
 	public ReadOnlyObjectProperty<RequestStatus> loadRegions(Consumer<Region> loadCallback);
+	
+	/**
+	 * Fetches the list of catch types from the API. For each region returned, {@code loadCallback} is called.
+	 * @param loadCallback The function to call for each catch type fetched from the server
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<RequestStatus> loadCatchTypes(Consumer<CatchType> loadCallback);
+	
+	/**
+	 * Fetches all traps belonging to the specified trapline from the API.
+	 * For each trap returned, {@code loadCallback} is called.
+	 * @param trapline The trapline for which to load traps
+	 * @param loadCallback The function to call for each trap fetched from the server
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<RequestStatus> loadTrapline(Trapline trapline, Consumer<Trap> loadCallback);
 }

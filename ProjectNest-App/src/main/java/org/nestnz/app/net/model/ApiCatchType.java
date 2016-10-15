@@ -19,22 +19,24 @@ package org.nestnz.app.net.model;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Represents a trap sent to/received from the /trap on the API.
- * This class can be used for GET and PUT requests, but {@link ApiPostTrap} should be used for POST requests as it excludes the ID
+ * Represents a catch type received from the API
  */
-public class ApiTrap extends ApiPostTrap {
+public final class ApiCatchType {
 	
 	private int id;
 	
-	private String lastReset;
+	private String name;
 	
-	public ApiTrap () {
+	private String imageUrl;
+
+	public ApiCatchType() {
 		
 	}
 
-	public ApiTrap(int id, int traplineId, int number, double latitude, double longitude, String created) {
-		super(traplineId, number, latitude, longitude, created);
+	public ApiCatchType(int id, String name, String imageUrl) {
 		this.id = id;
+		this.name = name;
+		this.imageUrl = imageUrl;
 	}
 
 	public int getId() {
@@ -45,18 +47,25 @@ public class ApiTrap extends ApiPostTrap {
 		this.id = id;
 	}
 
-	@XmlElement(name="last_reset")
-	public String getLastReset() {
-		return lastReset;
+	public String getName() {
+		return name;
 	}
 
-	public void setLastReset(String lastReset) {
-		this.lastReset = lastReset;
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@XmlElement(name="img_filename")
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
 	@Override
 	public String toString() {
-		return "ApiTrap [id=" + id + ", traplineId=" + traplineId + ", number=" + number + ", latitude=" + latitude + ", longitude="
-				+ longitude + ", created=" + created +", lastReset=" + lastReset + "]";
+		return "ApiCatchType [id=" + id + ", name=" + name + ", imageUrl=" + imageUrl + "]";
 	}
 }

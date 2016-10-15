@@ -287,69 +287,41 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	}
     	loadingProperty.set(true);
     	
-    	RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/trap").queryParam("trapline-id", Integer.toString(trapline.getId()))
-    			.header("Session-Token", loginService.getSessionToken());
+		Set<Integer> validTrapIds = new HashSet<>();
+		validTrapIds.add(0);//0 = trap not yet created on server
     	
-    	RestDataSource dataSource = trapsClient.createRestDataSource();
-    	BackgroundTasks.runInBackground(() -> {
-    		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
-    			if (dataSource.getResponseCode() == 204) {
-        			LOG.log(Level.INFO, "Trapline "+trapline.getId()+" currently has no traps!");
-        			Platform.runLater(() -> {
-	    				trapline.setLastUpdated(LocalDateTime.now());
-	    				loadingProperty.set(false);        				
-        			});
-    			} else {
-        			JsonArray array = reader.readArray();
-	    			Platform.runLater(() -> {
-	        			LOG.log(Level.FINE, "Response: "+array.toString());
-	        			try {
-	        				Set<Integer> validTrapIds = new HashSet<>();
-	        				validTrapIds.add(0);//0 = trap not yet created on server
-		    				for (JsonValue value : array) {
-		        				JsonObject trapJson = (JsonObject) value;
-		        				if (trapJson.getInt("trapline_id") != trapline.getId()) {
-		        					continue;//If the trap doesn't belong to the specified trapline, ignore it
-		        				}
-		        				int id = trapJson.getInt("id");
-		        				validTrapIds.add(id);
-		        				int number = trapJson.getInt("number");
-		        				double latitude = trapJson.getJsonNumber("coord_lat").doubleValue();
-		        				double longitude = trapJson.getJsonNumber("coord_long").doubleValue();
-		        				LocalDateTime created = LocalDateTime.parse(trapJson.getString("created").replace(' ', 'T'));
-		        				LocalDateTime lastReset = LocalDateTime.parse(trapJson.getString("last_reset").replace(' ', 'T'));
-		        				Trap trap = trapline.getTrap(id);
-		        				if (trap == null) {
-		        					trap = new Trap(id, number, latitude, longitude, TrapStatus.ACTIVE, created, lastReset);
-		        					trapline.getTraps().add(trap);
-		        				} else {
-		        					trap.setNumber(number);
-		        					trap.setLatitude(latitude);
-		        					trap.setLongitude(longitude);
-		        					trap.setLastReset(lastReset);
-		        				}
-		        			}
-		    				
-		    				Iterator<Trap> iterator = trapline.getTraps().iterator();
-		    				while (iterator.hasNext()) {
-		    					Trap trap = iterator.next();
-		    					if (!validTrapIds.contains(trap.getId())) {
-		    						iterator.remove();
-		    					}
-		    				}
-		    				trapline.setLastUpdated(LocalDateTime.now());
-	        			} catch (RuntimeException ex) {
-	        				LOG.log(Level.WARNING, "Problem parsing traps for trapline "+trapline, ex);
-	        			} finally {
-	        				loadingProperty.set(false);//Signal loading is complete
-	        			}
-	    			});
-	    		}
-    		} catch (IOException ex) {
-    			LOG.log(Level.WARNING, "Problem requesting traps for trapline "+trapline+". Response: "+dataSource.getResponseMessage(), ex);
-				loadingProperty.set(false);
-			}
+    	networkService.loadTrapline(trapline, trap -> {
+			validTrapIds.add(trap.getId());
+			
+    		Trap oldTrap = trapline.getTrap(trap.getId());
+    		if (oldTrap == null) {
+    			trapline.getTraps().add(trap);
+    		} else {
+    			oldTrap.setNumber(trap.getNumber());
+    			oldTrap.setLatitude(trap.getLatitude());
+    			oldTrap.setLongitude(trap.getLongitude());
+    			oldTrap.setLastReset(trap.getLastReset());
+    			oldTrap.setStatus(trap.getStatus());
+    		}
+    	}).addListener((obs, oldStatus, newStatus) -> {
+    		switch(newStatus) {
+			case SUCCESS:				
+				Iterator<Trap> iterator = trapline.getTraps().iterator();
+				while (iterator.hasNext()) {
+					Trap trap = iterator.next();
+					if (!validTrapIds.contains(trap.getId())) {
+						iterator.remove();
+					}
+				}
+				trapline.setLastUpdated(LocalDateTime.now());
+				
+				//Fall through
+			case FAILED:
+				loadingProperty.set(false);//Signal loading is complete
+				break;
+			case PENDING:
+				break;
+    		}
     	});
     }
     
@@ -362,9 +334,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			}
     	}).addListener((obs, oldStatus, newStatus) -> {
     		switch(newStatus) {
-			case FAILED:
-				//Fall through
 			case SUCCESS:
+				//Fall through
+			case FAILED:
 				//Signal region data has been fetched
 				appDataLoading.release();
 				break;
@@ -374,45 +346,32 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     	});
     }
     
-    protected void refreshCatchTypes () {
-    	RestClient regionClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/catch-type").header("Session-Token", loginService.getSessionToken());
-    	
-    	RestDataSource dataSource = regionClient.createRestDataSource();
-    	
+    protected void refreshCatchTypes () {    	
     	if (catchTypes.getData() == null) {
     		catchTypes.setData(new HashMap<>());
     	}
     	
-    	BackgroundTasks.runInBackground(() -> {
-    		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
-    			JsonArray array = reader.readArray();
-    			LOG.log(Level.INFO, "Response: "+array.toString());
-    			Platform.runLater(() -> {
-    				try {
-	    				for (JsonValue value : array) {
-	        				JsonObject regionJson = (JsonObject) value;
-	        				int id = regionJson.getInt("id");
-	        				CatchType catchType = catchTypes.getData().get(id);
-	        				if (catchType == null) {
-	        					catchType = new CatchType(id);
-	        					catchTypes.getData().put(id, catchType);
-	        				}
-	        				catchType.setName(regionJson.getString("name"));
-	        			}
-	    				catchTypes.setLastServerFetch(LocalDateTime.now());
-	    				cachingService.storeCatchTypes(catchTypes);
-    				} catch (RuntimeException ex) {
-    					LOG.log(Level.WARNING, "Problem parsing catch types.", ex);
-    				} finally {
-    					//Signal catch type data has been fetched
-    					appDataLoading.release();
-    				}
-    			});
-    		} catch (IOException | RuntimeException ex) {
-    			LOG.log(Level.WARNING, "Problem requesting catch types. Response: "+dataSource.getResponseMessage(), ex);
-    			appDataLoading.release();
+    	networkService.loadCatchTypes(catchType -> {
+    		if (catchTypes.getData().containsKey(catchType.getId())) {
+    			CatchType oldType = catchTypes.getData().get(catchType.getId());
+    			oldType.setName(catchType.getName());
+    			oldType.setImage(catchType.getImage());
+			} else {
+				catchTypes.getData().put(catchType.getId(), catchType);				
 			}
+    	}).addListener((obs, oldStatus, newStatus) -> {
+    		switch(newStatus) {
+			case SUCCESS:
+				catchTypes.setLastServerFetch(LocalDateTime.now());
+				cachingService.storeCatchTypes(catchTypes);
+				//Fall through
+			case FAILED:
+				//Signal catch type data has been fetched
+				appDataLoading.release();
+				break;
+			case PENDING:
+				break;
+    		}
     	});
     }
 

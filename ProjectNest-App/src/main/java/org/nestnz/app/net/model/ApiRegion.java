@@ -19,7 +19,7 @@ package org.nestnz.app.net.model;
 /**
  * Represents a region received from the API
  */
-public class ApiRegion {
+public final class ApiRegion {
 	
 	private int id;
 	
