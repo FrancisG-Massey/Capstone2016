@@ -267,9 +267,16 @@ public class RestNetworkService implements NetworkService {
 		
 		resultList.stateProperty().addListener((obs, oldState, newState) -> {
 			if (newState == ConnectState.FAILED) {
-				//Handle failure
-				status.set(RequestStatus.FAILED);
-				LOG.log(Level.SEVERE, "Problem loading "+type+". HTTP response: "+dataSource.getResponseMessage(), resultList.getException());
+				switch (dataSource.getResponseCode()) {
+				case 204://No Content
+					status.set(RequestStatus.SUCCESS);//No data received, but the request was still successful
+					break;
+				default:
+					//Handle failure
+					status.set(RequestStatus.FAILED);
+					LOG.log(Level.SEVERE, "Problem loading "+type+". HTTP response: "+dataSource.getResponseMessage(), resultList.getException());
+					break;
+				}				
 			} else if (newState == ConnectState.SUCCEEDED) {
 				status.set(RequestStatus.SUCCESS);
 			}
