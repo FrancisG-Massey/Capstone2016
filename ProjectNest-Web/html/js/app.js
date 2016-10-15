@@ -16,35 +16,35 @@ var myApp = angular
         $routeProvider
         .when('/login', {
                 controller : 'LoginController',
-                templateUrl : 'modules/authentication/views/login.html',
+                templateUrl : 'modules/authentication/views/login.html?'+new Date().getTime()
             })
         .when('/', {
             controller : 'HomeController',
-            templateUrl : 'templates/home.html'
+            templateUrl : 'templates/home.html?'+new Date().getTime()
         })
         .when('/about', {
             controller: 'HomeController',
-            templateUrl: 'templates/about.html'
+            templateUrl: 'templates/about.html?'+new Date().getTime()
         })
         .when('/mobile', {
             controller: 'HomeController',
-            templateUrl: 'templates/mobile.html'
+            templateUrl: 'templates/mobile.html?'+new Date().getTime()
         })
         .when('/contact', {
             controller: 'HomeController',
-            templateUrl: 'templates/contact.html'
+            templateUrl: 'templates/contact.html?'+new Date().getTime()
         })
         .when('/statistics', {
             controller: 'HomeController',
-            templateUrl: 'templates/statistics.html'
+            templateUrl: 'templates/statistics.html?'+new Date().getTime()
         })
         .when('/volunteer', {
             controller: 'HomeController',
-            templateUrl: 'templates/volunteer.html'
+            templateUrl: 'templates/volunteer.html?'+new Date().getTime()
         })
         .when('/trapline-admin',{
             controller: 'AdminTraplineController',
-            templateUrl: 'modules/admin/views/trapline-admin.html',
+            templateUrl: 'modules/admin/views/trapline-admin.html?'+new Date().getTime(),
             resolve: {
             	trapline: function($http, $route){
                     return $http({
@@ -78,7 +78,7 @@ var myApp = angular
         })
         .when('/trapline-admin/add-newtrapline',{
             controller: 'AdminNewTraplineController',
-            templateUrl: 'modules/admin/views/new_trapline.html',
+            templateUrl: 'modules/admin/views/new_trapline.html?'+new Date().getTime(),
             resolve: {
                 region: ['$http', function($http) {
                     return $http.get('https://www.nestnz.org/api/region');}],
@@ -100,7 +100,7 @@ var myApp = angular
         })
          .when('/trapline-admin/:regionId/:traplineId/edit-trapline',{
             controller: 'AdminEditTraplineController',
-            templateUrl: 'modules/admin/views/edit_trapline.html',
+            templateUrl: 'modules/admin/views/edit_trapline.html?'+new Date().getTime(),
             resolve: {
                 region: ['$http', function($http) {
                     return $http.get('https://www.nestnz.org/api/region');}],
@@ -124,7 +124,7 @@ var myApp = angular
         })
         .when('/trap-admin/:traplineId', {
             controller: 'AdminTrapController',
-            templateUrl: 'modules/admin/views/trap-admin.html',
+            templateUrl: 'modules/admin/views/trap-admin.html?'+new Date().getTime(),
             resolve: {
             	traps: function($http, $route){
                     return $http({
@@ -164,7 +164,7 @@ var myApp = angular
         })
         .when('/trap-admin/:traplineId/add-new', {
             controller: 'AdminNewTrapController',
-            templateUrl: 'modules/admin/views/new_trap.html',
+            templateUrl: 'modules/admin/views/new_trap.html?'+new Date().getTime(),
             resolve: {
                 baits:function($http, $route){
                     return $http
@@ -218,7 +218,7 @@ var myApp = angular
         })
         .when('/volunteer-admin/:traplineId', {
             controller: 'AdminVolunteerController',
-            templateUrl: 'modules/admin/views/volunteer-admin.html',
+            templateUrl: 'modules/admin/views/volunteer-admin.html?'+new Date().getTime(),
             resolve: {
                 trapline_users: function($http, $route){
                     return $http
