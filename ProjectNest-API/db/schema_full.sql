@@ -168,6 +168,8 @@ CREATE TABLE public.region
 (
     region_id bigint NOT NULL DEFAULT nextval('region_region_id_seq'::regclass),
     region_name text NOT NULL,
+    region_isinactive boolean NOT NULL DEFAULT FALSE,
+
     CONSTRAINT region_pkey PRIMARY KEY (region_id),
     CONSTRAINT region_unique UNIQUE (region_name),
 
@@ -196,6 +198,7 @@ CREATE TABLE public.users
     user_createduserid bigint,
     user_isadmin boolean NOT NULL DEFAULT FALSE,
     user_isinactive boolean NOT NULL DEFAULT FALSE,
+
     CONSTRAINT users_pkey PRIMARY KEY (user_id),
 
     -- All usernames and emails must be unique
@@ -225,6 +228,7 @@ CREATE TABLE public.session
     session_token text NOT NULL,
     session_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
     session_expirestimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp + interval '30 minutes',
+
     CONSTRAINT session_pkey PRIMARY KEY (session_id),
     CONSTRAINT session_token_unique UNIQUE (session_token),
     CONSTRAINT session_session_userid_fkey FOREIGN KEY (session_userid)
@@ -267,6 +271,8 @@ CREATE TABLE public.bait
     bait_name text NOT NULL,
     bait_imagefilename text,
     bait_note text,
+    bait_isinactive boolean NOT NULL DEFAULT FALSE,
+
     CONSTRAINT bait_pkey PRIMARY KEY (bait_id),
 
     -- Ensure multiple baits with the same name can't exist.
@@ -291,6 +297,8 @@ CREATE TABLE public.traptype
     traptype_name text,
     traptype_model text,
     traptype_note text,
+    traptype_isinactive boolean NOT NULL DEFAULT FALSE,
+
     CONSTRAINT traptype_pkey PRIMARY KEY (traptype_id),
 
     -- Ensure multiple trap-types with the same name can't exist.
@@ -323,6 +331,8 @@ CREATE TABLE public.trapline
     trapline_imagefilename text,
     trapline_defaulttraptypeid bigint NOT NULL,
     trapline_defaultbaitid bigint NOT NULL,
+    trapline_isinactive boolean NOT NULL DEFAULT FALSE,
+
     CONSTRAINT trapline_pkey PRIMARY KEY (trapline_id),
 
     -- Ensure that traplines have unique names.
@@ -365,6 +375,8 @@ CREATE TABLE public.catchtype
     catchtype_id bigint NOT NULL DEFAULT nextval('catchtype_catchtype_id_seq'::regclass),
     catchtype_name text NOT NULL,
     catchtype_imagefilename text,
+    catchtype_isinactive boolean NOT NULL DEFAULT FALSE,
+
     CONSTRAINT catchtype_pkey PRIMARY KEY (catchtype_id),
 
     -- Ensure that catch-types have unique names.
@@ -397,6 +409,7 @@ CREATE TABLE public.traplineuser
     traplineuser_userid bigint NOT NULL,
     traplineuser_traplineid bigint NOT NULL,
     traplineuser_isadmin boolean NOT NULL DEFAULT FALSE,
+
     CONSTRAINT traplineuser_pkey PRIMARY KEY (traplineuser_id),
 
     -- Ensure there is only one mapping between a user and each trapline.
@@ -450,6 +463,8 @@ CREATE TABLE public.trap
     trap_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
     trap_lastresettimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
     trap_baitid bigint NOT NULL,
+    trap_isinactive boolean NOT NULL DEFAULT FALSE,
+
     CONSTRAINT trap_pkey PRIMARY KEY (trap_id),
 
     -- Ensure that latitude and longitude values are within valid ranges
