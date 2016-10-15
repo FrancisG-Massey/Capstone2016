@@ -4,8 +4,8 @@
    <a href="#/trapline-admin/add-newtrapline" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap Line</a>  
 </div>
 
-<div class="row"> 
-    <div class="col-sm-7">  
+<div ng-class="{'row': selected}"> 
+    <div ng-class="{'col-sm-7': selected}">  
 
 	<div ng-if="region.traplines.length > 0" ng-repeat="region in regions" ng-init="parentIndex = region">
       <table style="table-layout:fixed" class="table table-condensed table-hover admin" >
@@ -21,10 +21,10 @@
       </table>
     </div>
     </div>
-    <form>
+    <form ng-if="selected">
     <div class="col-sm-5"> 
       <div class="well">
-        <h3 style="margin-top: 0">{{selected.id ? 'Trapline ID: ' + selected.id : 'Add New Trapline'}}</h3>
+        <h3 style="margin-top: 0">{{'Trapline ID: ' + selected.id }}</h3>
         <!--  <p>: <strong>d</strong></p>-->
         <div class="row">
           <div class="col-md-6 form-group">
@@ -55,14 +55,6 @@
             </div>
           </div>
         </div>
-    	<div class="clearfix">
-		<div class="pull-right" style="margin-top: 10px;" >
-        <div ng-if="selected">
-        <button class="btn btn-success" type="button">Save</button>
-        <button class="btn btn-danger" type="button">Delete</button>
-        </div>
-      </div>
-      </div>
 	</div>
 </div>
 </form>

@@ -92,13 +92,17 @@ angular.module('Admin')
     		    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
     			}
     		}
+    		if ($scope.selected) {                
+    		    $scope.selected.popup.openPopup();
+    		    mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
+    		}
     		return true;
     	}
     	
     	$scope.setSelected = function(item){
 	    	$scope.selected = this.trap;
-			$scope.selected.popup.openPopup();
-	    	mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
+			//$scope.selected.popup.openPopup();
+	    	//mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
 	    	
 	    	$scope.latitude = $scope.selected.coord_lat;
 	    	$scope.longtitude = $scope.selected.coord_long;
