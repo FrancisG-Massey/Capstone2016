@@ -7,6 +7,11 @@
 <p ng-if="!(traps.length > 0)">No traps exist: </p>
 	
 <div ng-if="traps.length > 0" ng-class="{'row': selected}">
+	<div ng-if="!selected" class="clearfix form-group">
+    <a href="#/trap-admin/{{trapline_id}}/add-new" id="addButton" class="btn btn-link">
+      <span class="glyphicon glyphicon-plus"></span> Add Trap
+    </a>
+  </div>
 	<div ng-class="{'col-sm-7': selected}">
 		<table class="table table-condensed table-hover admin">
 			<thead>
