@@ -16,13 +16,18 @@
         SELECT 
             ct.catchtype_id as id,
             ct.catchtype_name as name,
-            ct.catchtype_imagefilename as img_filename
+            ct.catchtype_imagefilename as img_filename,
+            ct.catchtype_isinactive as inactive
         FROM
             logged_user lu,
             catchtype ct
         WHERE
             ((#bigint:id# IS NULL) OR (ct.catchtype_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%'))) AND
+            
+            (((#boolean:inactive# IS NOT NULL) AND (ct.catchtype_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (ct.catchtype_isinactive = false)))
+
         GROUP BY
             ct.catchtype_id
         ORDER BY
@@ -46,7 +51,8 @@
         UPDATE catchtype
         SET
             catchtype_name = #string:name#,
-            catchtype_imagefilename = #string:img_filename#
+            catchtype_imagefilename = #string:img_filename#,
+            catchtype_isinactive = #boolean:inactive#
         WHERE 
             catchtype_id = #bigint:id#
         RETURNING

@@ -32,7 +32,10 @@
             ((#bigint:id# IS NULL) OR (u.user_id = #bigint:id#)) AND
             ((#bigint:created-user-id# IS NULL) OR (u.user_createduserid = #bigint:created-user-id#)) AND
             ((#string:name# IS NULL) OR (lower(u.user_name) LIKE lower('%' || #string:name# || '%'))) AND
-            ((#boolean:admin# IS NULL) OR (u.user_isadmin = #boolean:admin#))
+            ((#boolean:admin# IS NULL) OR (u.user_isadmin = #boolean:admin#)) AND
+
+            (((#boolean:inactive# IS NOT NULL) AND (u.user_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (u.user_isinactive = false)))
         GROUP BY
             u.user_id
         ORDER BY

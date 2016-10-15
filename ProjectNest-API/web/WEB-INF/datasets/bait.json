@@ -17,13 +17,18 @@
             b.bait_id as id,
             b.bait_name as name,
             b.bait_imagefilename as img_filename,
-            b.bait_note as note
+            b.bait_note as note,
+            b.bait_isinactive as inactive
         FROM
             logged_user lu,
             bait b
         WHERE
             ((#bigint:id# IS NULL) OR (b.bait_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%'))) AND 
+            
+            (((#boolean:inactive# IS NOT NULL) AND (bait_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (bait_isinactive = false)))
+
         GROUP BY
             b.bait_id
         ORDER BY
@@ -50,7 +55,8 @@
         SET
             bait_name = #string:name#,
             bait_imagefilename = #string:img_filename#,
-            bait_note = #string:note#
+            bait_note = #string:note#,
+            bait_isinactive = #boolean:inactive#
         WHERE
             bait_id = #bigint:id#
         RETURNING

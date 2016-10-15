@@ -15,7 +15,8 @@
 
         SELECT 
             r.region_id as id,
-            r.region_name as name
+            r.region_name as name,
+            r.region_isinactive as inactive
         FROM
             logged_user lu,
             region r
@@ -27,7 +28,10 @@
             ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
             ((#bigint:id# IS NULL) OR (r.region_id = #bigint:id#)) AND
             ((#bigint:trapline-id# IS NULL) OR (tl.trapline_id = #bigint:trapline-id#)) AND
-            ((#string:name# IS NULL) OR (lower(r.region_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(r.region_name) LIKE lower('%' || #string:name# || '%'))) AND
+            
+            (((#boolean:inactive# IS NOT NULL) AND (r.region_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (r.region_isinactive = false)))
         GROUP BY
             r.region_id
         ORDER BY
@@ -48,7 +52,8 @@
     "PUT" : "
         UPDATE region
         SET
-            region_name = #string:name#
+            region_name = #string:name#,
+            region_isinactive = #boolean:inactive#
         WHERE 
             region_id = #bigint:id#
         RETURNING

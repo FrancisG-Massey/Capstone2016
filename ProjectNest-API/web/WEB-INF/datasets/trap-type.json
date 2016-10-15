@@ -17,13 +17,17 @@
             tt.traptype_id as id,
             tt.traptype_name as name,
             tt.traptype_model as model,
-            tt.traptype_note as note
+            tt.traptype_note as note,
+            tt.traptype_isinactive as inactive
         FROM 
             logged_user lu,
             traptype tt
         WHERE
             ((#bigint:id# IS NULL) OR (tt.traptype_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(tt.traptype_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(tt.traptype_name) LIKE lower('%' || #string:name# || '%'))) AND
+
+            (((#boolean:inactive# IS NOT NULL) AND (tt.traptype_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (tt.traptype_isinactive = false)))
         GROUP BY
             tt.traptype_id
         ORDER BY
@@ -50,7 +54,8 @@
         SET
             traptype_name = #string:name#,
             traptype_model = #string:model#,
-            traptype_note = #string:note#
+            traptype_note = #string:note#,
+            traptype_isinactive = #boolean:inactive#
         WHERE 
             traptype_id = #bigint:id#
         RETURNING

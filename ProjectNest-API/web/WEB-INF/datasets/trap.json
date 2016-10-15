@@ -23,7 +23,8 @@
             t.trap_status as status,
             t.trap_createdtimestamp as created,
             t.trap_lastresettimestamp as last_reset,
-            t.trap_baitid as bait_id
+            t.trap_baitid as bait_id,
+            t.trap_isinactive as inactive
         FROM
             logged_user lu,
             trap t
@@ -38,7 +39,10 @@
             ((#bigint:trapline-id# IS NULL) OR (t.trap_traplineid = #bigint:trapline-id#)) AND
             ((#bigint:trap-type-id# IS NULL) OR (t.trap_traptypeid = #bigint:trap-type-id#)) AND
             ((#integer:status# IS NULL) OR (t.trap_status = #integer:status#)) AND
-            ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#))
+            ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#)) AND
+
+            (((#boolean:inactive# IS NOT NULL) AND (t.trap_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (t.trap_isinactive = false)))
         GROUP BY
             t.trap_id
         ORDER BY
@@ -83,7 +87,8 @@
             trap_traptypeid = #bigint:traptype_id#,
             trap_status = #bigint:status#,
             trap_lastresettimestamp = #timestamp:last_reset#,
-            trap_baitid = #bigint:bait_id#
+            trap_baitid = #bigint:bait_id#,
+            trap_isinactive = #boolean:inactive#
         WHERE 
             trap_id = #bigint:id#
         RETURNING
