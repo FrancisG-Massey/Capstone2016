@@ -126,7 +126,7 @@ public class SessionServlet extends HttpServlet {
         
         // Get the user's id and hashed password from the DB
         long dbUserID; String dbPassword;
-        final String sqlQuery = "SELECT user_id, user_password FROM public.users WHERE user_name = ?;";
+        final String sqlQuery = "SELECT user_id, user_password FROM public.users WHERE user_name = ? AND user_isinactive = false;";
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
             PreparedStatement sth = conn.prepareStatement(sqlQuery);
@@ -140,7 +140,7 @@ public class SessionServlet extends HttpServlet {
                     dbUserID = rsh.getLong("user_id");
                     LOG.log(Level.INFO, "User '{0}' with id '{1}' has successfully logged in!", new Object[]{inputUsername, Long.toString(dbUserID)});
                 } else {
-                    // No such-named user is registered in the database.
+                    // No such-named active user is registered in the database.
                     LOG.log(Level.INFO, "Failed login attempt from {0} with unrecognised username: \"{1}\" and password: \"{2}\"\nReturning 403...\n{3}", 
                             new Object[]{request.getRemoteAddr(), inputUsername, inputPassword, response.toString()});
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
