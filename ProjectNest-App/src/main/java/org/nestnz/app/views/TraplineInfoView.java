@@ -33,8 +33,10 @@ import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.services.TrapDataService;
+import org.nestnz.app.util.Sequence;
 
 import com.gluonhq.charm.glisten.control.AppBar;
+import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.layout.layer.MenuSidePopupView;
 import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
@@ -50,6 +52,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Spinner;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -110,7 +115,15 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         	dataService.loadingProperty().removeListener(this);
         });
         
-        VBox controls = new VBox();
+        initControls();
+        
+		menu = buildMenu();
+		getApplication().addLayerFactory("trapline-info-menu", () -> menu);
+        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
+	}
+    
+    private void initControls () {
+    	VBox controls = new VBox();
         HBox mapLoadControls = new HBox();
         preloadMap.setVisible(false);
         preloadMap.setOnAction(evt -> {
@@ -145,15 +158,30 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         
         start.getStyleClass().add("large-button");
 		start.setOnAction(evt -> {
-			NavigationView navView = ((NestApplication) getApplication()).lookupView(NavigationView.NAME);
-			navView.setTrapline(trapline);
-			getApplication().switchView(NavigationView.NAME);
+			//Find the highest & lowest trap numbers in the trapline
+			int minTrap = Integer.MAX_VALUE;
+			int maxTrap = 0;
+			for (Trap t : trapline.getTraps()) {
+				if (t.getNumber() > maxTrap) {
+					maxTrap = t.getNumber();
+				}
+				if (t.getNumber() < minTrap) {
+					minTrap = t.getNumber();
+				}
+			}
+			//Create the dialog for selecting the start & end points of the navigation sequence
+			Dialog<Sequence> dialog = buildSequenceDialog(minTrap, maxTrap);
+			
+			//If the "Go" button was pressed, swap to the navigation view using the supplied start & end trap numbers
+			dialog.showAndWait().ifPresent(seq -> {
+				NavigationView navView = ((NestApplication) getApplication()).lookupView(NavigationView.NAME);
+				navView.setTrapline(trapline);
+				navView.setNavigationSequence(seq.getStart(), seq.getEnd(), seq.getStep());
+				getApplication().switchView(NavigationView.NAME);
+			});			
 		});
 		this.setBottom(start);
-		menu = buildMenu();
-		getApplication().addLayerFactory("trapline-info-menu", () -> menu);
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
-	}
+    }
 	
 	public void setTrapline (Trapline trapline) {
 		this.trapline = trapline;
@@ -222,6 +250,55 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		
 		menu.getItems().add(addTraps);
 		return new MenuSidePopupView(menu, Side.LEFT);
+	}
+	
+	private Dialog<Sequence> buildSequenceDialog (int minTrap, int maxTrap) {
+		Dialog<Sequence> dialog = new Dialog<>();
+		
+    	GridPane controls = new GridPane();
+    	dialog.setContent(controls);
+    	dialog.setTitleText("Select Navigation Sequence");
+    	
+    	ColumnConstraints column1 = new ColumnConstraints();
+        column1.setPercentWidth(50);
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setPercentWidth(50);
+        controls.getColumnConstraints().addAll(column1, column2);
+        
+        Label startTrapLabel = new Label("Start Trap:");
+        Spinner<Integer> startTrapSelector = new Spinner<>(minTrap, maxTrap, minTrap);
+        
+        Label endTrapLabel = new Label("End Trap:");
+        Spinner<Integer> endTrapSelector = new Spinner<>(minTrap, maxTrap, maxTrap);
+        
+        GridPane.setConstraints(startTrapLabel, 0, 0);
+        GridPane.setConstraints(startTrapSelector, 1, 0);
+        
+        GridPane.setConstraints(endTrapLabel, 0, 1);
+        GridPane.setConstraints(endTrapSelector, 1, 1);
+        
+		controls.getChildren().addAll(startTrapLabel, startTrapSelector, endTrapLabel, endTrapSelector);
+		
+		Button go = new Button("Go");
+		Button cancel = new Button("Cancel");
+		
+		go.setOnAction(evt -> {
+			int startNum = startTrapSelector.getValue();
+			int endNum = endTrapSelector.getValue();
+			int step = 1;
+			
+			if (startNum > endNum) {
+				//If a higher start point has been selected (compared to the end point), run the trapline sequence in reverse
+				step = -1;
+			}
+			dialog.setResult(new Sequence(startNum, endNum, step));
+			dialog.hide();
+		});
+		
+		cancel.setOnAction(evt -> dialog.hide());
+		
+		dialog.getButtons().addAll(go, cancel);
+		return dialog;
 	}
 
     @Override
