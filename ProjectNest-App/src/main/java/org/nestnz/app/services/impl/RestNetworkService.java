@@ -18,25 +18,33 @@ package org.nestnz.app.services.impl;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.model.Catch;
+import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.net.model.ApiCatch;
+import org.nestnz.app.net.model.ApiRegion;
 import org.nestnz.app.net.model.ApiTrap;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.NetworkService;
 
+import com.gluonhq.connect.ConnectState;
+import com.gluonhq.connect.GluonObservableList;
 import com.gluonhq.connect.GluonObservableObject;
 import com.gluonhq.connect.provider.DataProvider;
+import com.gluonhq.connect.provider.ListDataReader;
 import com.gluonhq.connect.provider.ObjectDataWriter;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
+import com.gluonhq.impl.connect.provider.RestListDataReader;
 import com.gluonhq.impl.connect.provider.RestObjectDataWriterAndRemover;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.ListChangeListener;
 
 /**
  * 
@@ -55,8 +63,8 @@ public class RestNetworkService implements NetworkService {
 	 * @see org.nestnz.app.services.NetworkService#sendLoggedCatch(int, org.nestnz.app.model.Catch)
 	 */
 	@Override
-	public ReadOnlyObjectProperty<UpdateStatus> sendLoggedCatch(int trapId, Catch loggedCatch) {
-		ReadOnlyObjectWrapper<UpdateStatus> status = new ReadOnlyObjectWrapper<>(UpdateStatus.PENDING);
+	public ReadOnlyObjectProperty<RequestStatus> sendLoggedCatch(int trapId, Catch loggedCatch) {
+		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
 		
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
     			.path("/catch").header("Session-Token", loginService.getSessionToken())
@@ -80,23 +88,23 @@ public class RestNetworkService implements NetworkService {
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
 						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for catch "+apiCatch);
-						status.set(UpdateStatus.FAILED);
+						status.set(RequestStatus.FAILED);
 					} else {
 						int id;
 						try {
 							id = extractIdFromRedirect(locationHeaders.get(0));
 						} catch (RuntimeException ex) {
 							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
-							status.set(UpdateStatus.FAILED);
+							status.set(RequestStatus.FAILED);
 							return;
 						}
 						LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);
 						loggedCatch.setId(id);
-						status.set(UpdateStatus.SUCCESS);
+						status.set(RequestStatus.SUCCESS);
 					}
 				} else {
 					LOG.log(Level.WARNING, "Failed to send catch to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
-					status.set(UpdateStatus.FAILED);
+					status.set(RequestStatus.FAILED);
 				}
 				break;
 			case READY:
@@ -113,8 +121,8 @@ public class RestNetworkService implements NetworkService {
 	 * @see org.nestnz.app.services.NetworkService#sendCreatedTrap(int, org.nestnz.app.model.Trap)
 	 */
 	@Override
-	public ReadOnlyObjectProperty<UpdateStatus> sendCreatedTrap(int traplineId, Trap trap) {
-		ReadOnlyObjectWrapper<UpdateStatus> status = new ReadOnlyObjectWrapper<>(UpdateStatus.PENDING);
+	public ReadOnlyObjectProperty<RequestStatus> sendCreatedTrap(int traplineId, Trap trap) {
+		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
 		
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
     			.path("/trap").header("Session-Token", loginService.getSessionToken())
@@ -138,23 +146,23 @@ public class RestNetworkService implements NetworkService {
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
 						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for trap "+apiTrap);
-						status.set(UpdateStatus.FAILED);
+						status.set(RequestStatus.FAILED);
 					} else {
 						int id;
 						try {
 							id = extractIdFromRedirect(locationHeaders.get(0));
 						} catch (RuntimeException ex) {
 							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
-							status.set(UpdateStatus.FAILED);
+							status.set(RequestStatus.FAILED);
 							return;
 						}
 						LOG.log(Level.INFO, "Successfully created trap: "+apiTrap);
 						trap.setId(id);
-						status.set(UpdateStatus.SUCCESS);
+						status.set(RequestStatus.SUCCESS);
 					}
 				} else {
 					LOG.log(Level.WARNING, "Failed to send trap to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
-					status.set(UpdateStatus.FAILED);
+					status.set(RequestStatus.FAILED);
 				}
 				break;
 			case READY:
@@ -169,6 +177,50 @@ public class RestNetworkService implements NetworkService {
 	
 	public int extractIdFromRedirect (String location) {
 		return Integer.parseInt(location.substring(location.lastIndexOf('/')+1));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#loadRegions(java.util.function.Consumer)
+	 */
+	@Override
+	public ReadOnlyObjectProperty<RequestStatus> loadRegions(Consumer<Region> loadCallback) {
+		RestClient regionClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/region").header("Session-Token", loginService.getSessionToken());
+		
+		return processReadRequest(ApiRegion.class, regionClient, apiRegion -> {
+			Region region = new Region(apiRegion.getId(), apiRegion.getName());
+			loadCallback.accept(region);
+		});
+	}
+	
+	
+	private <T> ReadOnlyObjectProperty<RequestStatus>  processReadRequest (Class<T> type, RestClient client, Consumer<T> callback) {
+		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
+		    	
+    	RestDataSource dataSource = client.createRestDataSource();
+		
+		ListDataReader<T> reader = new RestListDataReader<>(dataSource, type);
+		GluonObservableList<T> resultList = DataProvider.retrieveList(reader);
+		resultList.addListener((ListChangeListener<T>) c -> {
+			while (c.next()) {
+				if (c.wasAdded()) {
+					for (T item : c.getAddedSubList()) {
+						callback.accept(item);
+					}
+				}
+			}
+		});
+		
+		resultList.stateProperty().addListener((obs, oldState, newState) -> {
+			if (newState == ConnectState.FAILED) {
+				//Handle failure
+				status.set(RequestStatus.FAILED);
+				LOG.log(Level.SEVERE, "Problem loading "+type+". HTTP response: "+dataSource.getResponseMessage(), resultList.getException());
+			} else if (newState == ConnectState.SUCCEEDED) {
+				status.set(RequestStatus.SUCCESS);
+			}
+		});
+		return status;
 	}
 
 }

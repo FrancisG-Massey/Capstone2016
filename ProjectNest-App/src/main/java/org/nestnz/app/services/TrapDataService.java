@@ -354,38 +354,23 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     }
     
     protected void refreshRegions () {
-    	RestClient regionClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/region").header("Session-Token", loginService.getSessionToken());
-    	
-    	RestDataSource dataSource = regionClient.createRestDataSource();
-    	
-    	BackgroundTasks.runInBackground(() -> {
-    		try (JsonReader reader = JsonUtil.createJsonReader(dataSource.getInputStream())) {
-    			JsonArray array = reader.readArray();
-    			LOG.log(Level.INFO, "Response: "+array.toString());
-    			Platform.runLater(() -> {
-    				try {
-	    				for (JsonValue value : array) {
-	        				JsonObject regionJson = (JsonObject) value;
-	        				int id = regionJson.getInt("id");
-	        				Region region = regions.get(id);
-	        				if (region == null) {
-	        					region = new Region(id);
-	        					regions.put(id, region);
-	        				}
-	        				region.setName(regionJson.getString("name"));
-	        			}
-    				} catch (RuntimeException ex) {
-    					LOG.log(Level.SEVERE, "Problem parsing regions.", ex);
-    				} finally {
-    					//Signal region data has been fetched
-    					appDataLoading.release();
-    				}
-    			});
-    		} catch (IOException | RuntimeException ex) {
-    			LOG.log(Level.SEVERE, "Problem requesting regions. Response: "+dataSource.getResponseMessage(), ex);
-    			appDataLoading.release();
+    	networkService.loadRegions(region -> {
+    		if (regions.containsKey(region.getId())) {
+    			regions.get(region.getId()).setName(region.getName());
+			} else {
+				regions.put(region.getId(), region);				
 			}
+    	}).addListener((obs, oldStatus, newStatus) -> {
+    		switch(newStatus) {
+			case FAILED:
+				//Fall through
+			case SUCCESS:
+				//Signal region data has been fetched
+				appDataLoading.release();
+				break;
+			case PENDING:
+				break;
+    		}
     	});
     }
     
