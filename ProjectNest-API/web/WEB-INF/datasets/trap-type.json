@@ -6,8 +6,7 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_isadmin,
-                user_isinactive
+                user_isadmin
             FROM users u
             JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
@@ -23,7 +22,6 @@
             logged_user lu,
             traptype tt
         WHERE
-            (lu.user_isinactive = false) AND
             ((#bigint:id# IS NULL) OR (tt.traptype_id = #bigint:id#)) AND
             ((#string:name# IS NULL) OR (lower(tt.traptype_name) LIKE lower('%' || #string:name# || '%')))
         GROUP BY

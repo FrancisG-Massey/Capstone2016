@@ -6,8 +6,7 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_isadmin,
-                user_isinactive
+                user_isadmin
             FROM users u
             JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
@@ -29,7 +28,6 @@
             users u
             LEFT JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id
         WHERE
-            (lu.user_isinactive = false) AND
             ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id) OR (u.user_id = lu.user_id)) AND
             ((#bigint:id# IS NULL) OR (u.user_id = #bigint:id#)) AND
             ((#bigint:created-user-id# IS NULL) OR (u.user_createduserid = #bigint:created-user-id#)) AND
