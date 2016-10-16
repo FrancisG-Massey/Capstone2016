@@ -73,7 +73,6 @@ public class TestTrapDataService {
 	
 	TrapDataService dataService;
 	CachingService cachingService = mock(CachingService.class);
-	LoginService loginService = mock(LoginService.class);
 	NetworkService networkService = mock(NetworkService.class);
 
 	/**
@@ -81,7 +80,7 @@ public class TestTrapDataService {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		dataService = new TrapDataService(cachingService, loginService, networkService);
+		dataService = new TrapDataService(cachingService, networkService);
 		
 		GluonObservableObject<Cacheable<Map<Integer, CatchType>>> results = new GluonObservableObject<>();	    
 		Cacheable<Map<Integer, CatchType>> catchTypes = new Cacheable<>();    	

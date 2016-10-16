@@ -35,6 +35,7 @@ import org.nestnz.app.net.model.ApiCatch;
 import org.nestnz.app.net.model.ApiCatchType;
 import org.nestnz.app.net.model.ApiRegion;
 import org.nestnz.app.net.model.ApiTrap;
+import org.nestnz.app.net.model.ApiTrapline;
 import org.nestnz.app.net.model.ApiPostTrap;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.NetworkService;
@@ -246,7 +247,25 @@ public class RestNetworkService implements NetworkService {
 			loadCallback.accept(trap);			
 		});
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#loadTraplines(java.util.function.Consumer)
+	 */
+	@Override
+	public ReadOnlyObjectProperty<RequestStatus> loadTraplines(Consumer<Trapline> loadCallback) {
+		RestClient traplineClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/trapline").header("Session-Token", loginService.getSessionToken());
+    	
+    	return processReadRequest(ApiTrapline.class, traplineClient, apiTrapline -> {
+    		Region r = new Region(apiTrapline.getRegionId());
+    		Trapline trapline = new Trapline(apiTrapline.getId(), apiTrapline.getName(), r, apiTrapline.getStart(), apiTrapline.getEnd());
+    		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType1()));
+    		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType2()));
+    		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType3()));
+    		
+    		loadCallback.accept(trapline);
+    	});
+	}	
 	
 	private <T> ReadOnlyObjectProperty<RequestStatus> processReadRequest (Class<T> type, RestClient client, Consumer<T> callback) {
 		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);

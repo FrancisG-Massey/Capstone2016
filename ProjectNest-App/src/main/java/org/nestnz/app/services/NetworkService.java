@@ -74,4 +74,12 @@ public interface NetworkService {
 	 * @return A status property which will change to SUCCESS or FAILED when the request completes
 	 */
 	public ReadOnlyObjectProperty<RequestStatus> loadTrapline(Trapline trapline, Consumer<Trap> loadCallback);
+	
+	/**
+	 * Fetches all traplines for which the user has permission to access from the API.
+	 * For each trapline returned, {@code loadCallback} is called.
+	 * @param loadCallback The function to call for each trapline fetched from the server
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<RequestStatus> loadTraplines(Consumer<Trapline> loadCallback);
 }

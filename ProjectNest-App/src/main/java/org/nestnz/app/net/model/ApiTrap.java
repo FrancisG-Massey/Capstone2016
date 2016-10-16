@@ -19,7 +19,7 @@ package org.nestnz.app.net.model;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Represents a trap sent to/received from the /trap on the API.
+ * Represents a trap sent to/received from /trap on the API.
  * This class can be used for GET and PUT requests, but {@link ApiPostTrap} should be used for POST requests as it excludes the ID
  */
 public class ApiTrap extends ApiPostTrap {
