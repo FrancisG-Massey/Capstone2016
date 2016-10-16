@@ -195,7 +195,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			} catch (InterruptedException e) {
 				//Silently ignore the interrupt
 			}
+			Set<Integer> validLineIds = new HashSet<>();
+			
 			networkService.loadTraplines(trapline -> { 	
+				validLineIds.add(trapline.getId());
+				
 	    		Trapline oldTrapline = getTrapline(trapline.getId());
 	    		if (oldTrapline == null) {
 	    			populateTrapline(trapline, trapline);
@@ -205,7 +209,15 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	    		}
 	    	}).addListener((obs, oldStatus, newStatus) -> {
 	    		switch(newStatus) {
-				case SUCCESS:				
+				case SUCCESS:
+					//Remove any traplines which no longer exist
+					Iterator<Trapline> iterator = traplines.iterator();
+    				while (iterator.hasNext()) {
+    					Trapline line = iterator.next();
+    					if (!validLineIds.contains(line.getId())) {
+    						iterator.remove();
+    					}
+    				}
 					//Fall through
 				case FAILED:
 					loadingProperty.set(false);//Signal loading is complete
