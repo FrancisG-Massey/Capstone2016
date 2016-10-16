@@ -102,8 +102,7 @@
             trapline_endtag = #string:end_tag#,
             trapline_imagefilename = #string:img_filename#,
             trapline_defaultbaitid = #bigint:default_bait_id#,
-            trapline_defaulttraptypeid = #bigint:default_traptype_id#,
-            trapline_isinactive = #boolean:inactive#
+            trapline_defaulttraptypeid = #bigint:default_traptype_id#
         WHERE 
             trapline_id = #bigint:id#
         RETURNING

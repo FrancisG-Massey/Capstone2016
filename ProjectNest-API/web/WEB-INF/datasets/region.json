@@ -52,8 +52,7 @@
     "PUT" : "
         UPDATE region
         SET
-            region_name = #string:name#,
-            region_isinactive = #boolean:inactive#
+            region_name = #string:name#
         WHERE 
             region_id = #bigint:id#
         RETURNING

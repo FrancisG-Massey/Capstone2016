@@ -87,8 +87,7 @@
             trap_traptypeid = #bigint:traptype_id#,
             trap_status = #bigint:status#,
             trap_lastresettimestamp = #timestamp:last_reset#,
-            trap_baitid = #bigint:bait_id#,
-            trap_isinactive = #boolean:inactive#
+            trap_baitid = #bigint:bait_id#
         WHERE 
             trap_id = #bigint:id#
         RETURNING

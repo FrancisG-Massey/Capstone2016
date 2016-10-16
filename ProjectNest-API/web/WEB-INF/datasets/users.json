@@ -77,8 +77,7 @@
             user_contactfullname = #string:fullname#,
             user_contactphone = #string:phone#,
             user_contactemail = #string:email#,
-            user_isadmin = #boolean:admin#,
-            user_isinactive = #boolean:inactive#
+            user_isadmin = #boolean:admin#
         WHERE 
             user_id = #bigint:id#
         RETURNING

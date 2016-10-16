@@ -54,8 +54,7 @@
         SET
             traptype_name = #string:name#,
             traptype_model = #string:model#,
-            traptype_note = #string:note#,
-            traptype_isinactive = #boolean:inactive#
+            traptype_note = #string:note#
         WHERE 
             traptype_id = #bigint:id#
         RETURNING

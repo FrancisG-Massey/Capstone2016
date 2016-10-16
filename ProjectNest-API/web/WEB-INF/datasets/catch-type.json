@@ -51,8 +51,7 @@
         UPDATE catchtype
         SET
             catchtype_name = #string:name#,
-            catchtype_imagefilename = #string:img_filename#,
-            catchtype_isinactive = #boolean:inactive#
+            catchtype_imagefilename = #string:img_filename#
         WHERE 
             catchtype_id = #bigint:id#
         RETURNING
