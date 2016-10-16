@@ -77,8 +77,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> sendLoggedCatch(int trapId, Catch loggedCatch) {
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/catch").header("Session-Token", loginService.getSessionToken())
-    			.contentType("application/json");
+    			.path("/catch").contentType("application/json");
 		
 		String logged = loggedCatch.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
@@ -96,8 +95,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> sendCreatedTrap(int traplineId, Trap trap) {
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/trap").header("Session-Token", loginService.getSessionToken())
-    			.contentType("application/json");
+    			.path("/trap").contentType("application/json");
 		
 		String created = trap.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
@@ -240,6 +238,7 @@ public class RestNetworkService implements NetworkService {
 						loginService.renewSession().addListener(onRenewal);
 					} else {
 						//Already tried once & received a 403 error.
+						LOG.log(Level.WARNING, "Failed to send "+type+" - received 403 error after renewing session.");
 						status.set(RequestStatus.FAILED_UNAUTHORISED);
 					}
 					break;
@@ -257,9 +256,16 @@ public class RestNetworkService implements NetworkService {
 	}
 	
 	private <T> ReadOnlyObjectProperty<RequestStatus> processCreateRequest (Class<T> type, T data, RestClient client, Consumer<Integer> callback) {
+		return processCreateRequest(type, data, client, callback, true);
+	}
+	
+	private <T> ReadOnlyObjectProperty<RequestStatus> processCreateRequest (Class<T> type, T data, RestClient client, Consumer<Integer> callback, boolean retry) {
 		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
 		
 		RestDataSource dataSource = client.createRestDataSource();
+    	
+    	dataSource.getHeaders().remove("Session-Token");
+    	dataSource.addHeader("Session-Token", loginService.getSessionToken());
 		
 		ObjectDataWriter<T> writer = new RestObjectDataWriterAndRemover<>(dataSource, type);
     	
@@ -269,7 +275,8 @@ public class RestNetworkService implements NetworkService {
     		if (newState == ConnectState.SUCCEEDED || newState == ConnectState.FAILED) {
     			//Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
     			
-				if (dataSource.getResponseCode() == 201) {//Created successfully
+				switch (dataSource.getResponseCode()) {
+				case 201://Created successfully
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
 						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for "+data);
@@ -286,9 +293,38 @@ public class RestNetworkService implements NetworkService {
 						callback.accept(id);
 						status.set(RequestStatus.SUCCESS);
 					}
-				} else {
+					break;
+				case 403://Session timeout
+					if (retry) {
+						ChangeListener<LoginStatus> onRenewal = new ChangeListener<LoginStatus> () {
+							public void changed (ObservableValue<? extends LoginStatus> loginObs, 
+									LoginStatus oldLoginStatus, LoginStatus newLoginStatus) {
+								loginObs.removeListener(this);
+								if (newLoginStatus == LoginStatus.LOGGED_IN) {
+									//Successfully renewed session
+									LOG.log(Level.INFO, "Renewed session successfully. Resending request using new session token...");
+									//Bind this status property to the result of the inner request
+									status.bind(processCreateRequest(type, data, client, callback, false));
+								} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
+									//Problem renewing session due to sever unavailability
+									status.set(RequestStatus.FAILED);
+								} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
+									//Old credentials no longer work
+									status.set(RequestStatus.FAILED_UNAUTHORISED);
+								}
+							}
+						};
+						loginService.renewSession().addListener(onRenewal);
+					} else {
+						//Already tried once & received a 403 error.
+						LOG.log(Level.WARNING, "Failed to send "+type+" - received 403 error after renewing session.");
+						status.set(RequestStatus.FAILED_UNAUTHORISED);
+					}
+					break;
+				default:
 					LOG.log(Level.WARNING, "Failed to send "+data+" to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
 					status.set(RequestStatus.FAILED);
+					break;
 				}  		
     		}
     	});
