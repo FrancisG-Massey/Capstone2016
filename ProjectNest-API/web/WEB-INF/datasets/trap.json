@@ -6,8 +6,7 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_isadmin,
-                user_isinactive
+                user_isadmin
             FROM users u
             JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
@@ -24,7 +23,8 @@
             t.trap_status as status,
             t.trap_createdtimestamp as created,
             t.trap_lastresettimestamp as last_reset,
-            t.trap_baitid as bait_id
+            t.trap_baitid as bait_id,
+            t.trap_isinactive as inactive
         FROM
             logged_user lu,
             trap t
@@ -33,14 +33,16 @@
             LEFT JOIN traplineuser tlu
                 ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            (lu.user_isinactive = false) AND
             ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
             ((#bigint:id# IS NULL) OR (t.trap_id = #bigint:id#)) AND
             ((#bigint:number# IS NULL) OR (t.trap_number = #bigint:number#)) AND
             ((#bigint:trapline-id# IS NULL) OR (t.trap_traplineid = #bigint:trapline-id#)) AND
             ((#bigint:trap-type-id# IS NULL) OR (t.trap_traptypeid = #bigint:trap-type-id#)) AND
             ((#integer:status# IS NULL) OR (t.trap_status = #integer:status#)) AND
-            ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#))
+            ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#)) AND
+
+            (((#boolean:inactive# IS NOT NULL) AND (t.trap_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (t.trap_isinactive = false)))
         GROUP BY
             t.trap_id
         ORDER BY

@@ -22,6 +22,9 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -193,7 +196,6 @@ public class Common {
         String nextParam = null;
         String nextParamValue = null;
 
-        SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
         SimpleDateFormat NZSIMPLEDATEFORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
         try {
@@ -284,8 +286,8 @@ public class Common {
                                 st.setNull(i, java.sql.Types.TIMESTAMP);
                                 continue;
                             }
-                            java.util.Date dt2 = ISO8601DATEFORMAT.parse(nextParamValue.trim().replaceAll(" ", "T"));
-                            st.setTimestamp(i, new java.sql.Timestamp(dt2.getTime()));
+                            LocalDateTime ldt = LocalDateTime.parse(nextParamValue.trim().replaceAll(" ", "T"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                            st.setTimestamp(i, Timestamp.valueOf(ldt));
                             break;
                         case "string-bcrypt":
                             if (nextParamValue == null) {
@@ -322,7 +324,7 @@ public class Common {
             LOG.log(Level.INFO, "An unexpected SQLException has occured. Unable to continue parsing: {0}", ex.getMessage());
             throw ex;
         } catch (
-            ParseException | NumberFormatException ex
+            DateTimeParseException | ParseException | NumberFormatException ex
         ) {
             // Write log within inner catch block so we still have params
             LOG.log(Level.INFO, "Supplied request parameter '" + nextParamValue + 

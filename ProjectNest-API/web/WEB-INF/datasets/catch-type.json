@@ -6,8 +6,7 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_isadmin,
-                user_isinactive
+                user_isadmin
             FROM users u
             JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
@@ -17,14 +16,18 @@
         SELECT 
             ct.catchtype_id as id,
             ct.catchtype_name as name,
-            ct.catchtype_imagefilename as img_filename
+            ct.catchtype_imagefilename as img_filename,
+            ct.catchtype_isinactive as inactive
         FROM
             logged_user lu,
             catchtype ct
         WHERE
-            (lu.user_isinactive = false) AND
             ((#bigint:id# IS NULL) OR (ct.catchtype_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%'))) AND
+            
+            (((#boolean:inactive# IS NOT NULL) AND (ct.catchtype_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (ct.catchtype_isinactive = false)))
+
         GROUP BY
             ct.catchtype_id
         ORDER BY

@@ -6,8 +6,7 @@
         WITH logged_user AS (
             SELECT
                 user_id,
-                user_isadmin,
-                user_isinactive
+                user_isadmin
             FROM users u
             JOIN session s ON u.user_id = s.session_userid
             WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
@@ -15,7 +14,7 @@
         ),
 
         -- Common Catches
-        -- This may get slow, but we can abstract to a view later if required
+        -- This may get slow, but we can probably abstract to a view later if required
         -- Likely can be better implemented with a window function, but time is of the essence...
         cc AS (
             SELECT
@@ -50,18 +49,21 @@
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 1) AS common_ct_id_2,
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3,
             tl.trapline_defaultbaitid AS default_bait_id,
-            tl.trapline_defaulttraptypeid AS default_traptype_id
+            tl.trapline_defaulttraptypeid AS default_traptype_id,
+            tl.trapline_isinactive as inactive
         FROM
             logged_user lu,
             trapline tl
             LEFT JOIN traplineuser tlu
                 ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            (lu.user_isinactive = false) AND
             ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
             ((#bigint:id# IS NULL) OR (tl.trapline_id = #bigint:id#)) AND
             ((#bigint:region-id# IS NULL) OR (tl.trapline_regionid = #bigint:region-id#)) AND
-            ((#string:name# IS NULL) OR (lower(tl.trapline_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(tl.trapline_name) LIKE lower('%' || #string:name# || '%'))) AND
+
+            (((#boolean:inactive# IS NOT NULL) AND (tl.trapline_isinactive = #boolean:inactive#)) OR
+            ((#boolean:inactive# IS NULL) AND (tl.trapline_isinactive = false)))
         GROUP BY
             tl.trapline_id
         ORDER BY
