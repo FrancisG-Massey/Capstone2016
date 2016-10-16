@@ -16,8 +16,13 @@
  *******************************************************************************/
 package org.nestnz.app.services;
 
+import java.util.function.Consumer;
+
 import org.nestnz.app.model.Catch;
+import org.nestnz.app.model.CatchType;
+import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
+import org.nestnz.app.model.Trapline;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 
@@ -27,7 +32,7 @@ import javafx.beans.property.ReadOnlyObjectProperty;
  */
 public interface NetworkService {
 	
-	public static enum UpdateStatus { PENDING, SUCCESS, FAILED };
+	public static enum RequestStatus { PENDING, SUCCESS, FAILED, FAILED_UNAUTHORISED };
 
 	/**
 	 * Submits a logged catch in a trap to the API. 
@@ -36,7 +41,7 @@ public interface NetworkService {
 	 * @param loggedCatch The information about the newly logged catch
 	 * @return A status property which will change to SUCCESS or FAILED when the request completes
 	 */
-	public ReadOnlyObjectProperty<UpdateStatus> sendLoggedCatch(int trapId, Catch loggedCatch);
+	public ReadOnlyObjectProperty<RequestStatus> sendLoggedCatch(int trapId, Catch loggedCatch);
 	
 	/**
 	 * Submits a new trap within a trapline to the API. 
@@ -45,5 +50,36 @@ public interface NetworkService {
 	 * @param trap The information of the newly created trap.
 	 * @return A status property which will change to SUCCESS or FAILED when the request completes
 	 */
-	public ReadOnlyObjectProperty<UpdateStatus> sendCreatedTrap(int traplineId, Trap trap);
+	public ReadOnlyObjectProperty<RequestStatus> sendCreatedTrap(int traplineId, Trap trap);
+	
+	/**
+	 * Fetches the list of regions from the API. For each region returned, {@code loadCallback} is called.
+	 * @param loadCallback The function to call for each region fetched from the server
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<RequestStatus> loadRegions(Consumer<Region> loadCallback);
+	
+	/**
+	 * Fetches the list of catch types from the API. For each region returned, {@code loadCallback} is called.
+	 * @param loadCallback The function to call for each catch type fetched from the server
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<RequestStatus> loadCatchTypes(Consumer<CatchType> loadCallback);
+	
+	/**
+	 * Fetches all traps belonging to the specified trapline from the API.
+	 * For each trap returned, {@code loadCallback} is called.
+	 * @param trapline The trapline for which to load traps
+	 * @param loadCallback The function to call for each trap fetched from the server
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<RequestStatus> loadTrapline(Trapline trapline, Consumer<Trap> loadCallback);
+	
+	/**
+	 * Fetches all traplines for which the user has permission to access from the API.
+	 * For each trapline returned, {@code loadCallback} is called.
+	 * @param loadCallback The function to call for each trapline fetched from the server
+	 * @return A status property which will change to SUCCESS or FAILED when the request completes
+	 */
+	public ReadOnlyObjectProperty<RequestStatus> loadTraplines(Consumer<Trapline> loadCallback);
 }

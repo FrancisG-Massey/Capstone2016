@@ -26,10 +26,10 @@ import java.util.logging.Logger;
 
 import org.nestnz.app.util.BackgroundTasks;
 
-import com.gluonhq.connect.provider.RestClient;
-import com.gluonhq.connect.source.RestDataSource;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.SettingsService;
+import com.gluonhq.connect.provider.RestClient;
+import com.gluonhq.connect.source.RestDataSource;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -65,6 +65,10 @@ public class LoginService {
     
     private final Optional<SettingsService> settingService;
     
+    private String username;
+    
+    private String password;
+    
     private LoginService () {
     	settingService = Services.get(SettingsService.class);
     }
@@ -87,9 +91,21 @@ public class LoginService {
     	}
     }
     
-    public void login (String username, String password) {
+    /**
+     * Tries to renew the {@link #sessionTokenProperty} using the username & password used in the last call to {@link #login(String, String)}.
+     * @return The {@link #loginStatusProperty()}, which can be listened to & indicates when the request has completed
+     * @throws IllegalStateException if no username & password have been saved for future use (i.e. if no successful call to {@link #login(String, String)} has completed before calling this method)
+     */
+    public ReadOnlyObjectProperty<LoginStatus> renewSession () {
+    	if (username == null || password == null) {
+    		throw new IllegalStateException("Username & password not set!");
+    	}
+    	return login(username, password);
+    }
+    
+    public ReadOnlyObjectProperty<LoginStatus> login (String username, String password) {
     	if (getLoginStatus() == LoginStatus.PENDING_LOGIN) {
-    		return;//Already logging in
+    		return loginStatusProperty.getReadOnlyProperty();//Already logging in
     	}
     	if (username == null || username.trim().length() < 1) {
     		throw new IllegalArgumentException("Invalid username: "+username);
@@ -116,12 +132,16 @@ public class LoginService {
 							loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
 						} else {
 							sessionTokenProperty.set(sessionHeaders.get(0));
+							LOG.log(Level.INFO, "Logged in successfully. Session token: "+sessionTokenProperty.get());
 							
 							//Save the email & password for future use
-							if (settingService.isPresent()) {
-								settingService.get().store("api.email", username);
-								settingService.get().store("api.password", password);
-							}
+							settingService.ifPresent(service -> {
+								service.store("api.email", username);
+								service.store("api.password", password);
+							});
+							this.username = username;
+							this.password = password;
+							
 							loginStatusProperty.set(LoginStatus.LOGGED_IN);
 						}					
 						break;
@@ -139,6 +159,7 @@ public class LoginService {
 					loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);});
 			}
     	}); 
+    	return loginStatusProperty.getReadOnlyProperty();
     }
     
     /**

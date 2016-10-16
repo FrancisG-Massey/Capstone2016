@@ -19,6 +19,7 @@ package org.nestnz.app.views;
 import static org.nestnz.app.util.NavigationTools.getDistance;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -33,15 +34,15 @@ import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.Position;
+import com.gluonhq.charm.down.plugins.PositionService;
+import com.gluonhq.charm.down.plugins.VibrationService;
 import com.gluonhq.charm.glisten.application.MobileApplication;
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
-import com.gluonhq.charm.down.Services;
-import com.gluonhq.charm.down.plugins.Position;
-import com.gluonhq.charm.down.plugins.PositionService;
-import com.gluonhq.charm.down.plugins.VibrationService;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.binding.Bindings;
@@ -98,6 +99,28 @@ public class NavigationView extends View {
     final Button prev = MaterialDesignIcon.ARROW_BACK.button(evt -> previousTrap());;
     
     final Button next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
+    
+    /**
+     * Used to quickly look up an index in {@link #orderedTraps} based on a trap number.
+     * Should always be initialised to an array the size of the maximum trap number
+     */
+    int[] trapNumberLookup;
+    
+    /**
+     * The number of the first trap to use in the navigation sequence
+     */
+    int startTrap;
+    
+    /**
+     * The number of the last trap to use in the navigation sequence
+     */
+    int endTrap;
+    
+    /**
+     * The number of traps to jump over when {@link #nextTrap()} is called (1=go to next trap, 2=skip next & go to one after, 3=skip next 2, etc)
+     * {@link #previousTrap()} uses the negative of this when calculating the previous trap
+     */
+    int step;
     
     final ObservableList<Trap> orderedTraps;
     
@@ -322,16 +345,26 @@ public class NavigationView extends View {
      * Go back to the previous trap in the trapline
      */
     public void previousTrap () {
-		LOG.log(Level.FINE, "Requested swap to previous trap");
-		currentTrapIndex.set(currentTrapIndex.get()-1);
+		int prevNumber = trapProperty.get().getNumber()-step;
+		while (trapNumberLookup[prevNumber] == -1) {
+			//Skip traps which don't exist (or are currently inactive)
+			prevNumber -= step;
+		}
+		LOG.log(Level.FINE, "Requested swap to previous trap (#"+prevNumber+")");
+		currentTrapIndex.set(trapNumberLookup[prevNumber]);
     }
     
     /**
      * Jump to the next trap in the trapline
      */
     public void nextTrap() {
-		LOG.log(Level.FINE, "Requested swap to next trap");
-		currentTrapIndex.set(currentTrapIndex.get()+1);
+		int nextNumber = trapProperty.get().getNumber()+step;
+		while (trapNumberLookup[nextNumber] == -1) {
+			//Skip traps which don't exist (or are currently inactive)
+			nextNumber += step;
+		}		
+		LOG.log(Level.FINE, "Requested swap to next trap (#"+nextNumber+")");
+		currentTrapIndex.set(trapNumberLookup[nextNumber]);
     }
     
     /**
@@ -339,7 +372,12 @@ public class NavigationView extends View {
      * @return True if a previous trap exists, false if this is the first trap in the line
      */
     public boolean hasPreviousTrap () {
-    	return currentTrapIndex.get() > 0;
+    	int prevNumber = trapProperty.get().getNumber()-step;
+		while (canTraverseNext(step < 0, prevNumber, startTrap) && trapNumberLookup[prevNumber] == -1) {
+			//Skip traps which don't exist (or are currently inactive)
+			prevNumber -= step;
+		}
+    	return canTraverseNext(step < 0, prevNumber, startTrap);
     }
     
     /**
@@ -347,7 +385,16 @@ public class NavigationView extends View {
      * @return True if a next trap exists, false if this is the last trap in the trapline
      */
     public boolean hasNextTrap () {
-    	return currentTrapIndex.get() < orderedTraps.size()-1;
+    	int nextNumber = trapProperty.get().getNumber()+step;
+		while (canTraverseNext(step > 0, nextNumber, endTrap) && trapNumberLookup[nextNumber] == -1) {
+			//Skip traps which don't exist (or are currently inactive)
+			nextNumber += step;
+		}
+    	return canTraverseNext(step > 0, nextNumber, endTrap);
+    }
+    
+    private boolean canTraverseNext (boolean reversed, int number, int limit) {
+    	return reversed ? number <= limit : number >= limit;
     }
     
     /**
@@ -360,11 +407,55 @@ public class NavigationView extends View {
     	currentTrapIndex.set(0);
     	
     	List<Trap> trapsTmp = new ArrayList<>(trapline.getTraps());
+    	
+    	/*Iterator<Trap> filter = trapsTmp.iterator();    	
+    	while (filter.hasNext()) {
+    		//Remove inactive traps from the list
+    		if (filter.next().getStatus() != TrapStatus.ACTIVE) {
+    			filter.remove();
+    		}
+    	}*/
+    	
     	Collections.sort(trapsTmp, (t1, t2) -> t1.getNumber() - t2.getNumber());
+    	
+    	Trap highestTrap = trapsTmp.get(trapsTmp.size()-1);
+    	
+    	trapNumberLookup = new int[highestTrap.getNumber()+1];
+    	Arrays.fill(trapNumberLookup, -1);
+    	
+    	for (int i=0;i<trapsTmp.size();i++) {
+    		Trap t = trapsTmp.get(i);
+    		trapNumberLookup[t.getNumber()] = i;
+    	}
+    	startTrap = trapsTmp.get(0).getNumber();
+    	endTrap = highestTrap.getNumber();
+    	step = 1;
     	
     	//Sort the traps by trap number
     	orderedTraps.setAll(trapsTmp);
+    }
+    
+    /**
+     * Sets the sequence for the navigation view to use.
+     * 
+     * NOTE: This method must be called <b>after</b> {@link #setTrapline(Trapline)}, as setTrapline will overwrite the values set here
+     * 
+     * To visit all traps in sequence, startTrap should be set to 1, endTrap set to the final trap number, and step set to 1
+     * To traverse the trapline backwards, startTrap should be set to the final trap number, endTrap set to 1, and step set to -1
+     * To visit every even numbered trap, startTrap should be set to 2, endTrap set to the final even trap number, and step set to 2.
+     * @param startTrap The first trap to visit in the trapline
+     * @param endTrap The last trap to visit in the trapline
+     * @param step The step to take between each trap in the trapline
+     */
+    public void setNavigationSequence(int startTrap, int endTrap, int step) {
+    	assert step != 0 : "step is zero!";//Can't have a step of zero, else we'll never move anywhere!
+    	assert Math.abs(endTrap - startTrap) >= Math.abs(step) : "step is too high! It should be no greater than the number of traps in the sequence!";
+    	assert step > 0 ? startTrap <= endTrap : startTrap >= endTrap : "step runs in the wrong direction! step="+step+", end="+endTrap+", start="+startTrap;//
     	
+    	this.startTrap = startTrap;
+    	this.endTrap = endTrap;
+    	this.step = step;
+    	currentTrapIndex.set(trapNumberLookup[startTrap]);
     }
 
     @Override

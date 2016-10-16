@@ -91,11 +91,15 @@ public class GluonMapLoadingService implements MapLoadingService {
 	 */
 	@Override
 	public int getTotalTileCount(double minLatitude, double maxLatitude, double minLongitude, double maxLongitude) {
-		int minX = getTileX(minLongitude, ZOOM);
-		int minY = getTileY(minLatitude, ZOOM);
-		int maxX = getTileX(maxLongitude, ZOOM);
-		int maxY = getTileY(maxLatitude, ZOOM);
-		return (maxX-minX+1)*(maxY-minY+1);
+		long minX = getTileX(minLongitude, ZOOM);
+		long minY = getTileY(minLatitude, ZOOM);
+		long maxX = getTileX(maxLongitude, ZOOM);
+		long maxY = getTileY(maxLatitude, ZOOM);
+		
+		LOG.log(Level.INFO, minX+", "+minY+" to "+maxX+", "+maxY+" (xRange="+(maxX-minX+1)+", yRange="+(maxY-minY+1)+")");
+		
+		long result = (maxX-minX+1)*(maxY-minY+1);
+		return result > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) result;
 	}
 
 	/* (non-Javadoc)

@@ -73,7 +73,7 @@ public class NestApplication extends MobileApplication {
     	LoginService loginService = LoginService.getInstance();
         CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
         NetworkService networkService = new RestNetworkService(loginService);
-        trapDataService = new TrapDataService(cachingService, loginService, networkService);
+        trapDataService = new TrapDataService(cachingService, networkService);
         
         mapLoadingService = new GluonMapLoadingService(appStoragePath);
         

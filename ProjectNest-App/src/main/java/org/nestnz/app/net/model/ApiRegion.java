@@ -16,25 +16,22 @@
  *******************************************************************************/
 package org.nestnz.app.net.model;
 
-import javax.xml.bind.annotation.XmlElement;
-
 /**
- * Represents a trap sent to/received from /trap on the API.
- * This class can be used for GET and PUT requests, but {@link ApiPostTrap} should be used for POST requests as it excludes the ID
+ * Represents a region received from the API
  */
-public class ApiTrap extends ApiPostTrap {
+public final class ApiRegion {
 	
 	private int id;
 	
-	private String lastReset;
-	
-	public ApiTrap () {
+	private String name;
+
+	public ApiRegion() {
 		
 	}
 
-	public ApiTrap(int id, int traplineId, int number, double latitude, double longitude, String created) {
-		super(traplineId, number, latitude, longitude, created);
+	public ApiRegion(int id, String name) {
 		this.id = id;
+		this.name = name;
 	}
 
 	public int getId() {
@@ -45,18 +42,16 @@ public class ApiTrap extends ApiPostTrap {
 		this.id = id;
 	}
 
-	@XmlElement(name="last_reset")
-	public String getLastReset() {
-		return lastReset;
+	public String getName() {
+		return name;
 	}
 
-	public void setLastReset(String lastReset) {
-		this.lastReset = lastReset;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override
 	public String toString() {
-		return "ApiTrap [id=" + id + ", traplineId=" + traplineId + ", number=" + number + ", latitude=" + latitude + ", longitude="
-				+ longitude + ", created=" + created +", lastReset=" + lastReset + "]";
+		return "ApiRegion [id=" + id + ", name=" + name + "]";
 	}
 }

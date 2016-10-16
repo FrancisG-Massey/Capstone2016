@@ -16,27 +16,47 @@
  *******************************************************************************/
 package org.nestnz.app.services.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.model.Catch;
+import org.nestnz.app.model.CatchType;
+import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
+import org.nestnz.app.model.TrapStatus;
+import org.nestnz.app.model.Trapline;
 import org.nestnz.app.net.model.ApiCatch;
+import org.nestnz.app.net.model.ApiCatchType;
+import org.nestnz.app.net.model.ApiRegion;
 import org.nestnz.app.net.model.ApiTrap;
+import org.nestnz.app.net.model.ApiTrapline;
+import org.nestnz.app.net.model.ApiPostTrap;
 import org.nestnz.app.services.LoginService;
+import org.nestnz.app.services.LoginService.LoginStatus;
 import org.nestnz.app.services.NetworkService;
 
+import com.gluonhq.connect.ConnectState;
+import com.gluonhq.connect.GluonObservableList;
 import com.gluonhq.connect.GluonObservableObject;
 import com.gluonhq.connect.provider.DataProvider;
+import com.gluonhq.connect.provider.ListDataReader;
 import com.gluonhq.connect.provider.ObjectDataWriter;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
+import com.gluonhq.impl.connect.provider.RestListDataReader;
 import com.gluonhq.impl.connect.provider.RestObjectDataWriterAndRemover;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 
 /**
  * 
@@ -55,113 +75,257 @@ public class RestNetworkService implements NetworkService {
 	 * @see org.nestnz.app.services.NetworkService#sendLoggedCatch(int, org.nestnz.app.model.Catch)
 	 */
 	@Override
-	public ReadOnlyObjectProperty<UpdateStatus> sendLoggedCatch(int trapId, Catch loggedCatch) {
-		ReadOnlyObjectWrapper<UpdateStatus> status = new ReadOnlyObjectWrapper<>(UpdateStatus.PENDING);
-		
+	public ReadOnlyObjectProperty<RequestStatus> sendLoggedCatch(int trapId, Catch loggedCatch) {
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/catch").header("Session-Token", loginService.getSessionToken())
-    			.contentType("application/json");
+    			.path("/catch").contentType("application/json");
 		
 		String logged = loggedCatch.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
 		ApiCatch apiCatch = new ApiCatch(trapId, loggedCatch.getCatchType().getId(), null, logged);
 		
-		RestDataSource dataSource = apiClient.createRestDataSource();
-		
-		ObjectDataWriter<ApiCatch> writer = new RestObjectDataWriterAndRemover<>(dataSource, ApiCatch.class);
-    	
-		GluonObservableObject<ApiCatch> result = DataProvider.storeObject(apiCatch, writer);
-
-    	result.stateProperty().addListener((obs, oldValue, newValue) -> {
-    		switch (newValue) {
-			case FAILED://Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
-	    	case SUCCEEDED:
-				if (dataSource.getResponseCode() == 201) {//Created successfully
-					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
-					if (locationHeaders.isEmpty()) {
-						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for catch "+apiCatch);
-						status.set(UpdateStatus.FAILED);
-					} else {
-						int id;
-						try {
-							id = extractIdFromRedirect(locationHeaders.get(0));
-						} catch (RuntimeException ex) {
-							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
-							status.set(UpdateStatus.FAILED);
-							return;
-						}
-						LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);
-						loggedCatch.setId(id);
-						status.set(UpdateStatus.SUCCESS);
-					}
-				} else {
-					LOG.log(Level.WARNING, "Failed to send catch to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
-					status.set(UpdateStatus.FAILED);
-				}
-				break;
-			case READY:
-			case REMOVED:
-			case RUNNING:
-			default:
-				break;    		
-    		}
+    	return processCreateRequest(ApiCatch.class, apiCatch, apiClient, id -> {
+    		LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);
+    		loggedCatch.setId(id);
     	});
-    	return status.getReadOnlyProperty();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.nestnz.app.services.NetworkService#sendCreatedTrap(int, org.nestnz.app.model.Trap)
 	 */
 	@Override
-	public ReadOnlyObjectProperty<UpdateStatus> sendCreatedTrap(int traplineId, Trap trap) {
-		ReadOnlyObjectWrapper<UpdateStatus> status = new ReadOnlyObjectWrapper<>(UpdateStatus.PENDING);
-		
+	public ReadOnlyObjectProperty<RequestStatus> sendCreatedTrap(int traplineId, Trap trap) {
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/trap").header("Session-Token", loginService.getSessionToken())
-    			.contentType("application/json");
+    			.path("/trap").contentType("application/json");
 		
 		String created = trap.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
-		ApiTrap apiTrap = new ApiTrap(traplineId, trap.getNumber(), trap.getLatitude(), trap.getLongitude(), created);
-		
-		RestDataSource dataSource = apiClient.createRestDataSource();
-		
-		ObjectDataWriter<ApiTrap> writer = new RestObjectDataWriterAndRemover<>(dataSource, ApiTrap.class);
-    	
-		GluonObservableObject<ApiTrap> result = DataProvider.storeObject(apiTrap, writer);
+		ApiPostTrap apiTrap = new ApiPostTrap(traplineId, trap.getNumber(), trap.getLatitude(), trap.getLongitude(), created);
 
-    	result.stateProperty().addListener((obs, oldValue, newValue) -> {
-    		switch (newValue) {
-			case FAILED://Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
-	    	case SUCCEEDED:
-				if (dataSource.getResponseCode() == 201) {//Created successfully
+		return processCreateRequest(ApiPostTrap.class, apiTrap, apiClient, id -> {
+			LOG.log(Level.INFO, "Successfully created trap: "+apiTrap);
+			trap.setId(id);    		
+    	});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#loadRegions(java.util.function.Consumer)
+	 */
+	@Override
+	public ReadOnlyObjectProperty<RequestStatus> loadRegions(Consumer<Region> loadCallback) {
+		RestClient regionClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/region");
+		
+		return processReadRequest(ApiRegion.class, regionClient, apiRegion -> {
+			Region region = new Region(apiRegion.getId(), apiRegion.getName());
+			loadCallback.accept(region);
+		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#loadCatchTypes(java.util.function.Consumer)
+	 */
+	@Override
+	public ReadOnlyObjectProperty<RequestStatus> loadCatchTypes(Consumer<CatchType> loadCallback) {
+		RestClient catchTypeClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/catch-type");
+		return processReadRequest(ApiCatchType.class, catchTypeClient, apiCatchType -> {
+			URL imageUrl = null;
+			if (apiCatchType.getImageUrl() != null) {
+				try {
+					imageUrl = new URL(apiCatchType.getImageUrl());
+				} catch (MalformedURLException ex) {
+					LOG.log(Level.WARNING, "Error decoding image url: "+apiCatchType.getImageUrl(), ex);
+				}
+			}
+			CatchType catchType = new CatchType(apiCatchType.getId(), apiCatchType.getName(), imageUrl);
+			loadCallback.accept(catchType);
+		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#loadTrapline(org.nestnz.app.services.Trapline, java.util.function.Consumer)
+	 */
+	@Override
+	public ReadOnlyObjectProperty<RequestStatus> loadTrapline(Trapline trapline, Consumer<Trap> loadCallback) {
+		RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/trap").queryParam("trapline-id", Integer.toString(trapline.getId()));
+		
+		return processReadRequest(ApiTrap.class, trapsClient, apiTrap -> {
+			if (apiTrap.getTraplineId() != trapline.getId()) {
+				LOG.log(Level.WARNING, apiTrap+" was returned in a request for trapline "+trapline.getId());
+				return;
+			}
+			
+			LocalDateTime created = LocalDateTime.parse(apiTrap.getCreated().replace(' ', 'T'));
+			LocalDateTime lastReset = apiTrap.getLastReset() == null ? null : LocalDateTime.parse(apiTrap.getLastReset().replace(' ', 'T'));
+			
+			Trap trap  = new Trap(apiTrap.getId(), apiTrap.getNumber(), 
+					apiTrap.getLatitude(), apiTrap.getLongitude(), TrapStatus.ACTIVE, created, lastReset);
+			
+			loadCallback.accept(trap);			
+		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#loadTraplines(java.util.function.Consumer)
+	 */
+	@Override
+	public ReadOnlyObjectProperty<RequestStatus> loadTraplines(Consumer<Trapline> loadCallback) {
+		RestClient traplineClient = RestClient.create().method("GET").host("https://api.nestnz.org")
+    			.path("/trapline");
+    	
+    	return processReadRequest(ApiTrapline.class, traplineClient, apiTrapline -> {
+    		Region r = new Region(apiTrapline.getRegionId());
+    		Trapline trapline = new Trapline(apiTrapline.getId(), apiTrapline.getName(), r, apiTrapline.getStart(), apiTrapline.getEnd());
+    		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType1()));
+    		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType2()));
+    		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType3()));
+    		
+    		loadCallback.accept(trapline);
+    	});
+	}	
+	
+	private <T> ReadOnlyObjectProperty<RequestStatus> processReadRequest (Class<T> type, RestClient client, Consumer<T> callback) {
+		return processReadRequest(type, client, callback, true);
+	}
+	
+	private <T> ReadOnlyObjectProperty<RequestStatus> processReadRequest (Class<T> type, RestClient client, Consumer<T> callback, boolean retry) {
+		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
+		    	
+    	RestDataSource dataSource = client.createRestDataSource();
+    	
+    	dataSource.getHeaders().remove("Session-Token");
+    	dataSource.addHeader("Session-Token", loginService.getSessionToken());
+		
+		ListDataReader<T> reader = new RestListDataReader<>(dataSource, type);
+		GluonObservableList<T> resultList = DataProvider.retrieveList(reader);
+		resultList.addListener((ListChangeListener<T>) c -> {
+			while (c.next()) {
+				if (c.wasAdded()) {
+					for (T item : c.getAddedSubList()) {
+						callback.accept(item);
+					}
+				}
+			}
+		});
+		
+		resultList.stateProperty().addListener((obs, oldState, newState) -> {
+			if (newState == ConnectState.FAILED) {
+				switch (dataSource.getResponseCode()) {
+				case 204://No Content
+					status.set(RequestStatus.SUCCESS);//No data received, but the request was still successful
+					break;
+				case 403://Session timeout
+					if (retry) {
+						ChangeListener<LoginStatus> onRenewal = new ChangeListener<LoginStatus> () {
+							public void changed (ObservableValue<? extends LoginStatus> loginObs, 
+									LoginStatus oldLoginStatus, LoginStatus newLoginStatus) {
+								loginObs.removeListener(this);
+								if (newLoginStatus == LoginStatus.LOGGED_IN) {
+									//Successfully renewed session
+									LOG.log(Level.INFO, "Renewed session successfully. Resending request using new session token...");
+									//Bind this status property to the result of the inner request
+									status.bind(processReadRequest(type, client, callback, false));
+								} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
+									//Problem renewing session due to sever unavailability
+									status.set(RequestStatus.FAILED);
+								} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
+									//Old credentials no longer work
+									status.set(RequestStatus.FAILED_UNAUTHORISED);
+								}
+							}
+						};
+						loginService.renewSession().addListener(onRenewal);
+					} else {
+						//Already tried once & received a 403 error.
+						LOG.log(Level.WARNING, "Failed to send "+type+" - received 403 error after renewing session.");
+						status.set(RequestStatus.FAILED_UNAUTHORISED);
+					}
+					break;
+				default:
+					//Handle failure
+					status.set(RequestStatus.FAILED);
+					LOG.log(Level.SEVERE, "Problem loading "+type+". HTTP response: "+dataSource.getResponseMessage(), resultList.getException());
+					break;
+				}				
+			} else if (newState == ConnectState.SUCCEEDED) {
+				status.set(RequestStatus.SUCCESS);
+			}
+		});
+		return status;
+	}
+	
+	private <T> ReadOnlyObjectProperty<RequestStatus> processCreateRequest (Class<T> type, T data, RestClient client, Consumer<Integer> callback) {
+		return processCreateRequest(type, data, client, callback, true);
+	}
+	
+	private <T> ReadOnlyObjectProperty<RequestStatus> processCreateRequest (Class<T> type, T data, RestClient client, Consumer<Integer> callback, boolean retry) {
+		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
+		
+		RestDataSource dataSource = client.createRestDataSource();
+    	
+    	dataSource.getHeaders().remove("Session-Token");
+    	dataSource.addHeader("Session-Token", loginService.getSessionToken());
+		
+		ObjectDataWriter<T> writer = new RestObjectDataWriterAndRemover<>(dataSource, type);
+    	
+		GluonObservableObject<T> result = DataProvider.storeObject(data, writer);
+
+    	result.stateProperty().addListener((obs, oldValue, newState) -> {
+    		if (newState == ConnectState.SUCCEEDED || newState == ConnectState.FAILED) {
+    			//Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
+    			
+				switch (dataSource.getResponseCode()) {
+				case 201://Created successfully
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
-						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for trap "+apiTrap);
-						status.set(UpdateStatus.FAILED);
+						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for "+data);
+						status.set(RequestStatus.FAILED);
 					} else {
 						int id;
 						try {
 							id = extractIdFromRedirect(locationHeaders.get(0));
 						} catch (RuntimeException ex) {
 							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
-							status.set(UpdateStatus.FAILED);
+							status.set(RequestStatus.FAILED);
 							return;
 						}
-						LOG.log(Level.INFO, "Successfully created trap: "+apiTrap);
-						trap.setId(id);
-						status.set(UpdateStatus.SUCCESS);
+						callback.accept(id);
+						status.set(RequestStatus.SUCCESS);
 					}
-				} else {
-					LOG.log(Level.WARNING, "Failed to send trap to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
-					status.set(UpdateStatus.FAILED);
-				}
-				break;
-			case READY:
-			case REMOVED:
-			case RUNNING:
-			default:
-				break;    		
+					break;
+				case 403://Session timeout
+					if (retry) {
+						ChangeListener<LoginStatus> onRenewal = new ChangeListener<LoginStatus> () {
+							public void changed (ObservableValue<? extends LoginStatus> loginObs, 
+									LoginStatus oldLoginStatus, LoginStatus newLoginStatus) {
+								loginObs.removeListener(this);
+								if (newLoginStatus == LoginStatus.LOGGED_IN) {
+									//Successfully renewed session
+									LOG.log(Level.INFO, "Renewed session successfully. Resending request using new session token...");
+									//Bind this status property to the result of the inner request
+									status.bind(processCreateRequest(type, data, client, callback, false));
+								} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
+									//Problem renewing session due to sever unavailability
+									status.set(RequestStatus.FAILED);
+								} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
+									//Old credentials no longer work
+									status.set(RequestStatus.FAILED_UNAUTHORISED);
+								}
+							}
+						};
+						loginService.renewSession().addListener(onRenewal);
+					} else {
+						//Already tried once & received a 403 error.
+						LOG.log(Level.WARNING, "Failed to send "+type+" - received 403 error after renewing session.");
+						status.set(RequestStatus.FAILED_UNAUTHORISED);
+					}
+					break;
+				default:
+					LOG.log(Level.WARNING, "Failed to send "+data+" to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
+					status.set(RequestStatus.FAILED);
+					break;
+				}  		
     		}
     	});
     	return status.getReadOnlyProperty();
@@ -170,5 +334,4 @@ public class RestNetworkService implements NetworkService {
 	public int extractIdFromRedirect (String location) {
 		return Integer.parseInt(location.substring(location.lastIndexOf('/')+1));
 	}
-
 }
