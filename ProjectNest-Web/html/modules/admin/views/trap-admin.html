@@ -5,15 +5,12 @@
 
 <h1 class="text-center page-header">Trap Admin</h1>
 <p ng-if="!(traps.length > 0)">No traps exist: </p>
-	
-<div ng-if="traps.length > 0" class="{'row': selected}">
-	<div class="clearfix form-group">
-    <a href="#/trap-admin/{{trapline_id}}/add-new" id="addButton" class="btn btn-link">
-      <span class="glyphicon glyphicon-plus"></span> Add Trap
-    </a>
-    <button ng-if="!selected" type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#trapline-map" >View Map</button>
-  </div>
-	<div ng-class="{'col-sm-7': selected}">
+<div class="form-group">
+   <a href="#/trap-admin/{{trapline_id}}/add-new" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap</a>  
+       <button ng-if="!selected" type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#trapline-map" >View Map</button>
+</div>	
+<div ng-if="traps.length > 0" class="row">
+	<div class="{'col-sm-7': selected}">
 		<table class="table table-condensed table-hover admin">
 			<thead>
 				<tr>
@@ -54,7 +51,7 @@
 			</ul>
 		</nav>
 	</div>
-	<div ng-if="selected" ng-class="{'col-sm-5': selected}">
+	<div ng-if="selected" class="{'col-sm-5': selected}">
 		<div class="well clearfix">
 		
 			<form ng-if="selected" name="form">
@@ -155,7 +152,6 @@
 	<div ng-if ="selected" ng-show="showMap()" class="map" id="mapid"></div>
 
 
-	</div>
 	</div>
 	</div>
 	
