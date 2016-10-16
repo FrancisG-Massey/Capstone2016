@@ -30,8 +30,10 @@
             ((#bigint:trapline-id# IS NULL) OR (tl.trapline_id = #bigint:trapline-id#)) AND
             ((#string:name# IS NULL) OR (lower(r.region_name) LIKE lower('%' || #string:name# || '%'))) AND
             
-            (((#boolean:inactive# IS NOT NULL) AND (r.region_isinactive = #boolean:inactive#)) OR
-            ((#boolean:inactive# IS NULL) AND (r.region_isinactive = false)))
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (r.region_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (r.region_isinactive = true)))
+
         GROUP BY
             r.region_id
         ORDER BY

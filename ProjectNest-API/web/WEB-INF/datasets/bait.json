@@ -26,9 +26,10 @@
             ((#bigint:id# IS NULL) OR (b.bait_id = #bigint:id#)) AND
             ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%'))) AND 
             
-            (((#boolean:inactive# IS NOT NULL) AND (bait_isinactive = #boolean:inactive#)) OR
-            ((#boolean:inactive# IS NULL) AND (bait_isinactive = false)))
-
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (b.bait_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (b.bait_isinactive = true)))
+            
         GROUP BY
             b.bait_id
         ORDER BY

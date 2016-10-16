@@ -25,8 +25,9 @@
             ((#bigint:id# IS NULL) OR (ct.catchtype_id = #bigint:id#)) AND
             ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%'))) AND
             
-            (((#boolean:inactive# IS NOT NULL) AND (ct.catchtype_isinactive = #boolean:inactive#)) OR
-            ((#boolean:inactive# IS NULL) AND (ct.catchtype_isinactive = false)))
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (ct.catchtype_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (ct.catchtype_isinactive = true)))
 
         GROUP BY
             ct.catchtype_id

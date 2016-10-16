@@ -34,8 +34,10 @@
             ((#string:name# IS NULL) OR (lower(u.user_name) LIKE lower('%' || #string:name# || '%'))) AND
             ((#boolean:admin# IS NULL) OR (u.user_isadmin = #boolean:admin#)) AND
 
-            (((#boolean:inactive# IS NOT NULL) AND (u.user_isinactive = #boolean:inactive#)) OR
-            ((#boolean:inactive# IS NULL) AND (u.user_isinactive = false)))
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (u.user_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (u.user_isinactive = true)))
+
         GROUP BY
             u.user_id
         ORDER BY

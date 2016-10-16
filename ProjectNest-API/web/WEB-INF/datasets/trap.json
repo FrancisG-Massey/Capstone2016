@@ -41,8 +41,10 @@
             ((#integer:status# IS NULL) OR (t.trap_status = #integer:status#)) AND
             ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#)) AND
 
-            (((#boolean:inactive# IS NOT NULL) AND (t.trap_isinactive = #boolean:inactive#)) OR
-            ((#boolean:inactive# IS NULL) AND (t.trap_isinactive = false)))
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (t.trap_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (t.trap_isinactive = true)))
+
         GROUP BY
             t.trap_id
         ORDER BY
