@@ -155,15 +155,13 @@ public class RequestServlet extends HttpServlet {
         // Build a map of typed parameters which appear in the retrieved query i.e. regex matches for #string:session-token# etc.
         // ParamOrder maintains insert positions as we dynamically bind our parameters later from the unordered map. 
         // This isn't great having 3 copies, but ideally we'll clean up later when we refactor the datasets out to a class.
-        Map<String, String> datasetParams_before = new HashMap<>();
-        Map<String, String> datasetParams_main = new HashMap<>();
-        Map<String, String> datasetParams_after = new HashMap<>();
+        Map<String, String> datasetParams = new HashMap<>();
         List<String> datasetParamOrder_before = new ArrayList<>();
         List<String> datasetParamOrder_main = new ArrayList<>();
         List<String> datasetParamOrder_after = new ArrayList<>();
-        Common.parseDatasetParameters(dirtySQL_before, datasetParams_before, datasetParamOrder_before);
-        Common.parseDatasetParameters(dirtySQL_main, datasetParams_main, datasetParamOrder_main);
-        Common.parseDatasetParameters(dirtySQL_after, datasetParams_after, datasetParamOrder_after);
+        Common.parseDatasetParameters(dirtySQL_before, datasetParams, datasetParamOrder_before);
+        Common.parseDatasetParameters(dirtySQL_main, datasetParams, datasetParamOrder_main);
+        Common.parseDatasetParameters(dirtySQL_after, datasetParams, datasetParamOrder_after);
         //LOG.log(Level.INFO, "Dataset accepts the following parameters:\n{0}\n{1}\n{2}", 
         //        new Object[]{datasetParams_before.toString(), datasetParams_main.toString(), datasetParams_after.toString()});
 
@@ -180,14 +178,8 @@ public class RequestServlet extends HttpServlet {
             //LOG.log(Level.INFO, "Request supplies the following parameters:\n{0}", parameterNames.toString());
             while (parameterNames.hasMoreElements()) {
                 final String paramName = (String) parameterNames.nextElement();
-                if (datasetParams_before.containsKey(paramName)) {
-                    datasetParams_before.put(paramName, request.getParameter(paramName));
-                }
-                if (datasetParams_main.containsKey(paramName)) {
-                    datasetParams_main.put(paramName, request.getParameter(paramName));
-                }
-                if (datasetParams_after.containsKey(paramName)) {
-                    datasetParams_after.put(paramName, request.getParameter(paramName));
+                if (datasetParams.containsKey(paramName)) {
+                    datasetParams.put(paramName, request.getParameter(paramName));
                 }
             }
         }
@@ -211,32 +203,20 @@ public class RequestServlet extends HttpServlet {
             // Fill the datasetParams map with values if they are provided in the request
             for (Map.Entry<String, String> requestParam : requestObjectParams.entrySet()) {
                 final String paramName = requestParam.getKey();
-                if (datasetParams_before.containsKey(paramName)) {
-                    datasetParams_before.put(paramName, requestParam.getValue());
-                }
-                if (datasetParams_main.containsKey(paramName)) {
-                    datasetParams_main.put(paramName, requestParam.getValue());
-                }
-                if (datasetParams_after.containsKey(paramName)) {
-                    datasetParams_after.put(paramName, requestParam.getValue());
+                if (datasetParams.containsKey(paramName)) {
+                    datasetParams.put(paramName, requestParam.getValue());
                 }
             }
         }
         // Add the session token as a parameter (we've already validated its format above)
-        datasetParams_before.put("session-token", sessionToken);
-        datasetParams_main.put("session-token", sessionToken);
-        datasetParams_after.put("session-token", sessionToken);
+        datasetParams.put("session-token", sessionToken);
         // Pass the config session expiry into the first dataset to extend the session etc.
-        datasetParams_before.put("session-timeout", String.valueOf(Common.SESSION_TIMEOUT) + " minutes");
+        datasetParams.put("session-timeout", String.valueOf(Common.SESSION_TIMEOUT) + " minutes");
         
         // If a subroute was provided specifying the entity id, use it with preference to an id in the body
         if (!requestEntityID.isEmpty()) {
-            datasetParams_before.put("id", requestEntityID);
-            datasetParams_main.put("id", requestEntityID);
-            datasetParams_after.put("id", requestEntityID);
+            datasetParams.put("id", requestEntityID);
         }
-        LOG.log(Level.INFO, "Sending request with the following parameters:\n1: {0}\n2: {1}\n3: {2}", 
-                new Object[]{datasetParams_before.toString(), datasetParams_main.toString(), datasetParams_after.toString()});
 
         // Replace the placeholders in the retrieved SQL with the values supplied by the request
         final String cleanSQL_before = (dirtySQL_before != null) ? dirtySQL_before.replaceAll(Common.DATASETPARAM_REGEX, "?") : null;
@@ -253,7 +233,7 @@ public class RequestServlet extends HttpServlet {
                 try (
                     PreparedStatement st = conn.prepareStatement(cleanSQL_before, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 ) {
-                    Common.bindDynamicParameters(st, datasetParams_before, datasetParamOrder_before);
+                    Common.bindDynamicParameters(st, datasetParams, datasetParamOrder_before);
                     LOG.log(Level.INFO, "Executing query:\n{0}", st.toString());
 
                     boolean hasResults = st.execute();
@@ -261,6 +241,14 @@ public class RequestServlet extends HttpServlet {
                         ResultSet rsh = st.getResultSet();
                         if (rsh.isBeforeFirst()) {
                             response.addHeader("Session-Token", sessionToken);
+                            
+                            // TODO: We can take this further and instead of pulling out specifically named variables,
+                            // we can dynamically create variables using the result set meta data column names.
+                            boolean hasRow = rsh.next();
+                            datasetParams.put("logged-user-id", (hasRow) ? String.valueOf(rsh.getLong("user_id")) : null);
+                            datasetParams.put("logged-user-isadmin", (hasRow) ? String.valueOf(rsh.getBoolean("user_isadmin")) : null);
+                            datasetParams.put("session-expires", (hasRow) ? rsh.getString("session_expirestimestamp") : null);
+                            
                             // Instead of getting the exact time from the db we can compensate for latency somewhat by calculating it here
                             response.addDateHeader("Expires", System.currentTimeMillis() + Common.SESSION_TIMEOUT * 60000L);
                             rsh.last(); LOG.log(Level.INFO, "{0} rows retrieved from database.", rsh.getRow());
@@ -277,11 +265,12 @@ public class RequestServlet extends HttpServlet {
             // Execute the main request dataset entry if one exists.
             String responseBody = null;
             boolean formatCSV = false;
+            LOG.log(Level.INFO, "Sending request with the following parameters:\n1: {0}", datasetParams);
             if (cleanSQL_main != null) {
                 try (
                     PreparedStatement st = conn.prepareStatement(cleanSQL_main, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 ) {
-                    Common.bindDynamicParameters(st, datasetParams_main, datasetParamOrder_main);
+                    Common.bindDynamicParameters(st, datasetParams, datasetParamOrder_main);
                     LOG.log(Level.INFO, "Executing query:\n{0}", st.toString());
 
                     boolean hasResults = st.execute();
@@ -369,7 +358,7 @@ public class RequestServlet extends HttpServlet {
                 try (
                     PreparedStatement st = conn.prepareStatement(cleanSQL_after, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 ) {
-                    Common.bindDynamicParameters(st, datasetParams_after, datasetParamOrder_after);
+                    Common.bindDynamicParameters(st, datasetParams, datasetParamOrder_after);
                     LOG.log(Level.INFO, "Executing query:\n{0}", st.toString());
                     st.execute();
                     st.close();

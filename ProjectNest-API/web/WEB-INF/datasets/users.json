@@ -1,18 +1,17 @@
 {
     "before": "
-        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
     ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT
             u.user_id as id, 
             u.user_name as username,
@@ -24,11 +23,10 @@
             u.user_isadmin as admin, 
             u.user_isinactive as inactive
         FROM
-            logged_user lu,
             users u
             LEFT JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id
         WHERE
-            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id) OR (u.user_id = lu.user_id)) AND
+            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#) OR (u.user_id = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (u.user_id = #bigint:id#)) AND
             ((#bigint:created-user-id# IS NULL) OR (u.user_createduserid = #bigint:created-user-id#)) AND
             ((#string:name# IS NULL) OR (lower(u.user_name) LIKE lower('%' || #string:name# || '%'))) AND
@@ -36,7 +34,7 @@
 
             -- Only allow admins to filter by inactive flag, return only active by default
             ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (u.user_isinactive = false)) OR 
-            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (u.user_isinactive = true)))
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (u.user_isinactive = true)))
 
         GROUP BY
             u.user_id

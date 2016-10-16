@@ -1,18 +1,17 @@
 {
     "before": "
-        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
     ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             tt.traptype_id as id,
             tt.traptype_name as name,
@@ -20,7 +19,6 @@
             tt.traptype_note as note,
             tt.traptype_isinactive as inactive
         FROM 
-            logged_user lu,
             traptype tt
         WHERE
             ((#bigint:id# IS NULL) OR (tt.traptype_id = #bigint:id#)) AND
@@ -28,7 +26,7 @@
 
             -- Only allow admins to filter by inactive flag, return only active by default
             ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (tt.traptype_isinactive = false)) OR 
-            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (tt.traptype_isinactive = true)))
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (tt.traptype_isinactive = true)))
 
         GROUP BY
             tt.traptype_id

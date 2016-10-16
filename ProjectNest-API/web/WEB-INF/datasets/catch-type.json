@@ -1,25 +1,23 @@
 {
     "before": "
-        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
     ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             ct.catchtype_id as id,
             ct.catchtype_name as name,
             ct.catchtype_imagefilename as img_filename,
             ct.catchtype_isinactive as inactive
         FROM
-            logged_user lu,
             catchtype ct
         WHERE
             ((#bigint:id# IS NULL) OR (ct.catchtype_id = #bigint:id#)) AND
@@ -27,7 +25,7 @@
             
             -- Only allow admins to filter by inactive flag, return only active by default
             ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (ct.catchtype_isinactive = false)) OR 
-            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (ct.catchtype_isinactive = true)))
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (ct.catchtype_isinactive = true)))
 
         GROUP BY
             ct.catchtype_id

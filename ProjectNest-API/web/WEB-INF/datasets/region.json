@@ -1,38 +1,36 @@
 {
     "before": "
-        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
     ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             r.region_id as id,
             r.region_name as name,
             r.region_isinactive as inactive
         FROM
-            logged_user lu,
             region r
             LEFT JOIN trapline tl
                 ON tl.trapline_regionid = r.region_id
             LEFT JOIN traplineuser tlu
                 ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
+            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (r.region_id = #bigint:id#)) AND
             ((#bigint:trapline-id# IS NULL) OR (tl.trapline_id = #bigint:trapline-id#)) AND
             ((#string:name# IS NULL) OR (lower(r.region_name) LIKE lower('%' || #string:name# || '%'))) AND
             
             -- Only allow admins to filter by inactive flag, return only active by default
             ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (r.region_isinactive = false)) OR 
-            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (lu.user_isadmin = true) AND (r.region_isinactive = true)))
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (r.region_isinactive = true)))
 
         GROUP BY
             r.region_id
