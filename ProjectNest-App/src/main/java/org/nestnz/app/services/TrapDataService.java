@@ -220,6 +220,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     				}
 					//Fall through
 				case FAILED:
+				case FAILED_UNAUTHORISED:
 					loadingProperty.set(false);//Signal loading is complete
 					break;
 				case PENDING:
@@ -295,6 +296,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				
 				//Fall through
 			case FAILED:
+			case FAILED_UNAUTHORISED:
 				loadingProperty.set(false);//Signal loading is complete
 				break;
 			case PENDING:
@@ -315,6 +317,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			case SUCCESS:
 				//Fall through
 			case FAILED:
+			case FAILED_UNAUTHORISED:
 				//Signal region data has been fetched
 				appDataLoading.release();
 				break;
@@ -344,6 +347,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				cachingService.storeCatchTypes(catchTypes);
 				//Fall through
 			case FAILED:
+			case FAILED_UNAUTHORISED:
 				//Signal catch type data has been fetched
 				appDataLoading.release();
 				break;

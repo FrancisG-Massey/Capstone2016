@@ -38,6 +38,7 @@ import org.nestnz.app.net.model.ApiTrap;
 import org.nestnz.app.net.model.ApiTrapline;
 import org.nestnz.app.net.model.ApiPostTrap;
 import org.nestnz.app.services.LoginService;
+import org.nestnz.app.services.LoginService.LoginStatus;
 import org.nestnz.app.services.NetworkService;
 
 import com.gluonhq.connect.ConnectState;
@@ -112,7 +113,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> loadRegions(Consumer<Region> loadCallback) {
 		RestClient regionClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/region").header("Session-Token", loginService.getSessionToken());
+    			.path("/region");
 		
 		return processReadRequest(ApiRegion.class, regionClient, apiRegion -> {
 			Region region = new Region(apiRegion.getId(), apiRegion.getName());
@@ -126,7 +127,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> loadCatchTypes(Consumer<CatchType> loadCallback) {
 		RestClient catchTypeClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/catch-type").header("Session-Token", loginService.getSessionToken());
+    			.path("/catch-type");
 		return processReadRequest(ApiCatchType.class, catchTypeClient, apiCatchType -> {
 			URL imageUrl = null;
 			if (apiCatchType.getImageUrl() != null) {
@@ -147,8 +148,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> loadTrapline(Trapline trapline, Consumer<Trap> loadCallback) {
 		RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/trap").queryParam("trapline-id", Integer.toString(trapline.getId()))
-    			.header("Session-Token", loginService.getSessionToken());
+    			.path("/trap").queryParam("trapline-id", Integer.toString(trapline.getId()));
 		
 		return processReadRequest(ApiTrap.class, trapsClient, apiTrap -> {
 			if (apiTrap.getTraplineId() != trapline.getId()) {
@@ -172,7 +172,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> loadTraplines(Consumer<Trapline> loadCallback) {
 		RestClient traplineClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/trapline").header("Session-Token", loginService.getSessionToken());
+    			.path("/trapline");
     	
     	return processReadRequest(ApiTrapline.class, traplineClient, apiTrapline -> {
     		Region r = new Region(apiTrapline.getRegionId());
@@ -186,9 +186,16 @@ public class RestNetworkService implements NetworkService {
 	}	
 	
 	private <T> ReadOnlyObjectProperty<RequestStatus> processReadRequest (Class<T> type, RestClient client, Consumer<T> callback) {
+		return processReadRequest(type, client, callback, true);
+	}
+	
+	private <T> ReadOnlyObjectProperty<RequestStatus> processReadRequest (Class<T> type, RestClient client, Consumer<T> callback, boolean retry) {
 		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
 		    	
     	RestDataSource dataSource = client.createRestDataSource();
+    	
+    	dataSource.getHeaders().remove("Session-Token");
+    	dataSource.addHeader("Session-Token", loginService.getSessionToken());
 		
 		ListDataReader<T> reader = new RestListDataReader<>(dataSource, type);
 		GluonObservableList<T> resultList = DataProvider.retrieveList(reader);
@@ -207,6 +214,27 @@ public class RestNetworkService implements NetworkService {
 				switch (dataSource.getResponseCode()) {
 				case 204://No Content
 					status.set(RequestStatus.SUCCESS);//No data received, but the request was still successful
+					break;
+				case 403://Session timeout
+					if (retry) {
+						loginService.renewSession().addListener((loginObs, oldLoginStatus, newLoginStatus) -> {
+							if (newLoginStatus == LoginStatus.LOGGED_IN) {
+								//Successfully renewed session
+								LOG.log(Level.INFO, "Renewed session successfully. Resending request using new session token...");
+								//Bind this status property to the result of the inner request
+								status.bind(processReadRequest(type, client, callback, false));
+							} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
+								//Problem renewing session due to sever unavailability
+								status.set(RequestStatus.FAILED);
+							} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
+								//Old credentials no longer work
+								status.set(RequestStatus.FAILED_UNAUTHORISED);
+							}
+						});
+					} else {
+						//Already tried once & received a 403 error.
+						status.set(RequestStatus.FAILED_UNAUTHORISED);
+					}
 					break;
 				default:
 					//Handle failure

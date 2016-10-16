@@ -32,7 +32,7 @@ import javafx.beans.property.ReadOnlyObjectProperty;
  */
 public interface NetworkService {
 	
-	public static enum RequestStatus { PENDING, SUCCESS, FAILED };
+	public static enum RequestStatus { PENDING, SUCCESS, FAILED, FAILED_UNAUTHORISED };
 
 	/**
 	 * Submits a logged catch in a trap to the API. 
