@@ -256,7 +256,9 @@ public class RequestServlet extends HttpServlet {
                     Common.bindDynamicParameters(st, datasetParams_before, datasetParamOrder_before);
                     LOG.log(Level.INFO, "Executing query:\n{0}", st.toString());
 
-                    try (ResultSet rsh = st.executeQuery();) {
+                    boolean hasResults = st.execute();
+                    if (hasResults) {
+                        ResultSet rsh = st.getResultSet();
                         if (rsh.isBeforeFirst()) {
                             response.addHeader("Session-Token", sessionToken);
                             // Instead of getting the exact time from the db we can compensate for latency somewhat by calculating it here
@@ -282,7 +284,9 @@ public class RequestServlet extends HttpServlet {
                     Common.bindDynamicParameters(st, datasetParams_main, datasetParamOrder_main);
                     LOG.log(Level.INFO, "Executing query:\n{0}", st.toString());
 
-                    try (ResultSet rsh = st.executeQuery();) {
+                    boolean hasResults = st.execute();
+                    if (hasResults) {
+                        ResultSet rsh = st.getResultSet();
                         switch (httpMethod) {
                             case "GET":
                                 if (request.getHeader("Accept") != null) {
@@ -308,13 +312,13 @@ public class RequestServlet extends HttpServlet {
                                     responseBody = (formatCSV) ? "" : "[]";
                                     LOG.log(Level.INFO, "Empty ResultSet received from database");
                                 }
-                                
+
                                 response.setContentLength(responseBody.length());
                                 try (PrintWriter out = response.getWriter()) {
                                     out.print(responseBody);
                                 }
                                 break;
-                                
+
                             case "POST":
                                 if (rsh.isBeforeFirst()) {
                                     // Success. Generate a location header for the client to find the new resource
@@ -328,7 +332,7 @@ public class RequestServlet extends HttpServlet {
                                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 }
                                 break;
-                                
+
                             case "PUT":
                                 if (rsh.isBeforeFirst()) {
                                     // Success. Generate a location header for the client to find the (possibly moved) resource
@@ -342,8 +346,17 @@ public class RequestServlet extends HttpServlet {
                                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                 }
                                 break;
-                                
+
                             case "DELETE":
+                                if (rsh.isBeforeFirst()) {
+                                    rsh.next();
+                                    final String newEntity = "/" + requestEntity + "/" + rsh.getString(1);
+                                    LOG.log(Level.INFO, "Entity removed from server: {0}", newEntity);
+                                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                                } else {
+                                    LOG.log(Level.INFO, "Unable to delete specified {0} on server.", requestEntity);
+                                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                }
                                 break;
                         }
                     }
