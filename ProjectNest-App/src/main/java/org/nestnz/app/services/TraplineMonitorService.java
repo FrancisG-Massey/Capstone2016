@@ -18,15 +18,20 @@ package org.nestnz.app.services;
 
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.util.BackgroundTasks;
 
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableSet;
+import javafx.util.Pair;
 
 /**
  * This service is used to monitor traps in a trapline for changes (such as logged catches & changes to trap coords).
@@ -40,15 +45,50 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
     
     private final NetworkService networkService;
     
+    private final ObservableSet<Trap> createdTraps = FXCollections.observableSet(new HashSet<>());
+    
     /**
      * Represents catches which have been sent to the network service to be logged in the server, to prevent duplicate requests
-     * FIXME: At the moment catches added here are never removed - a possible memory leak. 
      */
-    private final Set<Catch> pendingCatches = new HashSet<>();
+    private final ObservableSet<Pair<Integer, Catch>> loggedCatches = FXCollections.observableSet(new HashSet<>());
+    
+    private final ScheduledFuture<?> updateTask;
     
     public TraplineMonitorService (Trapline trapline, NetworkService networkService) {
     	this.trapline = Objects.requireNonNull(trapline);
     	this.networkService = networkService;
+    	
+    	this.updateTask = BackgroundTasks.scheduleRepeating(() -> {
+    		sendDataToServer();
+    	}, 30, TimeUnit.SECONDS);
+    }
+    
+    public void cleanup () {
+    	updateTask.cancel(false);
+    }
+    
+    public void sendDataToServer () {
+    	if (!loggedCatches.isEmpty() || !createdTraps.isEmpty()) {
+	    	for (Pair<Integer, Catch> c : loggedCatches) {
+				networkService.sendLoggedCatch(c.getKey(), c.getValue());    		
+	    	}
+	    	for (Trap t : createdTraps) {
+				networkService.sendCreatedTrap(trapline.getId(), t);    		
+	    	}
+	    	LOG.log(Level.INFO, "Sent "+loggedCatches.size()+" logged catches and "+createdTraps.size()+" created traps.");
+	    	
+	    	//TODO: Clear the catches and traps one-by-one as they're accepted by the server
+	    	loggedCatches.clear();
+	    	createdTraps.clear();
+    	}
+    }
+    
+    public ObservableSet<Trap> getUnsentTraps () {
+    	return createdTraps;
+    }
+    
+    public ObservableSet<Pair<Integer, Catch>> getUnsentCatchLogs () {
+    	return loggedCatches;
     }
 	
 	/* (non-Javadoc)
@@ -60,9 +100,8 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
 			if (change.wasUpdated()) {
 				for (Trap trap : change.getList().subList(change.getFrom(), change.getTo())) {
 					for (Catch c : trap.getCatches()) {
-						if (!c.getId().isPresent() && !pendingCatches.contains(c)) {
-							pendingCatches.add(c);
-							networkService.sendLoggedCatch(trap.getId(), c);
+						if (!c.getId().isPresent() && !loggedCatches.contains(c)) {
+							loggedCatches.add(new Pair<>(trap.getId(), c));
 							LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
 						}
 					}
@@ -70,12 +109,11 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
 			} else if (change.wasAdded()) {
 				for (Trap trap : change.getAddedSubList()) {
 					if (trap.getId() == 0) {//Only try to create traps if they haven't yet been created
-						networkService.sendCreatedTrap(trapline.getId(), trap);
+						createdTraps.add(trap);
 						LOG.log(Level.INFO, String.format("Detected newly created trap: %s", trap));
 					}
 				}
 			}
 		}
 	}
-
 }

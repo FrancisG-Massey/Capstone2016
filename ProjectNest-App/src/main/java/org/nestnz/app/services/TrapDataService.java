@@ -416,7 +416,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			} else if (c.wasRemoved()) {
 				for (Trapline t : c.getRemoved()) {
 					if (apiUpdateMonitors.containsKey(t)) {
-						t.getTraps().removeListener(apiUpdateMonitors.remove(t));
+						TraplineMonitorService s = apiUpdateMonitors.remove(t);
+						t.getTraps().removeListener(s);
+						s.cleanup();
 					}
 					removedTraplines.add(t);
 					updatedTraplines.remove(t);

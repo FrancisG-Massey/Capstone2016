@@ -18,6 +18,7 @@ package org.nestnz.app.util;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,8 +42,9 @@ public final class BackgroundTasks {
      * @param runnable The task to execute
      * @param delay The delay, in {@code unit}, between runs of the task
      * @param unit The {@link TimeUnit} of the {@code delay} parameter
+     * @return A {@link ScheduledFuture} which can be used to cancel the task
      */
-    public static void scheduleRepeating (Runnable runnable, long delay, TimeUnit unit) {
-    	executorService.scheduleAtFixedRate(runnable, delay, delay, unit);
+    public static ScheduledFuture<?> scheduleRepeating (Runnable runnable, long delay, TimeUnit unit) {
+    	return executorService.scheduleAtFixedRate(runnable, delay, delay, unit);
     }
 }
