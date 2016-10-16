@@ -54,6 +54,8 @@ import com.gluonhq.impl.connect.provider.RestObjectDataWriterAndRemover;
 
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 
 /**
@@ -217,20 +219,25 @@ public class RestNetworkService implements NetworkService {
 					break;
 				case 403://Session timeout
 					if (retry) {
-						loginService.renewSession().addListener((loginObs, oldLoginStatus, newLoginStatus) -> {
-							if (newLoginStatus == LoginStatus.LOGGED_IN) {
-								//Successfully renewed session
-								LOG.log(Level.INFO, "Renewed session successfully. Resending request using new session token...");
-								//Bind this status property to the result of the inner request
-								status.bind(processReadRequest(type, client, callback, false));
-							} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
-								//Problem renewing session due to sever unavailability
-								status.set(RequestStatus.FAILED);
-							} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
-								//Old credentials no longer work
-								status.set(RequestStatus.FAILED_UNAUTHORISED);
+						ChangeListener<LoginStatus> onRenewal = new ChangeListener<LoginStatus> () {
+							public void changed (ObservableValue<? extends LoginStatus> loginObs, 
+									LoginStatus oldLoginStatus, LoginStatus newLoginStatus) {
+								loginObs.removeListener(this);
+								if (newLoginStatus == LoginStatus.LOGGED_IN) {
+									//Successfully renewed session
+									LOG.log(Level.INFO, "Renewed session successfully. Resending request using new session token...");
+									//Bind this status property to the result of the inner request
+									status.bind(processReadRequest(type, client, callback, false));
+								} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
+									//Problem renewing session due to sever unavailability
+									status.set(RequestStatus.FAILED);
+								} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
+									//Old credentials no longer work
+									status.set(RequestStatus.FAILED_UNAUTHORISED);
+								}
 							}
-						});
+						};
+						loginService.renewSession().addListener(onRenewal);
 					} else {
 						//Already tried once & received a 403 error.
 						status.set(RequestStatus.FAILED_UNAUTHORISED);
