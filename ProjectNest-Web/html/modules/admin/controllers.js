@@ -45,6 +45,7 @@ angular.module('Admin')
 		//var traplineId = $routeParams.traplineId;
 		$rootScope.hideHeader = true;
 		$scope.trapline_id = $route.current.params.traplineId;
+		$scope.trapline_name= $route.current.params.traplineName;
 		$scope.traps = traps;
 		console.log(traps)
 		$scope.baits = baits;
@@ -204,6 +205,7 @@ angular.module('Admin')
 	//var traplineId = $routeParams.traplineId;
 	$rootScope.hideHeader = true;
 	$scope.trapline_id = $route.current.params.traplineId;
+	$scope.trapline_name= $route.current.params.traplineName;
     $scope.trapline_users = trapline_users;
     console.log($scope.trapline_users);
     $scope.users = users.data;
@@ -295,7 +297,7 @@ angular.module('Admin')
     $scope.baits = baits;
     $scope.trap_type = trap_type;
     $scope.catch_types = catch_types;
-    
+    $scope.trapline_name= $route.current.params.traplineName;;
     
     
     $scope.Save = function () {
@@ -319,6 +321,7 @@ angular.module('Admin')
 .controller('AdminEditTrapController',['$scope','$rootScope','baits','trap_type','$route','$http','trap','$location',function ($scope, $rootScope,baits,trap_type,$route,$http,trap,$location) {
     //var traplineId = $routeParams.traplineId;
     $rootScope.hideHeader = true;
+    $scope.trapline_name= $route.current.params.traplineName;;
     $scope.trap = trap[0];
     //$scope.trap.id = $route.current.params.trap_id;
     $scope.trapline_id = $scope.trap.trapline_id;
@@ -392,6 +395,7 @@ angular.module('Admin')
 .controller('AdminEditTraplineController',['$scope', '$rootScope','$http','region','baits','trap_type','$route','trapline','$location',function ($scope,$rootScope,$http,region,baits,trap_type,$route,trapline,$location) {
 	$rootScope.hideHeader = true;
 	$scope.trapline_id = $route.current.params.traplineId;
+	$scope.trapline_name= $route.current.params.traplineName;
 	$scope.regions = region.data;
     $scope.baits = baits;
     $scope.trap_types = trap_type;

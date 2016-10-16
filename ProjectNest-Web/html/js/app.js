@@ -98,7 +98,7 @@ var myApp = angular
                     }
         }
         })
-         .when('/trapline-admin/:regionId/:traplineId/edit-trapline',{
+         .when('/trapline-admin/:regionId/:traplineId/:traplineName/edit-trapline',{
             controller: 'AdminEditTraplineController',
             templateUrl: 'modules/admin/views/edit_trapline.html?'+new Date().getTime(),
             resolve: {
@@ -122,7 +122,7 @@ var myApp = angular
                      return $http.get('https://www.nestnz.org/api/trapline/'+$route.current.params.traplineId+'&'+$route.current.params.regionId);}]
         }
         })
-        .when('/trap-admin/:traplineId', {
+        .when('/trap-admin/:traplineId/:traplineName', {
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html?'+new Date().getTime(),
             resolve: {
@@ -162,7 +162,7 @@ var myApp = angular
                 }
             }
         })
-        .when('/trap-admin/:traplineId/add-new', {
+        .when('/trap-admin/:traplineId/:traplineName/add-new', {
             controller: 'AdminNewTrapController',
             templateUrl: 'modules/admin/views/new_trap.html?'+new Date().getTime(),
             resolve: {
@@ -189,7 +189,7 @@ var myApp = angular
                 }
             }
         })
-         .when('/trap-admin/:trap_id/edit-trap', {
+         .when('/trap-admin/:trap_id/:traplineName/edit-trap', {
             controller: 'AdminEditTrapController',
             templateUrl: 'modules/admin/views/edit_trap.html',
             resolve: {
@@ -216,7 +216,7 @@ var myApp = angular
                 }
             }
         })
-        .when('/volunteer-admin/:traplineId', {
+        .when('/volunteer-admin/:traplineId/:traplineName', {
             controller: 'AdminVolunteerController',
             templateUrl: 'modules/admin/views/volunteer-admin.html?'+new Date().getTime(),
             resolve: {

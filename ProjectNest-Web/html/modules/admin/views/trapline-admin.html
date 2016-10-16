@@ -18,9 +18,9 @@
 		<tbody data-ng-repeat="trapline in region.traplines">
           <tr data-ng-click="setSelected(parentIndex)" class="{{trapline == selected ? 'success' : ''}}">
             <td scope="row">{{trapline.name}}</td>
-            <td><a href="#/trap-admin/{{trapline.id}}">View Traps</a></td>
-            <td><a href="#/volunteer-admin/{{trapline.id}}">View Volunteers</a></td>
-            <td><a href="#/trapline-admin/{{selected.region.id}}/{{selected.id}}/edit-trapline">Edit</a></td>
+            <td><a href="#/trap-admin/{{trapline.id}}/{{trapline.name}}">View Traps</a></td>
+            <td><a href="#/volunteer-admin/{{trapline.id}}/{{trapline.name}}">View Volunteers</a></td>
+            <td><a href="#/trapline-admin/{{selected.region.id}}/{{selected.id}}/{{trapline.name}}/edit-trapline">Edit</a></td>
           </tr>    
         </tbody>
       </table>
