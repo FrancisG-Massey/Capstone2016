@@ -73,8 +73,6 @@ public class RestNetworkService implements NetworkService {
 	 */
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> sendLoggedCatch(int trapId, Catch loggedCatch) {
-		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
-		
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
     			.path("/catch").header("Session-Token", loginService.getSessionToken())
     			.contentType("application/json");
@@ -83,47 +81,10 @@ public class RestNetworkService implements NetworkService {
 		
 		ApiCatch apiCatch = new ApiCatch(trapId, loggedCatch.getCatchType().getId(), null, logged);
 		
-		RestDataSource dataSource = apiClient.createRestDataSource();
-		
-		ObjectDataWriter<ApiCatch> writer = new RestObjectDataWriterAndRemover<>(dataSource, ApiCatch.class);
-    	
-		GluonObservableObject<ApiCatch> result = DataProvider.storeObject(apiCatch, writer);
-
-    	result.stateProperty().addListener((obs, oldValue, newValue) -> {
-    		switch (newValue) {
-			case FAILED://Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
-	    	case SUCCEEDED:
-				if (dataSource.getResponseCode() == 201) {//Created successfully
-					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
-					if (locationHeaders.isEmpty()) {
-						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for catch "+apiCatch);
-						status.set(RequestStatus.FAILED);
-					} else {
-						int id;
-						try {
-							id = extractIdFromRedirect(locationHeaders.get(0));
-						} catch (RuntimeException ex) {
-							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
-							status.set(RequestStatus.FAILED);
-							return;
-						}
-						LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);
-						loggedCatch.setId(id);
-						status.set(RequestStatus.SUCCESS);
-					}
-				} else {
-					LOG.log(Level.WARNING, "Failed to send catch to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
-					status.set(RequestStatus.FAILED);
-				}
-				break;
-			case READY:
-			case REMOVED:
-			case RUNNING:
-			default:
-				break;    		
-    		}
+    	return processCreateRequest(ApiCatch.class, apiCatch, apiClient, id -> {
+    		LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);
+    		loggedCatch.setId(id);
     	});
-    	return status.getReadOnlyProperty();
 	}
 
 	/* (non-Javadoc)
@@ -131,8 +92,6 @@ public class RestNetworkService implements NetworkService {
 	 */
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> sendCreatedTrap(int traplineId, Trap trap) {
-		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
-		
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
     			.path("/trap").header("Session-Token", loginService.getSessionToken())
     			.contentType("application/json");
@@ -140,52 +99,11 @@ public class RestNetworkService implements NetworkService {
 		String created = trap.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
 		ApiPostTrap apiTrap = new ApiPostTrap(traplineId, trap.getNumber(), trap.getLatitude(), trap.getLongitude(), created);
-		
-		RestDataSource dataSource = apiClient.createRestDataSource();
-		
-		ObjectDataWriter<ApiPostTrap> writer = new RestObjectDataWriterAndRemover<>(dataSource, ApiPostTrap.class);
-    	
-		GluonObservableObject<ApiPostTrap> result = DataProvider.storeObject(apiTrap, writer);
 
-    	result.stateProperty().addListener((obs, oldValue, newValue) -> {
-    		switch (newValue) {
-			case FAILED://Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
-	    	case SUCCEEDED:
-				if (dataSource.getResponseCode() == 201) {//Created successfully
-					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
-					if (locationHeaders.isEmpty()) {
-						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for trap "+apiTrap);
-						status.set(RequestStatus.FAILED);
-					} else {
-						int id;
-						try {
-							id = extractIdFromRedirect(locationHeaders.get(0));
-						} catch (RuntimeException ex) {
-							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
-							status.set(RequestStatus.FAILED);
-							return;
-						}
-						LOG.log(Level.INFO, "Successfully created trap: "+apiTrap);
-						trap.setId(id);
-						status.set(RequestStatus.SUCCESS);
-					}
-				} else {
-					LOG.log(Level.WARNING, "Failed to send trap to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
-					status.set(RequestStatus.FAILED);
-				}
-				break;
-			case READY:
-			case REMOVED:
-			case RUNNING:
-			default:
-				break;    		
-    		}
+		return processCreateRequest(ApiPostTrap.class, apiTrap, apiClient, id -> {
+			LOG.log(Level.INFO, "Successfully created trap: "+apiTrap);
+			trap.setId(id);    		
     	});
-    	return status.getReadOnlyProperty();
-	}
-	
-	public int extractIdFromRedirect (String location) {
-		return Integer.parseInt(location.substring(location.lastIndexOf('/')+1));
 	}
 
 	/* (non-Javadoc)
@@ -302,5 +220,47 @@ public class RestNetworkService implements NetworkService {
 		});
 		return status;
 	}
+	
+	private <T> ReadOnlyObjectProperty<RequestStatus> processCreateRequest (Class<T> type, T data, RestClient client, Consumer<Integer> callback) {
+		ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
+		
+		RestDataSource dataSource = client.createRestDataSource();
+		
+		ObjectDataWriter<T> writer = new RestObjectDataWriterAndRemover<>(dataSource, type);
+    	
+		GluonObservableObject<T> result = DataProvider.storeObject(data, writer);
 
+    	result.stateProperty().addListener((obs, oldValue, newState) -> {
+    		if (newState == ConnectState.SUCCEEDED || newState == ConnectState.FAILED) {
+    			//Successful responses will be marked as 'failed', because the data writer tries to read the response as JSON
+    			
+				if (dataSource.getResponseCode() == 201) {//Created successfully
+					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
+					if (locationHeaders.isEmpty()) {
+						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for "+data);
+						status.set(RequestStatus.FAILED);
+					} else {
+						int id;
+						try {
+							id = extractIdFromRedirect(locationHeaders.get(0));
+						} catch (RuntimeException ex) {
+							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
+							status.set(RequestStatus.FAILED);
+							return;
+						}
+						callback.accept(id);
+						status.set(RequestStatus.SUCCESS);
+					}
+				} else {
+					LOG.log(Level.WARNING, "Failed to send "+data+" to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
+					status.set(RequestStatus.FAILED);
+				}  		
+    		}
+    	});
+    	return status.getReadOnlyProperty();
+	}
+	
+	public int extractIdFromRedirect (String location) {
+		return Integer.parseInt(location.substring(location.lastIndexOf('/')+1));
+	}
 }
