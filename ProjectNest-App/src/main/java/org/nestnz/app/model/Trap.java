@@ -72,7 +72,8 @@ public final class Trap {
 	 */
 	private final ObjectProperty<LocalDateTime> lastResetProperty = new SimpleObjectProperty<>();
 	
-	private final ObservableList<Catch> catches = FXCollections.observableArrayList(c -> new Observable[]{ c.catchTypeProperty() });
+	private final ObservableList<Catch> catches = FXCollections.observableArrayList(c -> 
+		new Observable[]{ c.catchTypeProperty(), c.idProperty() });
 	
 	/**
 	 * Indicates one of the trap properties (excluding catches) has changed since the last server synchronisation
