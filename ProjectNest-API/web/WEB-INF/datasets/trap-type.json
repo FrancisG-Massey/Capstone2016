@@ -62,5 +62,19 @@
         RETURNING
             traptype_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE traptype
+        SET
+            traptype_isinactive = true
+        WHERE
+            traptype_id = #bigint:id#
+        RETURNING traptype_id;
+
+        DELETE FROM traptype
+        WHERE 
+            (traptype_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT trapline_defaulttraptypeid FROM trapline)) AND
+            (#bigint:id# NOT IN (SELECT trap_traptypeid FROM trap)) AND
+            (#bigint:id# NOT IN (SELECT catch_traptypeid FROM catch));
+    "
 }

@@ -95,5 +95,17 @@
         RETURNING
             trap_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE trap
+        SET
+            trap_isinactive = true
+        WHERE
+            trap_id = #bigint:id#
+        RETURNING trap_id;
+
+        DELETE FROM trap
+        WHERE 
+            (trap_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT catch_trapid FROM catch));
+    "
 }

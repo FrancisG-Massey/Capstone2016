@@ -59,5 +59,10 @@
         RETURNING
             traplineuser_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        DELETE FROM traplineuser
+        WHERE 
+            traplineuser_id = #bigint:id#
+        RETURNING traplineuser_id;
+    "
 }

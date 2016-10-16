@@ -60,5 +60,17 @@
         RETURNING
             region_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE region
+        SET
+            region_isinactive = true
+        WHERE
+            region_id = #bigint:id#
+        RETURNING region_id;
+
+        DELETE FROM region
+        WHERE 
+            (region_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT trapline_regionid FROM trapline));
+    "
 }

@@ -85,5 +85,21 @@
         RETURNING
             user_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE users
+        SET
+            user_isinactive = true
+        WHERE
+            user_id = #bigint:id#
+        RETURNING user_id;
+
+        DELETE FROM session s
+        WHERE s.session_userid = #bigint:id#;
+
+        DELETE FROM users
+        WHERE 
+            (user_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT traplineuser_userid FROM traplineuser)) AND
+            (#bigint:id# NOT IN (SELECT catch_userid FROM catch));
+    "
 }

@@ -110,5 +110,18 @@
         RETURNING
             trapline_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE trapline
+        SET
+            trapline_isinactive = true
+        WHERE
+            trapline_id = #bigint:id#
+        RETURNING trapline_id;
+
+        DELETE FROM trapline
+        WHERE 
+            (trapline_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT traplineuser_traplineid FROM traplineuser)) AND
+            (#bigint:id# NOT IN (SELECT trap_traplineid FROM trap));
+    "
 }

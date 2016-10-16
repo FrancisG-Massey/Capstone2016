@@ -58,5 +58,17 @@
         RETURNING
             catchtype_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE catchtype
+        SET
+            catchtype_isinactive = true
+        WHERE
+            catchtype_id = #bigint:id#
+        RETURNING catchtype_id;
+
+        DELETE FROM catchtype
+        WHERE 
+            (catchtype_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT catch_catchtypeid FROM catch));
+    "
 }

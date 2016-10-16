@@ -62,5 +62,19 @@
         RETURNING
             bait_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE bait
+        SET
+            bait_isinactive = true
+        WHERE
+            bait_id = #bigint:id#
+        RETURNING bait_id;
+
+        DELETE FROM bait
+        WHERE 
+            (bait_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT trapline_defaultbaitid FROM trapline)) AND
+            (#bigint:id# NOT IN (SELECT trap_baitid FROM trap)) AND
+            (#bigint:id# NOT IN (SELECT catch_baitid FROM catch));
+    "
 }
