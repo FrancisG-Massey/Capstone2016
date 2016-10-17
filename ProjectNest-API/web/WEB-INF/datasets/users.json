@@ -62,7 +62,7 @@
             now()::timestamp,
             1,
             #boolean:admin#,
-            #boolean:inactive#
+            false
         WHERE
             (#bigint:id# IS NULL) AND 
             (#string:username# IS NOT NULL) AND (#string:password# IS NOT NULL)
