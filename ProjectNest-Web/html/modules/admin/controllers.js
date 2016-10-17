@@ -55,7 +55,7 @@ angular.module('Admin')
 	    $scope.currentPage = 0;
 	    var mymap;
 	
-    	$scope.showMap = function() {
+	 	$scope.showMap = function() {
     		if (!mymap) {
     		    mymap = L.map('mapid'), trap;
     		    
@@ -72,47 +72,12 @@ angular.module('Admin')
     	        var marker, popupText;
     		    for (var i = 0; i < traps.length; i++) {
     		    	trap = traps[i];
-    		    	popupText = "<strong>Trap: " + trap.number + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
+    		    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
     		    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
     			}
     		}
-    		if ($scope.selected) {                
-    		    $scope.selected.popup.openPopup();
-    		    mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
-    		}
     		return true;
     	}
-    	
-    	$scope.setSelected = function(item){
-	    	$scope.selected = this.trap;
-			//$scope.selected.popup.openPopup();
-	    	//mymap.setView([$scope.selected.coord_lat, $scope.selected.coord_long], 18);
-	    	
-	    	$scope.latitude = $scope.selected.coord_lat;
-	    	$scope.longtitude = $scope.selected.coord_long;
-	    	$scope.status = $scope.selected.status;
-
-    	// get catch by passing trap id
-    	$http.get('https://www.nestnz.org/api/catch?trap-id='+$scope.selected.id)
-        .then(function(response) {
-            $scope.catches = response.data;
-            console.log($scope.catches);
-            // attach catch history to relavnt catch types
-            var cat, catch_type;
-        	for (var i = 0; i < $scope.catches.length; i++) {
-        	    cat = $scope.catches[i];
-        	    cat.catch_type = [];
-        	    for (var x = 0; x < $scope.catch_types.length; x++) {
-        	        catch_type = $scope.catch_types[x];
-        	        if (catch_type.id == cat.catchtype_id) {
-        	            cat.catch_type = catch_type;
-        	        }
-        	    }
-        	};
-        });
-
-    };
-    
     $scope.formatDate = function(date){
         var dateOut = new Date(date);
         return dateOut;
