@@ -72,7 +72,7 @@ angular.module('Admin')
     	        var marker, popupText;
     		    for (var i = 0; i < traps.length; i++) {
     		    	trap = traps[i];
-    		    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' S<br>' + trap.coord_long + ' E';
+    		    	popupText = "<strong>Trap: " + trap.id + '</strong><br>' + trap.coord_lat + ' N<br>' + trap.coord_long + ' E';
     		    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
     			}
     		}
@@ -82,9 +82,6 @@ angular.module('Admin')
         var dateOut = new Date(date);
         return dateOut;
     };
-    
-
-    
     $scope.gap = 5;
     
     $scope.range = function (size,start, end) {
@@ -119,34 +116,6 @@ angular.module('Admin')
     	//console.log(this.n);
         $scope.currentPage = this.n;
     };
-    
-
-    $scope.Edit = function () {
-    	console.log($scope.trapline_id+" lineID");
-    	console.log($scope.trapNumber+" trapNumber");
-    	console.log($scope.longtitude+" Long");
-    	console.log($scope.latitude+" Lat");
-    	console.log($scope.typeId+" trapTypeID");
-    	console.log($scope.status+" current Status");
-    	console.log($scope.baitId+" Bait type id");
-        // as json object
-    	var data = {
-            "trapline_id":  parseInt($scope.trapline_id),
-            "number": $scope.trapNumber,
-            "coord_long": $scope.longtitude,
-            "coord_lat": $scope.latitude,
-            "traptype_id": $scope.typeId,
-            "status": $scope.status,
-            "bait_id": $scope.baitId
-        };  
-            
-        /*$http.post('https://www.nestnz.org/api/trap',data)
-        .then(function(data,status,header,config) {
-            $route.reload();
-        });*/         
-     };
-    
-
     }])
 
 .controller('AdminVolunteerController', ['$scope','$rootScope','trapline_users','users','$route',function ($scope, $rootScope,trapline_users,users,$route) {
@@ -266,7 +235,7 @@ angular.module('Admin')
         });         
      };
 }])
-.controller('AdminEditTrapController',['$scope','$rootScope','baits','trap_type','$route','$http','trap','$location',function ($scope, $rootScope,baits,trap_type,$route,$http,trap,$location) {
+.controller('AdminEditTrapController',['$scope','$rootScope','baits','trap_type','$route','$http','trap','$location','traps',function ($scope, $rootScope,baits,trap_type,$route,$http,trap,$location,traps) {
     //var traplineId = $routeParams.traplineId;
     $rootScope.hideHeader = true;
     $scope.trapline_name= $route.current.params.traplineName;;
@@ -276,7 +245,6 @@ angular.module('Admin')
     $scope.baits = baits;
     $scope.trap_type = trap_type;
     console.log(trap);
-
     $scope.Edit = function () {
     	console.log($scope.trap.id +" id");
     	console.log($scope.trap.coord_lat+" lati");
@@ -288,7 +256,7 @@ angular.module('Admin')
     	    	
      	$http.put('https://www.nestnz.org/api/trap/'+$scope.trap.id, $scope.trap)
         .then(function(data,status,header,config) {
-        	$location.path("/trap-admin/"+$scope.trapline_id);
+        	$location.path("/trap-admin/"+$scope.trapline_id+"/"+$scope.trapline_name);
         });  
      	
         /*$http.post('https://www.nestnz.org/api/trap',data)
@@ -296,6 +264,42 @@ angular.module('Admin')
             $route.reload();
         });*/         
      };
+     var traps = traps;
+     var focus_trap;
+     var mymap;
+     $scope.showMap = function() {
+ 		if (!mymap) {
+ 		    mymap = L.map('mapid'), trap;
+ 		    //$scope.trap.popup.openPopup();
+ 		    //mymap.setView([traps[0].coord_lat, traps[0].coord_long], 13);		
+ 	
+ 				        
+ 	        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+ 	            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery <a href="http://mapbox.com">Mapbox</a>',
+ 	            maxZoom: 18,
+ 	            id: 'mrmjlee.182flnof',
+ 	            accessToken: 'pk.eyJ1IjoibXJtamxlZSIsImEiOiJjaXNlOTNwNDYwMDlnMnlydHViZ3dpMmt6In0.miWLZ3CSlid3NaTw1KtRDg'
+ 	        }).addTo(mymap);
+ 	        
+ 	        var marker, popupText;
+ 		    for (var i = 0; i < traps.length; i++) {
+ 		    	trap = traps[i];
+ 		    	if (trap.id== $scope.trap.id){
+ 		    		focus_trap = trap;
+ 		    	}
+ 		    	popupText = "<strong>Trap: " + trap.number + '</strong><br>' + trap.coord_lat + ' N<br>' + trap.coord_long + ' E';
+ 		    	trap.popup = L.marker([trap.coord_lat, trap.coord_long]).addTo(mymap).bindPopup(popupText);
+ 			}
+ 		}
+	    //var popupText = "<strong>Trap: " + focus_trap.number + '</strong><br>' + focus_trap.coord_lat + ' N<br>' + focus_trap.coord_long + ' E';
+		
+	    //focus_trap.popup = L.marker([focus_trap.coord_lat, focus_trap.coord_long]).addTo(mymap).bindPopup(popupText);
+	    console.log(focus_trap);
+ 		focus_trap.popup.openPopup();
+	    mymap.setView([focus_trap.coord_lat, focus_trap.coord_long], 13);	
+ 		return true;
+ 	}
+ 	
 }])
 .controller('AdminNewTraplineController',['$scope', '$rootScope','$http','region','baits','trap_type','$route',function ($scope,$rootScope,$http,region,baits,trap_type,$route) {
 	$rootScope.hideHeader = true;

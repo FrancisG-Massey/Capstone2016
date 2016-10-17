@@ -193,7 +193,20 @@ var myApp = angular
             controller: 'AdminEditTrapController',
             templateUrl: 'modules/admin/views/edit_trap.html',
             resolve: {
-                baits:function($http, $route){
+            	traps: function($http, $route){
+                    return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/trap',
+                        params: {
+                            '_': new Date().getTime(),
+                            'trapline-id': $route.current.params.traplineId
+                        }
+                    })
+                    .then(function(response){
+                        return response.data;
+                    });
+                },
+            	baits:function($http, $route){
                     return $http
                     .get('https://www.nestnz.org/api/bait')
                     .then(function(response){
