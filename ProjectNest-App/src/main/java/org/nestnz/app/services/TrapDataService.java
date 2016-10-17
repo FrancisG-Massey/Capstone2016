@@ -219,8 +219,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     					}
     				}
 					//Fall through
-				case FAILED:
 				case FAILED_UNAUTHORISED:
+				case FAILED_NETWORK:
+				case FAILED_OTHER:
 					loadingProperty.set(false);//Signal loading is complete
 					break;
 				case PENDING:
@@ -295,8 +296,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				trapline.setLastUpdated(LocalDateTime.now());
 				
 				//Fall through
-			case FAILED:
 			case FAILED_UNAUTHORISED:
+			case FAILED_NETWORK:
+			case FAILED_OTHER:
 				loadingProperty.set(false);//Signal loading is complete
 				break;
 			case PENDING:
@@ -316,8 +318,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     		switch(newStatus) {
 			case SUCCESS:
 				//Fall through
-			case FAILED:
 			case FAILED_UNAUTHORISED:
+			case FAILED_NETWORK:
+			case FAILED_OTHER:
 				//Signal region data has been fetched
 				appDataLoading.release();
 				break;
@@ -346,8 +349,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				catchTypes.setLastServerFetch(LocalDateTime.now());
 				cachingService.storeCatchTypes(catchTypes);
 				//Fall through
-			case FAILED:
 			case FAILED_UNAUTHORISED:
+			case FAILED_NETWORK:
+			case FAILED_OTHER:
 				//Signal catch type data has been fetched
 				appDataLoading.release();
 				break;

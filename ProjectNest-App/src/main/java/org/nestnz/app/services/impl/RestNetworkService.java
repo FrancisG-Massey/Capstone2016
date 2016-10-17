@@ -228,7 +228,7 @@ public class RestNetworkService implements NetworkService {
 									status.bind(processReadRequest(type, client, callback, false));
 								} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
 									//Problem renewing session due to sever unavailability
-									status.set(RequestStatus.FAILED);
+									status.set(RequestStatus.FAILED_OTHER);
 								} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
 									//Old credentials no longer work
 									status.set(RequestStatus.FAILED_UNAUTHORISED);
@@ -242,10 +242,14 @@ public class RestNetworkService implements NetworkService {
 						status.set(RequestStatus.FAILED_UNAUTHORISED);
 					}
 					break;
+				case -1://Never received a HTTP response (probably a network error)
+					LOG.log(Level.WARNING, "Problem loading "+type+".", resultList.getException());
+					status.set(RequestStatus.FAILED_NETWORK);
+					break;
 				default:
 					//Handle failure
-					status.set(RequestStatus.FAILED);
-					LOG.log(Level.SEVERE, "Problem loading "+type+". HTTP response: "+dataSource.getResponseMessage(), resultList.getException());
+					status.set(RequestStatus.FAILED_OTHER);
+					LOG.log(Level.SEVERE, "Problem loading "+type+". HTTP response: "+dataSource.getResponseCode()+" "+dataSource.getResponseMessage(), resultList.getException());
 					break;
 				}				
 			} else if (newState == ConnectState.SUCCEEDED) {
@@ -280,14 +284,14 @@ public class RestNetworkService implements NetworkService {
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
 						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for "+data);
-						status.set(RequestStatus.FAILED);
+						status.set(RequestStatus.FAILED_OTHER);
 					} else {
 						int id;
 						try {
 							id = extractIdFromRedirect(locationHeaders.get(0));
 						} catch (RuntimeException ex) {
 							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
-							status.set(RequestStatus.FAILED);
+							status.set(RequestStatus.FAILED_OTHER);
 							return;
 						}
 						callback.accept(id);
@@ -307,7 +311,7 @@ public class RestNetworkService implements NetworkService {
 									status.bind(processCreateRequest(type, data, client, callback, false));
 								} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
 									//Problem renewing session due to sever unavailability
-									status.set(RequestStatus.FAILED);
+									status.set(RequestStatus.FAILED_OTHER);
 								} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
 									//Old credentials no longer work
 									status.set(RequestStatus.FAILED_UNAUTHORISED);
@@ -321,9 +325,13 @@ public class RestNetworkService implements NetworkService {
 						status.set(RequestStatus.FAILED_UNAUTHORISED);
 					}
 					break;
+				case -1://Never received a HTTP response (probably a network error)
+					LOG.log(Level.WARNING, "Failed to send "+data+" to server.", result.getException());
+					status.set(RequestStatus.FAILED_NETWORK);
+					break;
 				default:
 					LOG.log(Level.WARNING, "Failed to send "+data+" to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
-					status.set(RequestStatus.FAILED);
+					status.set(RequestStatus.FAILED_OTHER);
 					break;
 				}  		
     		}

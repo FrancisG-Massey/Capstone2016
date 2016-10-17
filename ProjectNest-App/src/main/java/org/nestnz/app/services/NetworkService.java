@@ -32,7 +32,32 @@ import javafx.beans.property.ReadOnlyObjectProperty;
  */
 public interface NetworkService {
 	
-	public static enum RequestStatus { PENDING, SUCCESS, FAILED, FAILED_UNAUTHORISED };
+	public static enum RequestStatus { 
+		/**
+		 * The request is currently waiting for a response from the server
+		 */
+		PENDING, 
+		
+		/**
+		 * The request completed successfully
+		 */
+		SUCCESS, 
+		
+		/**
+		 * The request failed because the user isn't authorised to read from/write to the specified resource
+		 */
+		FAILED_UNAUTHORISED, 
+		
+		/**
+		 * The request failed because the network isn't available at the moment
+		 */
+		FAILED_NETWORK,
+		
+		/**
+		 * The request failed for some other reason
+		 */
+		FAILED_OTHER 
+	};
 
 	/**
 	 * Submits a logged catch in a trap to the API. 
