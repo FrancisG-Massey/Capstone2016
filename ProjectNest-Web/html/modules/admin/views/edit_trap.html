@@ -1,11 +1,11 @@
 <ul class="breadcrumb">
   <li><a href="/#" >Home</a></li>
   <li><a href="/#/trapline-admin" >Admin</a></li>
-  <li><a href="#/trap-admin/{{trapline_id}}">Trapline {{trapline_id}}</a></li>
-  <li class="active"> Edit trap {{trap.number}}</li>  
+  <li><a href="#/trap-admin/{{trapline_id}}/{{trapline_name}}">{{trapline_name}}</a></li>
+  <li class="active"> Trap {{trap.number}}</li>  
 </ul>
-
-  <h2 class="text-center page-header">Edit Trap</h2>
+<div class="jumbotron">
+  <h2 class="text-center page-header">Edit Trap {{trap.number}}</h2>
   <form  ng-submit="Edit()">
 		<div class="col-lg-10 col-lg-offset-1">
 		<div class="well">
@@ -25,14 +25,14 @@
       <div class="col-md-6 form-group">
         <label>Latitude</label>
         <div class="input-group">
-          <input type="number" class="form-control" ng-model="trap.coord_lat">
+          <input type="number" class="form-control" step="any" min="-90" max="90"  ng-model="trap.coord_lat" required>
           <span class="input-group-addon">N</span>
         </div>
       </div>
       <div class="col-md-6 form-group">
         <label>Longitude</label>
         <div class="input-group">
-          <input type="number" class="form-control" ng-model="trap.coord_long"> 
+          <input type="number" class="form-control" step="any" min="-180" max="180" ng-model="trap.coord_long" required> 
           <span class="input-group-addon">E</span>
         </div>
       </div>
@@ -53,7 +53,7 @@
         </select>
       </div>
     </div>
-
+	<div ng-show="showMap()" class="map" id="mapid"></div>
     <div class="clearfix" style="margin-top:8px; margin-bottom: 20px">
       <div class = "pull-right" style="margin-top: 10px;">
         <button class="btn btn-success" type="submit">Save</button>
@@ -62,4 +62,4 @@
     </div>
 </div>
   </form>
-  
+</div>  

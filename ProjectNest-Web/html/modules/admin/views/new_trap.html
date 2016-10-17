@@ -1,10 +1,11 @@
 <ul class="breadcrumb">
   <li><a href="/#" >Home</a></li>
   <li><a href="/#/trapline-admin" >Admin</a></li>
-  <li><a href="#/trap-admin/{{trapline_id}}">Trapline {{trapline_id}}</a></li>
+  <li><a href="#/trap-admin/{{trapline_id}}/{{trapline_name}}">{{trapline_name}}</a></li>
   <li class="active"> Add new trap</li>  
 </ul>
 
+<div class="jumbotron">
   <h2 class="text-center page-header">New Trap</h2>
   <form  ng-submit="Save()">
 		<div class="col-lg-10 col-lg-offset-1">
@@ -25,14 +26,14 @@
       <div class="col-md-6 form-group">
         <label>Latitude</label>
         <div class="input-group">
-          <input type="number" class="form-control" ng-model="latitude">
+          <input type="number" class="form-control" step="any" min="-90" max="90" ng-model="latitude"  required>
           <span class="input-group-addon">N</span>
         </div>
       </div>
       <div class="col-md-6 form-group">
         <label>Longitude</label>
         <div class="input-group">
-          <input type="number" class="form-control" ng-model="longtitude"> 
+          <input type="number" class="form-control" step="any" min="-180" max="180" ng-model="longtitude"  required> 
           <span class="input-group-addon">E</span>
         </div>
       </div>
@@ -40,15 +41,15 @@
     <div class="row">
       <div class="col-md-6 form-group">
         <label>Bait type</label>
-        <select class="form-control" ng-model="baitId" >
-          <option data-ng-selected="bait.id == baitId" 
+        <select class="form-control" ng-model="baitId"  required>
+          <option 
              data-ng-repeat="bait in baits" ng-value="{{bait.id}}">{{bait.name}}</option>
         </select>
       </div>
       <div class="col-md-6 form-group">
         <label>Trap type</label>
-        <select class="form-control" ng-model="typeId" >
-          <option data-ng-selected="type.id == typeId" 
+        <select class="form-control" ng-model="typeId"  required>
+          <option  
              data-ng-repeat="type in trap_type" ng-value="{{type.id}}">{{type.name}}</option> 
         </select>
       </div>
@@ -68,4 +69,4 @@
     </div>
 </div>
   </form>
-  
+</div>  

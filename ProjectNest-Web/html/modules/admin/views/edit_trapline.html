@@ -1,13 +1,11 @@
 <ul class="breadcrumb">
   <li><a href="/#" >Home</a></li>
   <li><a href="/#/trapline-admin" >Admin</a></li>
-  <li class="active">Edit trapline {{trapline_Id}}</li>  
+  <li class="active">{{trapline_name}}</li>  
 </ul>
 
-<div>
-  <h1>Add New Trapline</h1>
-  <div class="row">
-    <div class="col-sm-5">
+<div class="jumbotron">
+<h2 class="text-center page-header">Edit Trapline</h2>
       <form ng-submit="Edit()">
       <div class="col-lg-10 col-lg-offset-1">
 		<div class="well">
@@ -49,6 +47,5 @@
         </div>
         </div>
       </form>
-    </div>
-  </div>
-</div>
+      </div>
+      
