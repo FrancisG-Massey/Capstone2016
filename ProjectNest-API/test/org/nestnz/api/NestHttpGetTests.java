@@ -11,8 +11,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Base64;
 import java.util.regex.Pattern;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -26,65 +24,26 @@ import org.junit.runners.MethodSorters;
  * @author Sam
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class NestHttpGetTests {
-    
-    private static final String BASE_URL = AllTests.getTestServerBaseUrl();
-    private static String SESSION_TOKEN = "";
+public class NestHttpGetTests extends NestHttpTests {
     
     public NestHttpGetTests() {
     }
     
     @BeforeClass
     public static void setUpClass() throws IOException {
-        
-        // Login using nest root (deactivated in production)
-        URL url = new URL(BASE_URL + "/session");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        
-        String encoded = Base64.getEncoder().encodeToString("nestrootadmin:nestrootadmin".getBytes());
-        connection.setRequestProperty("Authorization", "Basic "+encoded);
-        
-        connection.setRequestMethod("POST");
-        connection.connect();
-        
-        SESSION_TOKEN = connection.getHeaderField("Session-Token");
+        NestHttpTests.NestAdminLogin();
     }
     
     @AfterClass
     public static void tearDownClass() throws IOException {
-        // Logout of nest root (deactivated in production)
-        URL url = new URL(BASE_URL + "/session");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        
-        connection.setRequestMethod("DELETE");
-        connection.addRequestProperty("Session-Token", SESSION_TOKEN);
-        
-        connection.connect();
+        NestHttpTests.NestAdminLogout();
     }
 
-    /**
-     * Accepts a REST entity subroute, e.g. "/region" and returns a response code from a GET request to the URL
-     * @param entitySubroute
-     * @return
-     * @throws MalformedURLException
-     * @throws IOException 
-     */
-    private static int nestHttpGetRequest(String entitySubroute, boolean addSessionToken) throws IOException {
-        URL url = new URL(BASE_URL + entitySubroute);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        if (addSessionToken) {
-            connection.addRequestProperty("Session-Token", SESSION_TOKEN);
-        }
-        connection.connect();
-        return connection.getResponseCode();
-    }
-    
     // Check that all of the URLs we expect to succeed, do.
     
     @Test
     public void AAA_GetUserSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/user", true);
+        int code = nestHttpGetRequest("/user", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -95,12 +54,7 @@ public class NestHttpGetTests {
         
     @Test
     public void AAB_GetUserAsJsonIsJson() throws IOException {
-        URL url = new URL(BASE_URL + "/user");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.addRequestProperty("Session-Token", SESSION_TOKEN);
-        connection.addRequestProperty("Accept", "application/json");
-        connection.connect();
+        HttpURLConnection connection = nestHttpGetRequest("/user", true, "application/json");
         
         // Make sure the request succeeds
         int code = connection.getResponseCode();
@@ -129,12 +83,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AAC_GetUserAsCsvIsCsv() throws IOException {
-        URL url = new URL(BASE_URL + "/user");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.addRequestProperty("Session-Token", SESSION_TOKEN);
-        connection.addRequestProperty("Accept", "text/csv");
-        connection.connect();
+        HttpURLConnection connection = nestHttpGetRequest("/user", true, "text/csv");
         
         // Make sure the request succeeds
         int code = connection.getResponseCode();
@@ -144,7 +93,7 @@ public class NestHttpGetTests {
         // Make sure the request has a correct mime-type declaration
         String acceptHeader = connection.getContentType();
         assertTrue("Error, no Content-Type header found", acceptHeader != null);
-        assertTrue("Error, Content-Type is not valid for CSV", 
+        assertTrue("Error, Content-Type is not valid for CSV:" + acceptHeader, 
                 Pattern.compile("text/csv").matcher(acceptHeader.toLowerCase()).find() ||
                 Pattern.compile("application/octet-stream").matcher(acceptHeader.toLowerCase()).find()
         );
@@ -166,7 +115,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AB_GetBaitSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/bait", true);
+        int code = nestHttpGetRequest("/bait", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -174,7 +123,7 @@ public class NestHttpGetTests {
 
     @Test
     public void AC_GetCatchTypeSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/catch-type", true);
+        int code = nestHttpGetRequest("/catch-type", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -182,7 +131,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AD_GetTrapTypeSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/trap-type", true);
+        int code = nestHttpGetRequest("/trap-type", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -190,7 +139,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AE_GetRegionSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/region", true);
+        int code = nestHttpGetRequest("/region", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -198,7 +147,7 @@ public class NestHttpGetTests {
 
     @Test
     public void AF_GetCatchSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/catch", true);
+        int code = nestHttpGetRequest("/catch", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -206,7 +155,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AG_GetTraplineSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/trapline", true);
+        int code = nestHttpGetRequest("/trapline", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -214,7 +163,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AH_GetTraplineUserSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/trapline-user", true);
+        int code = nestHttpGetRequest("/trapline-user", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -222,7 +171,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AI_GetTrapSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/trap", true);
+        int code = nestHttpGetRequest("/trap", true, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -230,7 +179,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AJ_GetCatchReportSimpleSucceeds() throws IOException {
-        int code = nestHttpGetRequest("/catch-report-simple", false);
+        int code = nestHttpGetRequest("/catch-report-simple", false, "application/json").getResponseCode();
         
         assertTrue("Error, non-success response code: " + Integer.toString(code), code >= 200);
         assertTrue("Error, non-success response code: " + Integer.toString(code), code < 300);
@@ -240,7 +189,7 @@ public class NestHttpGetTests {
     
     @Test
     public void AK_GetUnknownUrlFails() throws IOException {
-        int code = nestHttpGetRequest("/some-undefined-entity", true);
+        int code = nestHttpGetRequest("/some-undefined-entity", true, "application/json").getResponseCode();
         
         assertEquals(code, 404);
     }

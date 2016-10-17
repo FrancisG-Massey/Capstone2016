@@ -218,6 +218,15 @@ ALTER TABLE public.users
     OWNER TO nestnz;
 
 
+-- Create a default root login for running test cases etc.
+-- This should be disabled in production for obvious reasons.
+
+INSERT INTO public.users 
+    (user_name, user_password, user_createduserid, user_isadmin, user_isinactive)
+VALUES
+    ('nestrootadmin', '$2a$12$H5MJurSvPZZJb5ahrxhrFOHQFBvISnUoMb8VzxJ6ktogzSwA420o.', 1, TRUE, FALSE);
+
+
 -- Table: public.session
 -- DROP TABLE public.session;
 
