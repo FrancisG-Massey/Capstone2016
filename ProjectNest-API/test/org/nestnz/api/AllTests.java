@@ -39,6 +39,8 @@ public class AllTests {
         // As the tests don't execute withint the servlet container, we don't
         // have access to this context and need to simulate the base path here.
         // Assumes tests run from './build/test/classes/' and we want './build/'
+        // This will be different if we build from gradle instead of netbeans,
+        // but we won't have time to sort his out so maybe in the future...
         if (servletContextPath != null) {
             return servletContextPath;
         }
