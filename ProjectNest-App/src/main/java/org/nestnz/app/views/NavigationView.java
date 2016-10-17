@@ -107,9 +107,14 @@ public class NavigationView extends View {
     int[] trapNumberLookup;
     
     /**
-     * The number of the first trap to use in the navigation sequence
+     * The number of the first active trap in the trapline
      */
-    int startTrap;
+    int firstTrap;
+    
+    /**
+     * The number of the last active trap in the trapline
+     */
+    int lastTrap;
     
     /**
      * The number of the last trap to use in the navigation sequence
@@ -373,11 +378,11 @@ public class NavigationView extends View {
      */
     public boolean hasPreviousTrap () {
     	int prevNumber = trapProperty.get().getNumber()-step;
-		while (canTraverseNext(step < 0, prevNumber, startTrap) && trapNumberLookup[prevNumber] == -1) {
+		while (canTraverseNext(step < 0, prevNumber, firstTrap) && trapNumberLookup[prevNumber] == -1) {
 			//Skip traps which don't exist (or are currently inactive)
 			prevNumber -= step;
 		}
-    	return canTraverseNext(step < 0, prevNumber, startTrap);
+    	return canTraverseNext(step < 0, prevNumber, firstTrap);
     }
     
     /**
@@ -427,8 +432,8 @@ public class NavigationView extends View {
     		Trap t = trapsTmp.get(i);
     		trapNumberLookup[t.getNumber()] = i;
     	}
-    	startTrap = trapsTmp.get(0).getNumber();
-    	endTrap = highestTrap.getNumber();
+    	firstTrap = trapsTmp.get(0).getNumber();
+    	lastTrap = endTrap = highestTrap.getNumber();
     	step = 1;
     	
     	//Sort the traps by trap number
@@ -452,7 +457,14 @@ public class NavigationView extends View {
     	assert Math.abs(endTrap - startTrap) >= Math.abs(step) : "step is too high! It should be no greater than the number of traps in the sequence!";
     	assert step > 0 ? startTrap <= endTrap : startTrap >= endTrap : "step runs in the wrong direction! step="+step+", end="+endTrap+", start="+startTrap;//
     	
-    	this.startTrap = startTrap;
+    	if (step < 0 != this.step < 0) {
+    		//If the navigation is to run in reverse and wasn't previously (or vice versa), swap the first & last trap numbers around.
+    		int tmp = this.firstTrap;
+    		this.firstTrap = this.lastTrap;
+    		this.lastTrap = tmp;
+    	}
+    	
+    	//this.startTrap = startTrap;
     	this.endTrap = endTrap;
     	this.step = step;
     	currentTrapIndex.set(trapNumberLookup[startTrap]);

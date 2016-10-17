@@ -183,7 +183,7 @@ public class TestNavigationView {
 		
 		navView.setNavigationSequence(2, 4, 1);
 		
-		assertFalse(navView.hasPreviousTrap());//This should be the first trap in the sequence
+		assertTrue(navView.hasPreviousTrap());//This should be true, as there's still one trap before this one
 		
 		assertEquals(trap2, navView.trapProperty.getValue());
 		navView.nextTrap();
