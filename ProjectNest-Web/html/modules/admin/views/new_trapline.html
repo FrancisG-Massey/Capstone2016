@@ -4,11 +4,10 @@
   <li class="active"> Add new trapline</li>  
 </ul>
 
-<div>
-  <h1>Add New Trapline</h1>
-  <div class="row">
-    <div class="col-sm-5">
+<h2 class="text-center page-header">New Trapline</h2>
       <form ng-submit="Save()">
+      	<div class="col-lg-10 col-lg-offset-1">
+		<div class="well">
         <div class="form-group">
           <label>Name</label>
           <input type="text" class="form-control"  ng-model="line_name" >
@@ -42,7 +41,7 @@
         <div class="clearfix form-group">
           <button class="btn btn-success pull-right" type="submit">Save</button>
         </div>
+        </div>
+        </div>
       </form>
-    </div>
-  </div>
-</div>
+
