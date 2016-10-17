@@ -23,7 +23,8 @@ import org.junit.runners.Suite;
     //org.nestnz.api.DBConnectTests.class,
     org.nestnz.api.DBInterfaceTests.class,
     org.nestnz.api.NestHttpSessionTests.class,
-    org.nestnz.api.NestHttpGetTests.class
+    org.nestnz.api.NestHttpGetTests.class,
+    org.nestnz.api.NestHttpPostTests.class
 })
 public class AllTests {
     // Run the test suite to impose a bit nicer execution order on test classes

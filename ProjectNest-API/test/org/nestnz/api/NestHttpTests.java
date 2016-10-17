@@ -14,11 +14,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import org.apache.tomcat.jdbc.pool.DataSource;
 
 /**
- *
+ * Base class for defining HTTP helper functions
  * @author Sam
  */
 abstract public class NestHttpTests {
@@ -114,7 +116,7 @@ abstract public class NestHttpTests {
      * @return
      * @throws IOException 
      */
-    private static HttpURLConnection nestHttpPostRequest(String entitySubroute, Boolean addSessionToken, String requestBody) throws IOException {
+    protected static HttpURLConnection nestHttpPostRequest(String entitySubroute, Boolean addSessionToken, String requestBody) throws IOException {
         URL url = new URL(BASE_URL + entitySubroute);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
@@ -165,11 +167,10 @@ abstract public class NestHttpTests {
      * DELETEs a REST entity, e.g. "/region/42" and returns the response object
      * @param entitySubroute
      * @param addSessionToken
-     * @param acceptHeader
      * @return 
      * @throws IOException 
      */
-    protected static HttpURLConnection nestHttpDeleteRequest(String entitySubroute, boolean addSessionToken, String acceptHeader) throws IOException {
+    protected static HttpURLConnection nestHttpDeleteRequest(String entitySubroute, boolean addSessionToken) throws IOException {
         URL url = new URL(BASE_URL + entitySubroute);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("DELETE");
@@ -178,5 +179,35 @@ abstract public class NestHttpTests {
         }
         connection.connect();
         return connection;
+    }
+    
+    /**
+     * Remove the created entities directly via the db so we don't worry about bugs in DELETE.
+     * @param entitiesList These should be names of tables in the database!
+     * @param ids This should have keys for each value in entitiesList!
+     * @return
+     * @throws SQLException
+     * @throws IOException 
+     */
+    protected static boolean dbDeleteEntities(List<String> entitiesList, Map<String,Long> ids) throws SQLException, IOException {
+        DataSource dsTest = Common.getNestDS(DBCONFIGPATH_TEST);
+        
+        for(int i = entitiesList.size()-1; i >= 0; i--) {
+            
+            // Get the entities to delete
+            final String tablename = entitiesList.get(i);
+            Long id = ids.get(tablename);
+            // It's late, okay!?
+            final String columnname = (!tablename.equals("users"))? tablename+"_id" : "user_id";
+            
+            try (
+                Connection conn = dsTest.getConnection();
+                Statement st = conn.createStatement();        
+            ) {
+                boolean hasResults = st.execute("DELETE FROM "+tablename+" WHERE "+columnname+" = "+id+";");
+            }
+        }
+        dsTest.close();
+        return true;
     }
 }
