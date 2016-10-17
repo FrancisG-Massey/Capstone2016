@@ -1,18 +1,17 @@
 {
     "before": "
-        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
     ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             c.catch_id as id,
             c.catch_trapid as trap_id,
@@ -23,8 +22,7 @@
             c.catch_note as note,
             c.catch_loggedtimestamp as logged,
             c.catch_imagefilename as img_filename
-        FROM 
-            logged_user lu,
+        FROM
             catch c
             LEFT JOIN trap t
                 ON t.trap_id = c.catch_trapid
@@ -33,7 +31,7 @@
             LEFT JOIN traplineuser tlu
                 ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id) OR (c.catch_userid = lu.user_id)) AND
+            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#) OR (c.catch_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (c.catch_id = #bigint:id#)) AND
             ((#bigint:trap-id# IS NULL) OR (t.trap_id = #bigint:trap-id#)) AND
             ((#bigint:trap-number# IS NULL) OR (t.trap_number = #bigint:trap-number#)) AND

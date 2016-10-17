@@ -218,6 +218,15 @@ ALTER TABLE public.users
     OWNER TO nestnz;
 
 
+-- Create a default root login for running test cases etc.
+-- This should be disabled in production for obvious reasons.
+
+INSERT INTO public.users 
+    (user_name, user_password, user_createduserid, user_isadmin, user_isinactive)
+VALUES
+    ('nestrootadmin', '$2a$12$H5MJurSvPZZJb5ahrxhrFOHQFBvISnUoMb8VzxJ6ktogzSwA420o.', 1, TRUE, FALSE);
+
+
 -- Table: public.session
 -- DROP TABLE public.session;
 
@@ -861,22 +870,26 @@ ALTER FUNCTION public.clean_sessions()
 -- Function: public.clean_sessions()
 -- DROP FUNCTION public.clean_sessions();
 
-CREATE OR REPLACE FUNCTION public.extend_session(token text, length interval)
-    RETURNS timestamp AS
+CREATE OR REPLACE FUNCTION public.extend_session(token text, length interval,
+        OUT user_id bigint, 
+        OUT user_isadmin boolean, 
+        OUT session_expirestimestamp timestamp
+    ) AS
 $BODY$
-    DECLARE
-    new_expires timestamp;
     BEGIN
         PERFORM public.clean_sessions();
 
-        UPDATE session
-        SET session_expirestimestamp = GREATEST(now()::timestamp + length, session_expirestimestamp)
-        WHERE session_token = token
-        RETURNING session_expirestimestamp
+        UPDATE session AS s
+        SET session_expirestimestamp = GREATEST(now()::timestamp + length, s.session_expirestimestamp)
+        WHERE session_token = token;
 
-        INTO new_expires;
-
-        RETURN new_expires;
+        SELECT 
+            u.user_id, u.user_isadmin, s.session_expirestimestamp
+        INTO 
+            user_id, user_isadmin, session_expirestimestamp
+        FROM users u 
+        JOIN session s ON u.user_id = s.session_userid
+        WHERE s.session_token = token;
     END;
 $BODY$
     LANGUAGE plpgsql VOLATILE

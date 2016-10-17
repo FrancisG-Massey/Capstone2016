@@ -1,18 +1,17 @@
 {
     "before": "
-        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
     ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             t.trap_id as id,
             t.trap_traplineid as trapline_id,
@@ -26,14 +25,13 @@
             t.trap_baitid as bait_id,
             t.trap_isinactive as inactive
         FROM
-            logged_user lu,
             trap t
             LEFT JOIN trapline tl
                 ON tl.trapline_id = t.trap_traplineid
             LEFT JOIN traplineuser tlu
                 ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
+            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (t.trap_id = #bigint:id#)) AND
             ((#bigint:number# IS NULL) OR (t.trap_number = #bigint:number#)) AND
             ((#bigint:trapline-id# IS NULL) OR (t.trap_traplineid = #bigint:trapline-id#)) AND
@@ -41,8 +39,10 @@
             ((#integer:status# IS NULL) OR (t.trap_status = #integer:status#)) AND
             ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#)) AND
 
-            (((#boolean:inactive# IS NOT NULL) AND (t.trap_isinactive = #boolean:inactive#)) OR
-            ((#boolean:inactive# IS NULL) AND (t.trap_isinactive = false)))
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (t.trap_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (t.trap_isinactive = true)))
+
         GROUP BY
             t.trap_id
         ORDER BY
@@ -93,5 +93,17 @@
         RETURNING
             trap_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE trap
+        SET
+            trap_isinactive = true
+        WHERE
+            trap_id = #bigint:id#
+        RETURNING trap_id;
+
+        DELETE FROM trap
+        WHERE 
+            (trap_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT catch_trapid FROM catch));
+    "
 }

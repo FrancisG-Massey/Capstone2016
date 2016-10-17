@@ -1,22 +1,22 @@
 {
     "before": "
-        SELECT * FROM extend_session(#string:session-token#::text, #string:session-timeout#::interval) es WHERE es IS NOT NULL;
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
     ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        ),
+        WITH cc AS (
+            -- Common Catches
+            -- This may get slow, but we can probably abstract to a view later if required
+            -- Likely can be better implemented with a window function, but time is of the essence...
 
-        -- Common Catches
-        -- This may get slow, but we can probably abstract to a view later if required
-        -- Likely can be better implemented with a window function, but time is of the essence...
-        cc AS (
             SELECT
                 tl.trapline_id,
                 c.catch_catchtypeid,
@@ -52,18 +52,19 @@
             tl.trapline_defaulttraptypeid AS default_traptype_id,
             tl.trapline_isinactive as inactive
         FROM
-            logged_user lu,
             trapline tl
             LEFT JOIN traplineuser tlu
                 ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
+            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (tl.trapline_id = #bigint:id#)) AND
             ((#bigint:region-id# IS NULL) OR (tl.trapline_regionid = #bigint:region-id#)) AND
             ((#string:name# IS NULL) OR (lower(tl.trapline_name) LIKE lower('%' || #string:name# || '%'))) AND
 
-            (((#boolean:inactive# IS NOT NULL) AND (tl.trapline_isinactive = #boolean:inactive#)) OR
-            ((#boolean:inactive# IS NULL) AND (tl.trapline_isinactive = false)))
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (tl.trapline_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (tl.trapline_isinactive = true)))
+
         GROUP BY
             tl.trapline_id
         ORDER BY
@@ -108,5 +109,18 @@
         RETURNING
             trapline_id;
     ",
-    "DELETE" : ""
+    "DELETE" : "
+        UPDATE trapline
+        SET
+            trapline_isinactive = true
+        WHERE
+            trapline_id = #bigint:id#
+        RETURNING trapline_id;
+
+        DELETE FROM trapline
+        WHERE 
+            (trapline_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT traplineuser_traplineid FROM traplineuser)) AND
+            (#bigint:id# NOT IN (SELECT trap_traplineid FROM trap));
+    "
 }
