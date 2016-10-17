@@ -2,12 +2,12 @@
  
 angular.module('Admin')
 .controller('AdminTraplineController',['$scope', '$rootScope','$http','region','trapline','baits','trap_type','$route', '$location',function ($scope,$rootScope,$http,region,trapline,baits,trap_type,$route, $location) {
-	console.log($scope.currentPath);
+	//console.log($scope.currentPath);
 	$rootScope.hideHeader = true;
     $scope.regions = region.data;
     $scope.traplines = trapline;
-    $scope.baits = baits;
-    $scope.trap_types = trap_type;
+    //$scope.baits = baits;
+    //$scope.trap_types = trap_type;
     console.log($scope.traplines);
 	//console.log($rootScope.traps);
 	
@@ -23,23 +23,6 @@ angular.module('Admin')
 	        }
 	    }
 	};
-	
-	
-    $scope.setSelected = function(region_selected){
-    	$scope.selected = this.trapline;
-    	$scope.selected.region = region_selected;
-    	$rootScope.line_selected = $scope.selected;
-    	
-    	// set textbox values as selected trapline values using ng-binds
-    	$scope.line_name = $scope.selected.name;
-    	$scope.region_id = $scope.selected.region.id;
-    	$scope.startTag = $scope.selected.start_tag;
-    	$scope.endTag = $scope.selected.end_tag;
-    	console.log($scope.line_name);
-    	console.log($scope.startTag);
-    	console.log($scope.endTag);
-    	console.log($scope.region_id);
-    };
 }])
 .controller('AdminTrapController',['$scope','$rootScope','traps','baits','trap_type','$route','$http','catch_types',function ($scope, $rootScope,traps,baits,trap_type,$route,$http,catch_types) {
 		//var traplineId = $routeParams.traplineId;
