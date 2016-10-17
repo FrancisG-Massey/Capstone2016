@@ -9,59 +9,34 @@
    <a href="#/trapline-admin/add-newtrapline" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap Line</a>  
 </div>
 
-<div class="row"> 
-    <div class="{'col-sm-7':selected}">  
+<div class="row">  
 
 	<div ng-if="region.traplines.length > 0" ng-repeat="region in regions" ng-init="parentIndex = region">
       <table style="table-layout:fixed" class="table table-condensed table-hover admin" >
       	<caption class="text-left"><strong>{{region.name}}</strong></caption>
+		<thead>
+			<tr>
+				<th>Trapline Name</th>
+				<th>Start</th>
+				<th>End</th>
+				<th>Traps</th>
+				<th>Volunteers</th>
+				<th>Catch History</th>
+				<th>Action</th>
+			</tr>
+		</thead>
 		<tbody data-ng-repeat="trapline in region.traplines">
           <tr data-ng-click="setSelected(parentIndex)" class="{{trapline == selected ? 'success' : ''}}">
             <td scope="row">{{trapline.name}}</td>
+            <td>{{trapline.start_tag}}</td>
+            <td>{{trapline.end_tag}}</td>
             <td><a href="#/trap-admin/{{trapline.id}}/{{trapline.name}}">View Traps</a></td>
             <td><a href="#/volunteer-admin/{{trapline.id}}/{{trapline.name}}">View Volunteers</a></td>
+            <td><a herf="#">View Catch History</a></td>
             <td><a href="#/trapline-admin/{{selected.region.id}}/{{selected.id}}/{{trapline.name}}/edit-trapline">Edit</a></td>
           </tr>    
         </tbody>
       </table>
     </div>
-    </div>
-    <form ng-if="selected">
-    <div class="col-sm-5"> 
-      <div class="well">
-        <h3 style="margin-top: 0">{{'Trapline ID: ' + selected.id}}</h3>
-        <!--  <p>: <strong>d</strong></p>-->
-        <div class="row">
-          <div class="col-md-6 form-group">
-            <label>Name</label>
-            <div>
-              <input type="text" class="form-control"  ng-model="line_name" >
-            </div>
-          </div>
-		  <div class="col-md-6 form-group">
-			<label>Region</label>
-			<select class="form-control" ng-model="region_id" >
-			<option data-ng-selected="region.name == selected.region.name" ng-value="{{region.id}}" data-ng-repeat="region in regions">{{region.name}}</option>
-			
-			</select>
-		</div>
-		</div>
-        <div class="row">
-          <div class="col-md-6 form-group">
-            <label>Start</label>
-            <div>
-              <input type="text" class="form-control"  ng-model ="startTag">
-            </div>
-          </div>
-          <div class="col-md-6 form-group">  
-            <label>End</label>
-            <div>
-              <input type="text" class="form-control"  ng-model= "endTag">
-            </div>
-          </div>
-        </div>
-	</div>
-</div>
-</form>
 </div>
 
