@@ -374,6 +374,10 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	public Map<Integer, CatchType> getCatchTypes() {
 		return catchTypes.getData();
 	}
+	
+	public TraplineMonitorService getTraplineUpdateService (Trapline trapline) {
+		return apiUpdateMonitors.get(trapline);
+	}
 
 	private final Set<Trapline> updatedTraplines = new HashSet<>();
 	private final Set<Trapline> removedTraplines = new HashSet<>();
