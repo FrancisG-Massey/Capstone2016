@@ -39,6 +39,7 @@ import org.nestnz.app.parser.Cacheable;
 import org.nestnz.app.parser.ParserCatch;
 import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
+import org.nestnz.app.services.NetworkService.RequestStatus;
 import org.nestnz.app.util.BackgroundTasks;
 
 import com.gluonhq.connect.GluonObservableObject;
@@ -46,6 +47,7 @@ import com.gluonhq.connect.GluonObservableObject;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -261,16 +263,16 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 		output.getCatchTypes().addAll(catchTypeCopy.values());
     }
     
-    public void loadTrapline (Trapline trapline) {
+    public ReadOnlyObjectProperty<RequestStatus> loadTrapline (Trapline trapline) {
     	if (loadingProperty.get()) {
-    		return;
+    		return null;
     	}
     	loadingProperty.set(true);
     	
 		Set<Integer> validTrapIds = new HashSet<>();
 		validTrapIds.add(0);//0 = trap not yet created on server
     	
-    	networkService.loadTrapline(trapline, trap -> {
+		ReadOnlyObjectProperty<RequestStatus> status = networkService.loadTrapline(trapline, trap -> {
 			validTrapIds.add(trap.getId());
 			
     		Trap oldTrap = trapline.getTrap(trap.getId());
@@ -283,7 +285,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     			oldTrap.setLastReset(trap.getLastReset());
     			oldTrap.setStatus(trap.getStatus());
     		}
-    	}).addListener((obs, oldStatus, newStatus) -> {
+    	});
+		
+		status.addListener((obs, oldStatus, newStatus) -> {
     		switch(newStatus) {
 			case SUCCESS:				
 				Iterator<Trap> iterator = trapline.getTraps().iterator();
@@ -305,6 +309,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				break;
     		}
     	});
+		
+		return status;
     }
     
     protected void refreshRegions () {

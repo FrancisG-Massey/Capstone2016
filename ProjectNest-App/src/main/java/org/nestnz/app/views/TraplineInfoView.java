@@ -45,8 +45,6 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -58,7 +56,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-public class TraplineInfoView extends View implements ChangeListener<Boolean> {
+public class TraplineInfoView extends View {
 
     private static final Logger LOG = Logger.getLogger(TraplineInfoView.class.getName());
 	
@@ -102,17 +100,16 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		this.mapService = Objects.requireNonNull(mapService);
 		
         this.setOnShown(evt -> {
-    		dataService.loadingProperty().addListener(this);
     		if (trapline != null) {
     			Optional<LocalDateTime> lastUpdated = trapline.getLastUpdated();
     			if (!lastUpdated.isPresent() || lastUpdated.get().plusHours(REFRESH_FREQUENCY).isBefore(LocalDateTime.now())) {
-    				dataService.loadTrapline(trapline);
+    				refreshTrapline();
     			}
     		}
         });
         
         this.setOnHidden(evt -> {
-        	dataService.loadingProperty().removeListener(this);
+        	
         });
         
         initControls();
@@ -306,21 +303,36 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 		appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> this.getApplication().showLayer("trapline-info-menu")));
 		appBar.setTitleText(trapline.getName());
         appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
-        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.loadTrapline(trapline)));
+        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> refreshTrapline()));
     }
-
-	/* (non-Javadoc)
-	 * @see javafx.beans.value.ChangeListener#changed(javafx.beans.value.ObservableValue, java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-		if (newValue) {
-			this.getApplication().showLayer("loading");
-		} else {
-			this.getApplication().hideLayer("loading");
+    
+    private void refreshTrapline () {
+    	NestApplication app = (NestApplication) this.getApplication();
+    	dataService.loadTrapline(trapline).addListener((obs, oldStatus, newStatus) -> {
+    		String message = null;
+    		switch (newStatus) {
+			case PENDING:
+				return;
+			case FAILED_NETWORK:
+				message = "Unable to reach the NestNZ server. Please make sure you have internet access before trying again.";
+				break;
+			case FAILED_OTHER:
+				message = "There was a problem loading traps for the "+trapline.getName()+" trapline. Please try again later.";
+				break;
+			case FAILED_UNAUTHORISED:
+				message = "You cannot view this trapline.";
+				break;
+			case SUCCESS:
+				break;    		
+    		}
 			updateMapLoadProgress();
-		}
-	}
+    		app.hideLayer("loading");
+    		if (message != null) {
+    			app.showNotification(message);
+    		}
+    	});
+    	app.showLayer("loading");
+    }
 	
 	/**
 	 * Compares the provided values and returns the one furtherest from zero
