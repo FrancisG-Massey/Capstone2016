@@ -103,13 +103,36 @@ angular
 							$scope.trap_type = trap_type;
 							// get all catch types
 							$scope.catch_types = catch_types;
-
+							
+							// load catch history when the page loads and save them into a scope variable
+							//console.log($scope.trapline_id);
+						    var config = {
+									method: 'GET',
+					       			 url: 'https://www.nestnz.org/api/catch-report-simple?trapline-id='+$scope.trapline_id+'&_='+new Date().getTime(),
+						            }
+						    $http(config)
+						            .success(function(res){
+						                console.log(res);
+						                $scope.json_data=res;
+						            })
+						            .error(function(res){});
+						    
 							// formatting Date
 							$scope.formatDate = function(date) {
 								var dateOut = new Date(date);
 								return dateOut;
 							};
-
+							  // load catch history in json format.
+							$scope.load_history = function(trap){
+								console.log($scope.json_data);
+								$scope.active_trap = trap;
+								$scope.trap_history=[];
+								for(var i =0; i< $scope.json_data.length; i++){
+									if(trap.number ==$scope.json_data[i].trap){
+										$scope.trap_history.push($scope.json_data[i]);
+									}
+								}
+								  };
 							// Define length of traps per each page.
 							// pagination
 							var pageLength = 10, numTraps = traps.length, trapPages = [], pages = Math
@@ -172,7 +195,7 @@ angular
 
 							// for view traps on a map
 							$scope.showMap = function() {
-								console.log($scope.traps[0]);
+								//console.log($scope.traps[0]);
 								if (!mymap) {
 									mymap = L.map('mapid');
 									var trap;
