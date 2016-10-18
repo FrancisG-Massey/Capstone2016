@@ -24,8 +24,6 @@ angular
 							// $scope.baits = baits;
 							// $scope.trap_types = trap_type;
 							console.log($scope.traplines);
-							// console.log($rootScope.traps);
-
 							// Valid Trapline objects are nested in each region
 							// object.
 							var region, trapline;
@@ -38,9 +36,47 @@ angular
 										region.traplines.push(trapline);
 									}
 								}
-							}
-							;
-						} ])
+							};
+							// loading / download csv data and save it to scope variable.
+							$scope.loadcsv = function(trapline){
+								console.log(trapline.id);
+								var id = trapline.id;
+							    var config = {
+										method: 'GET',
+						       			 url: 'https://www.nestnz.org/api/catch-report-simple?trapline-id='+id+'&_='+new Date().getTime(),
+						       			 headers: {
+						       			   'Accept': 'text/csv'
+						       			 },
+							            }
+							   $http(config)
+							            .success(function(res){
+							                console.log(res);
+							                $scope.csv_data = res;
+							            })
+							            .error(function(res){});
+							  };
+							  // load catch history in json format.
+							  $scope.loadjson = function(trapline){
+									console.log(trapline.id);
+									var id = trapline.id;
+								    var config = {
+											method: 'GET',
+							       			 url: 'https://www.nestnz.org/api/catch-report-simple?trapline-id='+id+'&_='+new Date().getTime(),
+								            }
+								     $http(config)
+								            .success(function(res){
+								                console.log(res);
+								                $scope.json_data=res;
+								            })
+								            .error(function(res){});
+								  };
+									$scope.formatDate = function(date) {
+										var dateOut = new Date(date);
+										return dateOut;
+									};
+							} 	
+					
+						])
 		.controller(
 				'AdminTrapController',
 				[
