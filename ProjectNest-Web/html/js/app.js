@@ -4,8 +4,9 @@
 angular.module('Authentication', []);
 angular.module('Admin', []);
 
+
 var myApp = angular
-        .module('myApp', [ 'Authentication', 'Admin', 'ngRoute', 'ngCookies' ])
+        .module('myApp', [ 'Authentication', 'Admin', 'ngRoute','ngCookies' ])
 
         .config([ '$httpProvider', function($httpProvider) {
             $httpProvider.defaults.useXDomain = true;
@@ -46,7 +47,7 @@ var myApp = angular
             controller: 'AdminTraplineController',
             templateUrl: 'modules/admin/views/trapline-admin.html?'+new Date().getTime(),
             resolve: {
-            	trapline: function($http, $route){
+            	trapline: function($http, $route,$cookieStore,$rootScope,$location){
                     return $http({
                         method: "GET",
                         url: 'https://www.nestnz.org/api/trapline',
@@ -56,22 +57,49 @@ var myApp = angular
                     })
                     .then(function(response){
                         return response.data;
-                    });
+                    },function(errorResponse){
+                    	if(errorResponse.status == 403){
+                            $rootScope.globals = {};
+                            $cookieStore.remove('globals');
+                            $location.path('/login');
+                    	} 	
+                    }
+                    );
                 },
-            	region: ['$http', function($http) {
-                    return $http.get('https://www.nestnz.org/api/region');}],
-                baits:function($http, $route){
+                region:function($http, $route,$cookieStore,$rootScope){
+                    return $http
+                    .get('https://www.nestnz.org/api/region')
+                    .then(function(response){
+                        return response;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
+                } )
+                },
+                baits:function($http, $route,$cookieStore,$rootScope){
                         return $http
                         .get('https://www.nestnz.org/api/bait')
                         .then(function(response){
                             return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     })
                     },
-                trap_type:function($http, $route){
+                trap_type:function($http, $route,$cookieStore,$rootScope){
                         return $http
                         .get('https://www.nestnz.org/api/trap-type')
                         .then(function(response){
                             return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     })
                     }
         }
@@ -80,20 +108,40 @@ var myApp = angular
             controller: 'AdminNewTraplineController',
             templateUrl: 'modules/admin/views/new_trapline.html?'+new Date().getTime(),
             resolve: {
-                region: ['$http', function($http) {
-                    return $http.get('https://www.nestnz.org/api/region');}],
-                baits:function($http, $route){
+            	 region:function($http, $route,$cookieStore,$rootScope){
+                     return $http
+                     .get('https://www.nestnz.org/api/region')
+                     .then(function(response){
+                         return response;
+                 }, function(errorResponse){
+                 	if(errorResponse.status==403){
+                 		$rootScope.globals = {};
+                 		$cookieStore.remove('globals');
+                 	}
+                 })
+                 },
+                baits:function($http, $route,$cookieStore,$rootScope){
                         return $http
                         .get('https://www.nestnz.org/api/bait')
                         .then(function(response){
                             return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     })
                     },
-                trap_type:function($http, $route){
+                trap_type:function($http, $route,$cookieStore,$rootScope){
                         return $http
                         .get('https://www.nestnz.org/api/trap-type')
                         .then(function(response){
                             return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     })
                     }
         }
@@ -102,31 +150,61 @@ var myApp = angular
             controller: 'AdminEditTraplineController',
             templateUrl: 'modules/admin/views/edit_trapline.html?'+new Date().getTime(),
             resolve: {
-                region: ['$http', function($http) {
-                    return $http.get('https://www.nestnz.org/api/region');}],
-            	baits:function($http, $route){
+            	 region:function($http, $route,$cookieStore,$rootScope){
+                     return $http
+                     .get('https://www.nestnz.org/api/region')
+                     .then(function(response){
+                         return response;
+                 }, function(errorResponse){
+                 	if(errorResponse.status==403){
+                 		$rootScope.globals = {};
+                 		$cookieStore.remove('globals');
+                 	}
+                 })
+                 },
+            	baits:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/bait')
                     .then(function(response){
                         return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
                 })
                 },
-            trap_type:function($http, $route){
+            trap_type:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/trap-type')
                     .then(function(response){
                         return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
                 })
                 },
-            	 trapline:['$http','$route', function($http,$route) {
-                     return $http.get('https://www.nestnz.org/api/trapline/'+$route.current.params.traplineId+'&'+$route.current.params.regionId);}]
+                trapline:function($http, $route,$cookieStore,$rootScope){
+                    return $http
+                    .get('https://www.nestnz.org/api/trapline/'+$route.current.params.traplineId+'&'+$route.current.params.regionId)
+                    .then(function(response){
+                        return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
+                })
+                }
         }
         })
         .when('/trap-admin/:traplineId/:traplineName', {
             controller: 'AdminTrapController',
             templateUrl: 'modules/admin/views/trap-admin.html?'+new Date().getTime(),
             resolve: {
-            	traps: function($http, $route){
+            	traps: function($http, $route,$cookieStore,$rootScope){
                     return $http({
                         method: "GET",
                         url: 'https://www.nestnz.org/api/trap',
@@ -137,28 +215,48 @@ var myApp = angular
                     })
                     .then(function(response){
                         return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     });
                 },
-                baits:function($http, $route){
+                baits:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/bait')
                     .then(function(response){
                         return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
                 })
                 },
-                trap_type:function($http, $route){
+                trap_type:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/trap-type')
                     .then(function(response){
                         return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
                 })
                 },
-                catch_types:function($http,$route){
+                catch_types:function($http,$route,$cookieStore,$rootScope){
                 	return $http
                 	.get('https://www.nestnz.org/api/catch-type')
                 	.then(function(response){
                 		return response.data;
-                	})
+                	}, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
+                    })
                 }
             }
         })
@@ -166,25 +264,40 @@ var myApp = angular
             controller: 'AdminNewTrapController',
             templateUrl: 'modules/admin/views/new_trap.html?'+new Date().getTime(),
             resolve: {
-                baits:function($http, $route){
+                baits:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/bait')
                     .then(function(response){
                         return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
                 })
                 },
-                trap_type:function($http, $route){
+                trap_type:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/trap-type')
                     .then(function(response){
                         return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
                 })
                 },
-                catch_types:function($http,$route){
+                catch_types:function($http,$route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/catch-type')
                     .then(function(response){
                         return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     })
                 }
             }
@@ -193,7 +306,7 @@ var myApp = angular
             controller: 'AdminEditTrapController',
             templateUrl: 'modules/admin/views/edit_trap.html',
             resolve: {
-            	traps: function($http, $route){
+            	traps: function($http, $route,$cookieStore,$rootScope){
                     return $http({
                         method: "GET",
                         url: 'https://www.nestnz.org/api/trap',
@@ -204,27 +317,47 @@ var myApp = angular
                     })
                     .then(function(response){
                         return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     });
                 },
-            	baits:function($http, $route){
+            	baits:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/bait')
                     .then(function(response){
                         return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
                 })
                 },
-                trap_type:function($http, $route){
+                trap_type:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/trap-type')
                     .then(function(response){
                         return response.data;
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
                 })
                 },                
-            	trap: function($http, $route){
+            	trap: function($http, $route,$cookieStore,$rootScope){
                     return $http
                         .get('https://www.nestnz.org/api/trap/'+$route.current.params.trap_id)
                         .then(function(response){
                             return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     })
                 }
             }
@@ -233,11 +366,16 @@ var myApp = angular
             controller: 'AdminVolunteerController',
             templateUrl: 'modules/admin/views/volunteer-admin.html?'+new Date().getTime(),
             resolve: {
-                trapline_users: function($http, $route){
+                trapline_users: function($http, $route,$cookieStore,$rootScope){
                     return $http
                         .get('https://www.nestnz.org/api/trapline-user?trapline-id='+$route.current.params.traplineId)
                         .then(function(response){
                             return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
                     })
                 },
                 users: ['$http', function($http) {
