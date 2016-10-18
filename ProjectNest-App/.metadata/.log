@@ -1,0 +1,21 @@
+!SESSION 2016-10-07 11:50:12.448 -----------------------------------------------
+eclipse.buildId=4.5.2.M20160212-1500
+java.version=1.8.0_92
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_NZ
+Framework arguments:  -product org.eclipse.epp.package.java.product
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -product org.eclipse.epp.package.java.product
+
+!ENTRY org.eclipse.ui 2 2 2016-10-07 11:52:14.181
+!MESSAGE Invalid preference category path: org.eclipse.andmore.platform.ui.preference (bundle: org.eclipse.andmore.android, page: org.eclipse.andmore.android.emulator.preferencepage)
+
+!ENTRY org.eclipse.update.configurator 4 0 2016-10-07 11:52:29.311
+!MESSAGE Can't find bundle for base name feature, locale en_NZ
+
+!ENTRY org.eclipse.update.configurator 4 0 2016-10-07 11:52:42.489
+!MESSAGE Can't find bundle for base name feature, locale en_NZ
+
+!ENTRY org.eclipse.ui 2 0 2016-10-07 11:52:50.057
+!MESSAGE The 'org.eclipse.ui.startup' extension from 'org.eclipse.sequoyah.device.framework.wizard' does not provide a 'class' attribute.
+This usage is deprecated and a 'class' attribute should be provided.
+The release after Mars (4.5) will no longer support the deprecated usage!

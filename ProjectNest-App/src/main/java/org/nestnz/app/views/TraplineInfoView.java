@@ -37,8 +37,6 @@ import org.nestnz.app.util.Sequence;
 
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Dialog;
-import com.gluonhq.charm.glisten.layout.layer.MenuSidePopupView;
-import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
@@ -47,15 +45,13 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Side;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.Spinner;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class TraplineInfoView extends View implements ChangeListener<Boolean> {
@@ -82,7 +78,6 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
     
     private Button preloadMap = new Button("Preload");
 	
-	private final SidePopupView menu;
 	
 	private final TrapDataService dataService;
 	
@@ -117,14 +112,12 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         
         initControls();
         
-		menu = buildMenu();
-		getApplication().addLayerFactory("trapline-info-menu", () -> menu);
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
     
     private void initControls () {
     	VBox controls = new VBox();
-        HBox mapLoadControls = new HBox();
+;
         preloadMap.setVisible(false);
         preloadMap.setOnAction(evt -> {
         	ReadOnlyIntegerProperty remaining = mapService.preloadMapTiles(minLat, maxLat, minLong, maxLong);
@@ -140,8 +133,19 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         		getApplication().hideLayer("loading");
         	}
         });
-        mapLoadControls.getChildren().addAll(mapLoaded, preloadMap);
-        controls.getChildren().addAll(traplineSize, lastUpdated, mapLoadControls);
+        controls.getStyleClass().add("trapline-info-vbox");
+        
+        
+        Label trapSizeHeading = new Label("Traps");
+        trapSizeHeading.getStyleClass().add("heading");
+        Label lastUpdatedHeading = new Label("Last Updated");
+        lastUpdatedHeading.getStyleClass().add("heading");
+        
+        //TODO: Swap between label & preload button depending on whether it's fully loaded
+        Node mapPreload = new Label("Map Loaded");
+        
+        controls.getChildren().addAll(trapSizeHeading, traplineSize, lastUpdatedHeading, 
+        		lastUpdated, mapPreload);
         setCenter(controls);
         
         mapLoaded.textProperty().bind(createStringBinding(() -> {
@@ -186,7 +190,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 	public void setTrapline (Trapline trapline) {
 		this.trapline = trapline;
 		start.visibleProperty().bind(isNotEmpty(trapline.getTraps()));
-        traplineSize.textProperty().bind(format("Traps: %d", size(trapline.getTraps())));
+        traplineSize.textProperty().bind(format("%d", size(trapline.getTraps())));
         
         lastUpdated.textProperty().bind(createStringBinding(() -> {
         	String time;
@@ -196,7 +200,7 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         	} else {
         		time = "Never";
         	}
-        	return String.format("Last fetched: %s", time);
+        	return String.format("%s", time);
         }, trapline.lastUpdatedProperty()));
         
         updateMapLoadProgress();
@@ -237,20 +241,6 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
         }
 	}
 	
-	private SidePopupView buildMenu () {
-		Menu menu = new Menu();
-		final MenuItem addTraps = new MenuItem("Add Traps", MaterialDesignIcon.ADD.graphic());
-		
-		addTraps.setOnAction(evt -> {
-			this.getApplication().hideLayer("trapline-info-menu");
-			AddTrapView addTrapView = ((NestApplication) getApplication()).lookupView(AddTrapView.NAME);
-			addTrapView.setTrapline(trapline);
-			getApplication().switchView(AddTrapView.NAME);
-		});
-		
-		menu.getItems().add(addTraps);
-		return new MenuSidePopupView(menu, Side.LEFT);
-	}
 	
 	private Dialog<Sequence> buildSequenceDialog (int minTrap, int maxTrap) {
 		Dialog<Sequence> dialog = new Dialog<>();
@@ -303,9 +293,13 @@ public class TraplineInfoView extends View implements ChangeListener<Boolean> {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-		appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> this.getApplication().showLayer("trapline-info-menu")));
+		appBar.setNavIcon(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
 		appBar.setTitleText(trapline.getName());
-        appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
+        appBar.getActionItems().add(MaterialDesignIcon.ADD.button(evt -> {
+			AddTrapView addTrapView = ((NestApplication) getApplication()).lookupView(AddTrapView.NAME);
+			addTrapView.setTrapline(trapline);
+			getApplication().switchView(AddTrapView.NAME);
+		}));
         appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.loadTrapline(trapline)));
     }
 

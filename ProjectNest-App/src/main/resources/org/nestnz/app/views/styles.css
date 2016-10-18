@@ -13,6 +13,29 @@
 	
 }
 
+
+.trapline-info-vbox {
+	-fx-alignment: top;
+	-fx-pref-width : 100%;
+	-fx-padding: 10;
+    -fx-spacing: 8;
+}
+
+.trapline-info-vbox .label {
+	-fx-alignment: left;
+	-fx-font-size: 1.5em;
+	-fx-wrap-text: true;
+	-fx-pref-width: 200px;
+	-fx-max-width: 200px;
+	-fx-padding: 5px 0 0 0;
+}
+
+.trapline-info-vbox .heading {
+	/*for "Traps" "Last fetched" etc */
+	-fx-font-weight: bold;
+	-fx-padding: 15px 0 0 0;
+}
+
 .prev {
 	-fx-alignment: center-left;
 }
