@@ -476,6 +476,9 @@ CREATE TABLE public.trap
 
     CONSTRAINT trap_pkey PRIMARY KEY (trap_id),
 
+    -- Ensure trap numbers are only positive natural numbers
+    CONSTRAINT nat_trap_numbers CHECK (trap_number > 0),
+
     -- Ensure that latitude and longitude values are within valid ranges
     CONSTRAINT valid_latitude CHECK ((trap_coordy >= -90) AND (trap_coordy <= 90)),
     CONSTRAINT valid_longitude CHECK ((trap_coordx >= -180) AND (trap_coordx <= 180)),
