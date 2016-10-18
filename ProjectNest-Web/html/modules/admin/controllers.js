@@ -17,6 +17,7 @@ angular
 						function($scope, $rootScope, $http, region, trapline,
 								baits, trap_type, $route, $location) {
 							// console.log($scope.currentPath);
+							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.regions = region.data;
 							$scope.traplines = trapline;
@@ -54,6 +55,7 @@ angular
 						function($scope, $rootScope, traps, baits, trap_type,
 								$route, $http, catch_types) {
 							// var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
@@ -181,6 +183,7 @@ angular
 						function($scope, $rootScope, trapline_users, users,
 								$route) {
 							// var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
@@ -279,6 +282,7 @@ angular
 						function($scope, $rootScope, baits, trap_type, $route,
 								$http, catch_types) {
 							// var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.baits = baits;
@@ -321,6 +325,7 @@ angular
 						function($scope, $rootScope, baits, trap_type, $route,
 								$http, trap, $location, traps) {
 							// var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.trapline_name = $route.current.params.traplineName;
 							;
@@ -426,6 +431,7 @@ angular
 						'$route',
 						function($scope, $rootScope, $http, region, baits,
 								trap_type, $route) {
+							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.regions = region.data;
 							$scope.baits = baits;
@@ -470,6 +476,7 @@ angular
 						function($scope, $rootScope, trapline_users, users,
 								$route) {
 							//var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_users = trapline_users;
@@ -492,6 +499,7 @@ angular
 						'$location',
 						function($scope, $rootScope, $http, region, baits,
 								trap_type, $route, trapline, $location) {
+							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
