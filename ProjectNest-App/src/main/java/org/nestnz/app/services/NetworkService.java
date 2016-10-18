@@ -24,6 +24,7 @@ import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 
 /**
@@ -58,6 +59,21 @@ public interface NetworkService {
 		 */
 		FAILED_OTHER 
 	};
+	
+	/**
+	 * Checks whether the network has been marked as 'available'
+	 * If the network is not marked as available, all automated network requests should be stopped - only requests initiated by the user (e.g. pressing the 'refresh' button) should be processed.
+	 * @return True if the network has been marked as available, false otherwise
+	 */
+	public boolean isNetworkAvailable();
+	
+	/**
+	 * The networkAvailableProperty indicates whether previous network requests have failed due to a network error (i.e. haven't received any http response).
+	 * If the property is set to false and a network request completes successfully, the property will be set to true.
+	 * If set to false, automatic network requests (such as those performed when a view is opened, catch is logged, etc) should not be completed - only those manually initiated by the user
+	 * @return A {@link ReadOnlyBooleanProperty} which can be listened on to detect when the network becomes available/unavailable
+	 */
+	public ReadOnlyBooleanProperty networkAvailableProperty();
 
 	/**
 	 * Submits a logged catch in a trap to the API. 

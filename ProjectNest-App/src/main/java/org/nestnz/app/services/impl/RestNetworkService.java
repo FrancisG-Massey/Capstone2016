@@ -52,6 +52,8 @@ import com.gluonhq.connect.source.RestDataSource;
 import com.gluonhq.impl.connect.provider.RestListDataReader;
 import com.gluonhq.impl.connect.provider.RestObjectDataWriterAndRemover;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
@@ -67,8 +69,26 @@ public class RestNetworkService implements NetworkService {
 	
 	private final LoginService loginService;
 	
+	private final ReadOnlyBooleanWrapper networkAvailableProperty = new ReadOnlyBooleanWrapper(true);
+	
 	public RestNetworkService (LoginService loginService) {
 		this.loginService = loginService;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#isNetworkAvailable()
+	 */
+	@Override
+	public boolean isNetworkAvailable() {
+		return networkAvailableProperty.get();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#networkAvailableProperty()
+	 */
+	@Override
+	public ReadOnlyBooleanProperty networkAvailableProperty() {
+		return networkAvailableProperty.getReadOnlyProperty();
 	}
 
 	/* (non-Javadoc)
@@ -213,6 +233,8 @@ public class RestNetworkService implements NetworkService {
 			if (newState == ConnectState.FAILED) {
 				switch (dataSource.getResponseCode()) {
 				case 204://No Content
+					networkAvailableProperty.set(true);
+					
 					status.set(RequestStatus.SUCCESS);//No data received, but the request was still successful
 					break;
 				case 403://Session timeout
@@ -244,6 +266,7 @@ public class RestNetworkService implements NetworkService {
 					break;
 				case -1://Never received a HTTP response (probably a network error)
 					LOG.log(Level.WARNING, "Problem loading "+type+".", resultList.getException());
+					networkAvailableProperty.set(false);
 					status.set(RequestStatus.FAILED_NETWORK);
 					break;
 				default:
@@ -253,6 +276,7 @@ public class RestNetworkService implements NetworkService {
 					break;
 				}				
 			} else if (newState == ConnectState.SUCCEEDED) {
+				networkAvailableProperty.set(true);
 				status.set(RequestStatus.SUCCESS);
 			}
 		});
@@ -281,6 +305,8 @@ public class RestNetworkService implements NetworkService {
     			
 				switch (dataSource.getResponseCode()) {
 				case 201://Created successfully
+					networkAvailableProperty.set(true);
+					
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
 						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for "+data);
@@ -298,7 +324,7 @@ public class RestNetworkService implements NetworkService {
 						status.set(RequestStatus.SUCCESS);
 					}
 					break;
-				case 403://Session timeout
+				case 403://Session timeout					
 					if (retry) {
 						ChangeListener<LoginStatus> onRenewal = new ChangeListener<LoginStatus> () {
 							public void changed (ObservableValue<? extends LoginStatus> loginObs, 
@@ -327,6 +353,7 @@ public class RestNetworkService implements NetworkService {
 					break;
 				case -1://Never received a HTTP response (probably a network error)
 					LOG.log(Level.WARNING, "Failed to send "+data+" to server.", result.getException());
+					networkAvailableProperty.set(false);
 					status.set(RequestStatus.FAILED_NETWORK);
 					break;
 				default:
