@@ -10,9 +10,8 @@
 </div>
 
 <div class="row">  
-
-	<div ng-if="region.traplines.length > 0" ng-repeat="region in regions" ng-init="parentIndex = region">
-      <table style="table-layout:fixed" class="table table-condensed table-hover admin" >
+	<div class= "table-responsive" ng-if="region.traplines.length > 0" ng-repeat="region in regions" ng-init="parentIndex = region">
+      <table style="table-layout:fixed;" class="table table-condensed table-hover admin" >
       	<caption class="text-left"><strong>{{region.name}}</strong></caption>
 		<thead>
 			<tr>
@@ -26,17 +25,52 @@
 			</tr>
 		</thead>
 		<tbody data-ng-repeat="trapline in region.traplines">
-          <tr>
+          <tr ng-click="getName(trapline)">
             <td scope="row">{{trapline.name}}</td>
             <td>{{trapline.start_tag}}</td>
             <td>{{trapline.end_tag}}</td>
-            <td><a href="#/trap-admin/{{trapline.id}}/{{trapline.name}}">View Traps</a></td>
-            <td><a href="#/volunteer-admin/{{trapline.id}}/{{trapline.name}}">View Volunteers</a></td>
-            <td><a herf="#">View Catch History</a></td>
-            <td><a href="#/trapline-admin/{{trapline.region_id}}/{{trapline.id}}/{{trapline.name}}/edit-trapline">Edit</a></td>
+            <td><a href="#/trap-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-sm btn-primary">View Traps</a></td>
+            <td><a href="#/volunteer-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-sm btn-primary">View Volunteers</a></td>
+            <td><a herf="#" ng-click="loadjson(trapline); loadcsv(trapline);" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#catch-history">View Catch History</a></td>
+            <td><a href="#/trapline-admin/{{trapline.region_id}}/{{trapline.id}}/{{trapline.name}}/edit-trapline" class="btn btn-sm btn-primary">Edit</a></td>
           </tr>    
         </tbody>
       </table>
     </div>
+</div>
+<div class="modal fade" id="catch-history" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg"" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Catch History</h4>
+      </div>
+        <div class="modal-body">
+		  <h5 class="text-center"><strong>Region Name...</strong><br><br><i>Trapline Name...</i><br></h5>
+          <table class="table table-striped" id="tblGrid">
+            <thead id="tblHead">
+              <tr>
+                <th>Trap</th>
+                <th>Catch</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody data-ng-repeat="catch in json_data">
+              <tr>
+              	<td>{{catch.trap}}</td>
+                <td>{{catch.catch}}</td>
+                <td>{{formatDate(catch.date) | date:"dd MMMM yyyy"}}</td>
+              </tr>
+            </tbody>
+          </table>
+	        <div class="modal-footer">
+	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	          <button type="submit" class="btn btn-primary">Export</button>
+	        </div>
+	      </div>
+    </div>
+  </div>
 </div>
 </div>
