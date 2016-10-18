@@ -11,7 +11,7 @@
 
   <div class="clearfix form-group">
      <a href="#/trap-admin/{{trapline_id}}/{{trapline_name}}/add-new" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap</a>
-     <button ng-if="traps.length > 0" type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#trapline-map" >View Map</button>
+     <button ng-if="traps.length > 0" type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#trapline-map">View Map</button>
   </div>
 	
   <div ng-if="traps.length > 0">
@@ -56,7 +56,7 @@
 </div>
 
 <div class="modal fade" id="trapline-map" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-lg"" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -65,7 +65,7 @@
         <h4 class="modal-title">{{trapline_name}} Traps</h4>
       </div>
       <div class="modal-body">
-        <div ng-show="showMap()" class="map" id="mapid"></div>
+        <div data-ng-show="showMap()" class="map big-map" id="mapid"></div>
       </div>
       <div class="modal-footer">
        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
