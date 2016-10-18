@@ -383,7 +383,7 @@ var myApp = angular
                     return $http.get('https://www.nestnz.org/api/user');}]
             }
         })
-        .when('/volunteer-admin/:traplineId/add-volunteer', {
+        .when('/volunteer-admin/:traplineId/:traplineName/:users/add-volunteer', {
             controller: 'AdminNewVolunteerController',
             templateUrl: 'modules/admin/views/new_volunteer.html'
         })        

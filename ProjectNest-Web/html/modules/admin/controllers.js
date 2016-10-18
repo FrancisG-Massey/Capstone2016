@@ -250,6 +250,7 @@ angular
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
 							$scope.trapline_users = trapline_users;
+							console.log($scope.trapline_id);
 							console.log($scope.trapline_users);
 							$scope.users = users.data;
 							console.log($scope.users);
@@ -263,8 +264,7 @@ angular
 										usersForTrapLine.push(user);
 									}
 								}
-							}
-							;
+							};
 
 							$scope.formatDate = function(date) {
 								var dateOut = new Date(date);
@@ -532,18 +532,17 @@ angular
 				[
 						'$scope',
 						'$rootScope',
-						'trapline_users',
-						'users',
 						'$route',
-						function($scope, $rootScope, trapline_users, users,
+						function($scope, $rootScope,
 								$route) {
 							//var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.trapline_id = $route.current.params.traplineId;
-							$scope.trapline_users = trapline_users;
-							console.log($scope.trapline_users);
-							$scope.users = users.data;
+							$scope.trapline_name = $route.current.params.traplineName;
+							console.log($scope.trapline_id);
+							console.log($scope.trapline_name);
+							$scope.users = $route.current.params.users;
 							console.log($scope.users);
 
 						} ])
