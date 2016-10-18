@@ -188,7 +188,8 @@ var myApp = angular
                 },
                 trapline:function($http, $route,$cookieStore,$rootScope){
                     return $http
-                    .get('https://www.nestnz.org/api/trapline/'+$route.current.params.traplineId+'&'+$route.current.params.regionId)
+                    .get('https://www.nestnz.org/api/trapline/?'+$route.current.params.traplineId+'&'+$route.current.params.regionId
+                    		+"&_="+new Date().getTime())
                     .then(function(response){
                         return response.data;
                 }, function(errorResponse){

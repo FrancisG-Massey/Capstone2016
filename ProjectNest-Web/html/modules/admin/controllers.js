@@ -506,11 +506,12 @@ angular
 							$scope.regions = region.data;
 							$scope.baits = baits;
 							$scope.trap_types = trap_type;
-							$scope.trapline = trapline.data[0];
-
+							$scope.trapline = trapline[0];
+							console.log($scope.trapline);
 							$scope.Edit = function() {
+								$scope.trapline.default_bait_id=parseInt($scope.trapline.default_bait_id);
+								$scope.trapline.traptype_id=parseInt($scope.trapline.traptype_id);
 								console.log($scope.trapline);
-								console.log($scope.trapline.region_id);
 								/*var data = {
 										 "name": $scope.line_name,
 								         "region_id": parseInt($scope.region_id),
