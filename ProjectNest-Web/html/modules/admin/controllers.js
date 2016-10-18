@@ -33,13 +33,16 @@ angular
 								for (var x = 0; x < $scope.traplines.length; x++) {
 									trapline = $scope.traplines[x];
 									if (trapline.region_id == region.id) {
+										trapline.region = region;
 										region.traplines.push(trapline);
 									}
 								}
 							};
 							// loading / download csv data and save it to scope variable.
 							$scope.loadcsv = function(trapline){
+								console.log(trapline);
 								console.log(trapline.id);
+								$scope.active_trapline = trapline;
 								var id = trapline.id;
 							    var config = {
 										method: 'GET',
