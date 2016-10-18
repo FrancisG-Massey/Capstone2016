@@ -464,7 +464,7 @@ CREATE TABLE public.trap
 (
     trap_id bigint NOT NULL DEFAULT nextval('trap_trap_id_seq'::regclass),
     trap_traplineid bigint NOT NULL,
-    trap_number bigint,
+    trap_number bigint NOT NULL,
     trap_coordx numeric NOT NULL,
     trap_coordy numeric NOT NULL,
     trap_traptypeid bigint NOT NULL,
@@ -501,6 +501,17 @@ WITH (
 );
 ALTER TABLE public.trap
     OWNER TO nestnz;
+
+
+-- Ensure only one active trap uses any given trap number within a trapline
+-- Index: public.idx_trap_number_unique
+-- DROP INDEX public.idx_trap_number_unique;
+
+CREATE UNIQUE INDEX idx_trap_number_unique
+    ON public.trap
+    USING btree
+    (trap_traplineid, trap_number)
+    WHERE trap_isinactive = false;
 
 
 -- Index: public.t_btid_idx
