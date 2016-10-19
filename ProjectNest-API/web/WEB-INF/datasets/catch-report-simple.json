@@ -13,7 +13,7 @@
     "GET" : "
         SELECT 
             c.catch_loggedtimestamp::date as date,
-            c.catch_trapid as trap,
+            t.trap_number as trap,
             ct.catchtype_name as catch
         FROM
             catch c
