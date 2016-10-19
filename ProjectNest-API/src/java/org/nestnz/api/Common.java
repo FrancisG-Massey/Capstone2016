@@ -125,11 +125,15 @@ public class Common {
         StringBuilder sb = new StringBuilder();
         ResultSetMetaData rsmd = rsh.getMetaData();
         int numColumns = rsmd.getColumnCount();
-        String dataHeaders = "\"" + rsmd.getColumnName(1).replace("\"", "").replace(",", "") + "\"";
-        for (int i = 2; i < numColumns + 1; i++) { 
-                dataHeaders += ",\"" + rsmd.getColumnName(i).replace("\"", "").replace(",", "") + "\"";
+        String colName1 = rsmd.getColumnName(1).replace("\"", "").replace(",", "").trim();
+        colName1 = colName1.substring(0, 1).toUpperCase() + ((colName1.length()>0)? colName1.substring(1) : "");
+        String colNames = "\"" + colName1 + "\"";
+        for (int i = 2; i < numColumns + 1; i++) {
+            String colName = rsmd.getColumnName(i).replace("\"", "").replace(",", "").trim();
+            colName = colName.substring(0, 1).toUpperCase() + ((colName.length()>0)? colName.substring(1) : "");
+            colNames += ",\"" + colName + "\"";
         }
-        sb.append(dataHeaders).append("\n");
+        sb.append(colNames).append("\n");
         System.out.println(sb.toString());
         while (rsh.next()) {
             String row = "\"" + rsh.getString(1).replace("\"", "").replace(",", "") + "\""; 
