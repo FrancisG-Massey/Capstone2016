@@ -108,7 +108,8 @@ public class TraplineInfoView extends View {
         this.setOnShown(evt -> {
     		if (trapline != null) {
     			Optional<LocalDateTime> lastUpdated = trapline.getLastUpdated();
-    			if (!lastUpdated.isPresent() || lastUpdated.get().plusHours(REFRESH_FREQUENCY).isBefore(LocalDateTime.now())) {
+    			if (dataService.isNetworkAvailable() &&
+    					(!lastUpdated.isPresent() || lastUpdated.get().plusHours(REFRESH_FREQUENCY).isBefore(LocalDateTime.now()))) {
     				refreshTrapline();
     			}
     		}

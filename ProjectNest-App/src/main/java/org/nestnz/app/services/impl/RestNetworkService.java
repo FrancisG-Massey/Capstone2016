@@ -74,6 +74,13 @@ public class RestNetworkService implements NetworkService {
 	
 	public RestNetworkService (LoginService loginService) {
 		this.loginService = loginService;
+		
+		loginService.loginStatusProperty().addListener((obs, oldStatus, newStatus) -> {
+			if (newStatus == LoginStatus.SERVER_UNAVAILABLE
+					|| newStatus == LoginStatus.UNKNOWN_ERROR) {
+				networkAvailableProperty.set(false);
+			}
+		});
 	}
 
 	/* (non-Javadoc)

@@ -81,7 +81,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     public TrapDataService (CachingService cachingService, NetworkService networkService) throws IOException {
     	this.cachingService = Objects.requireNonNull(cachingService);
-    	this.networkService = networkService;
+    	this.networkService = Objects.requireNonNull(networkService);
+    }
+    
+    public boolean isNetworkAvailable () {
+    	return networkService.isNetworkAvailable();
     }
     
     public void initialise () {
