@@ -1,0 +1,53 @@
+{
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es;
+    ",
+    "GET" : "
+        WITH catchsums AS (
+            SELECT
+                t.trap_number,
+                extract(month FROM c.catch_loggedtimestamp)  AS catchmonth
+            FROM catch c 
+                INNER JOIN trap t ON t.trap_id = c.catch_trapid
+            WHERE
+                ((#bigint:trapline-id# IS NOT NULL) AND (t.trap_traplineid = #bigint:trapline-id#))
+
+            -- Hack to get an empty row for each trap
+            UNION
+            SELECT
+                t.trap_number, 0
+            FROM trap t
+            WHERE
+                ((#bigint:trapline-id# IS NOT NULL) AND (t.trap_traplineid = #bigint:trapline-id#))
+        )
+
+        SELECT
+            trap_number as Trap,
+            sum (CASE WHEN catchmonth = 1 THEN 1 ELSE 0 END) AS January,
+            sum (CASE WHEN catchmonth = 2 THEN 1 ELSE 0 END) AS February,
+            sum (CASE WHEN catchmonth = 3 THEN 1 ELSE 0 END) AS March,
+            sum (CASE WHEN catchmonth = 4 THEN 1 ELSE 0 END) AS April,
+            sum (CASE WHEN catchmonth = 5 THEN 1 ELSE 0 END) AS May,
+            sum (CASE WHEN catchmonth = 6 THEN 1 ELSE 0 END) AS June,
+            sum (CASE WHEN catchmonth = 7 THEN 1 ELSE 0 END) AS July,
+            sum (CASE WHEN catchmonth = 8 THEN 1 ELSE 0 END) AS August,
+            sum (CASE WHEN catchmonth = 9 THEN 1 ELSE 0 END) AS September,
+            sum (CASE WHEN catchmonth = 10 THEN 1 ELSE 0 END) AS October,
+            sum (CASE WHEN catchmonth = 11 THEN 1 ELSE 0 END) AS November,
+            sum (CASE WHEN catchmonth = 12 THEN 1 ELSE 0 END) AS December
+        FROM
+            catchsums cs
+        GROUP BY
+            trap_number
+        ORDER BY
+            trap_number ASC
+    "
+}
