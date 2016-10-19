@@ -13,21 +13,24 @@
     "GET" : "
         WITH catchsums AS (
             SELECT
-                r.region_name,
-                tl.trapline_name,
+                t.trap_number,
                 extract(month FROM c.catch_loggedtimestamp)  AS catchmonth
             FROM catch c 
                 INNER JOIN trap t ON t.trap_id = c.catch_trapid
-                INNER JOIN trapline tl on tl.trapline_id = t.trap_traplineid
-                INNER JOIN region r on r.region_id = tl.trapline_regionid
-            WHERE 
-                (extract(year FROM c.catch_loggedtimestamp) = #integer:year#) AND
-                (tl.trapline_isinactive = false)
+            WHERE
+                ((#bigint:trapline-id# IS NOT NULL) AND (t.trap_traplineid = #bigint:trapline-id#))
+
+            -- Hack to get an empty row for each trap
+            UNION
+            SELECT
+                t.trap_number, 0
+            FROM trap t
+            WHERE
+                ((#bigint:trapline-id# IS NOT NULL) AND (t.trap_traplineid = #bigint:trapline-id#))
         )
 
         SELECT
-            region_name AS Region,
-            trapline_name AS Trapline,
+            trap_number as Trap,
             sum (CASE WHEN catchmonth = 1 THEN 1 ELSE 0 END) AS January,
             sum (CASE WHEN catchmonth = 2 THEN 1 ELSE 0 END) AS February,
             sum (CASE WHEN catchmonth = 3 THEN 1 ELSE 0 END) AS March,
@@ -43,10 +46,8 @@
         FROM
             catchsums cs
         GROUP BY
-            region_name,
-            trapline_name
+            trap_number
         ORDER BY
-            region_name,
-            trapline_name
+            trap_number ASC
     "
 }
