@@ -81,11 +81,12 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
      * @return A {@link ReadOnlyObjectProperty} which is set to {@link RequestStatus#SUCCESS} if all catches were sent successfully, or to an error if any requests failed.
      */
     public ReadOnlyObjectProperty<RequestStatus> sendCatchesToServer () {
-    	ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>(RequestStatus.PENDING);
+    	ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>();
     	if (loggedCatches.isEmpty()) {
     		//Run the status update later, so the calling method has a chance to register a listener first
     		Platform.runLater(() -> status.set(RequestStatus.SUCCESS));
     	} else {
+    		Platform.runLater(() -> status.set(RequestStatus.PENDING));
     		IntegerProperty remaining = new SimpleIntegerProperty(loggedCatches.size());
     		remaining.addListener((obs, oldVal, newVal) -> {
     			if (newVal.intValue() == 0) {
