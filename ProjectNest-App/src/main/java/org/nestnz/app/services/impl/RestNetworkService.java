@@ -52,6 +52,7 @@ import com.gluonhq.connect.source.RestDataSource;
 import com.gluonhq.impl.connect.provider.RestListDataReader;
 import com.gluonhq.impl.connect.provider.RestObjectDataWriterAndRemover;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -214,6 +215,12 @@ public class RestNetworkService implements NetworkService {
 		    	
     	RestDataSource dataSource = client.createRestDataSource();
     	
+		if (loginService.getSessionToken() == null) {
+			//If a session token is not defined, it means the user must be logged out
+			Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));
+			return status;
+		}
+    	
     	dataSource.getHeaders().remove("Session-Token");
     	dataSource.addHeader("Session-Token", loginService.getSessionToken());
 		
@@ -292,6 +299,11 @@ public class RestNetworkService implements NetworkService {
 		
 		RestDataSource dataSource = client.createRestDataSource();
     	
+		if (loginService.getSessionToken() == null) {
+			//If a session token is not defined, it means the user must be logged out
+			Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));
+			return status;
+		}
     	dataSource.getHeaders().remove("Session-Token");
     	dataSource.addHeader("Session-Token", loginService.getSessionToken());
 		
