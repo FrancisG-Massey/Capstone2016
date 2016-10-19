@@ -23,6 +23,7 @@
         <th>Status</th>
         <th>Last Reset</th>
         <th>Placed Date</th>
+        <th>Catch History</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -34,7 +35,8 @@
         <td>{{trap.status? "active":"inactive"}}</td>
         <td>{{formatDate(trap.created) | date:"dd MMMM yyyy"}}</td>
         <td>{{formatDate(trap.last_reset)| date:"dd MMMM yyyy"}}</td>
-        <td><a href="#/trap-admin/{{trap.id}}/{{trapline_name}}/edit-trap">Edit</a></td>
+        <td><a herf="#" ng-click="load_history(trap)" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#catch-history">View Catch History</a></td>
+        <td><a href="#/trap-admin/{{trap.id}}/{{trapline_name}}/edit-trap" class="btn btn-sm btn-primary">Edit</a></td>
       </tr>
     </tbody>
   </table>
@@ -73,5 +75,37 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="catch-history" tabindex="-1" role="dialog">
+	    <div class="modal-dialog" role="document">
+	      <div class="modal-content">
+	        <div class="modal-header">
+	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	            <span aria-hidden="true">&times;</span>
+	          </button>
+	          <h4 class="modal-title">Catch History</h4>
+	        </div>
+        <div class="modal-body">
+		  <h5 class="text-center"><strong>{{trapline_name}}</strong><br><br><i>Trap number: {{active_trap.number}}</i></h5>
+          <table class="table table-striped" id="tblGrid">
+            <thead id="tblHead">
+              <tr>
+                <th>Catch</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody data-ng-repeat="catch in trap_history">
+              <tr>
+                <td>{{catch.catch}}</td>
+                <td>{{formatDate(catch.date) | date:"dd MMMM yyyy"}}</td>
+              </tr>
+            </tbody>
+          </table>
+	        <div class="modal-footer">
+	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	        </div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
 </div>
     

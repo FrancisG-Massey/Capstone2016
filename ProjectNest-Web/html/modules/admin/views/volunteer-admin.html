@@ -4,14 +4,15 @@
   <li class="active">{{trapline_name}}</li>  
 </ul>
 
-<h1 class="text-center page-header">Volunteer Admin</h1>
+<div class="jumbotron">
+<h2 class="text-center page-header">Trapline User Admin</h2>
+<p ng-if="!(volunteers.length > 0)">No Trapline User exist: </p>
 
- <div class="row"> 
-    <div class="col-sm-7">  
-    <div style="padding-bottom: 20px;">
-      <a ng-click="addNew()" id="addButton" ><span class="glyphicon glyphicon-plus"></span> Add Volunteer</a>  
-      </div>
-      <table class="table table-condensed table-hover admin">
+  <div class="clearfix form-group">
+     <a href="#/volunteer-admin/{{trapline_id}}/{{trapline_name}}/{{users}}/add-volunteer" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap</a>
+  </div>
+  <div ng-if="volunteers.length> 0">
+	    <table class="table table-condensed table-hover admin">
         <thead>
           <tr>
             <th>ID</th>
@@ -31,71 +32,21 @@
           </tr>    
         </tbody>
       </table>
-      
-      <nav aria-label="Page navigation">
-		  <ul class="pagination">
-	          <li ng-class="{disabled: currentPage == 0}">
-	              <a href ng-click="prevPage()">« Prev</a>
-	          </li>
-	      
-               <li ng-repeat="n in range(volunteers.length, currentPage, currentPage + gap) "
-                   ng-class="{active: n == currentPage}"
-               ng-click="setPage()">
-                   <a href ng-bind="n + 1">1</a>
-               </li>
-	       
-	          <li ng-class="{disabled: (currentPage) == volunteers.length - 1}">
-	              <a href ng-click="nextPage()">Next »</a>
-	          </li>
-		  </ul>
-		</nav>
-		<!--  <button ng-click="goBack()" type="button" class="btn btn-default">
-			<span class="glyphicon glyphicon-arrow-left"></span> Back
-		</button> -->
-    </div>
 
-    <div class="col-sm-5"> 
-      <div class="well">
-        <h3 style="margin-top: 0">{{selected.id ? 'Volunteer ID: ' + selected.id : 'Add New Volunteer'}}</h3>
-        <p>{{selected.id ? 'First Volunteered: ' + (formatDate(selected.created_timestamp)  |  date:"dd MMMM yyyy") : " "}}</p>
-        <div class="row">
-          <div class="col-md-6 form-group">
-            <label>Full Name</label>
-            <div>
-              <input type="text" class="form-control" value ="{{selected.username}}">
-            </div>
-          </div>
-          <div class="col-md-6 form-group">  
-            <label>User Name</label>
-            <div>
-              <input type="text" class="form-control" value ="{{selected.fullname}}">
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6 form-group">
-            <label>Phone</label>
-            <div>
-              <input type="text" class="form-control" value ="{{selected.phone}}">
-            </div>
-          </div>
-          <div class="col-md-6 form-group">  
-            <label>Email</label>
-            <div>
-              <input type="text" class="form-control" value ="{{selected.email}}">
-            </div>
-          </div>
-        </div>
-        
-    	<div class="clearfix">
-		<div class="pull-right" style="margin-top: 10px;">
-        <button class="btn btn-success" type="button" ng-if="!selected">Save</button>
-        <div ng-if="selected">
-        <button class="btn btn-success" type="button">Edit</button>
-        <button class="btn btn-danger" type="button">Delete</button>
-        </div>
-      </div>
-      </div>
-	</div>
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      <li ng-class="{disabled: currentPage == 0}"><a href
+        ng-click="prevPage()">« Prev</a></li>
+
+      <li
+        ng-repeat="n in range(traps.length, currentPage, currentPage + gap) "
+        ng-class="{active: n == currentPage}" ng-click="setPage()"><a
+        href ng-bind="n + 1">1</a></li>
+
+      <li ng-class="{disabled: (currentPage) == traps.length - 1}"><a
+        href ng-click="nextPage()">Next »</a></li>
+    </ul>
+  </nav>  
 </div>
 </div>
+    
