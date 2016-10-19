@@ -15,6 +15,7 @@
         SELECT 
             c.catch_id as id,
             c.catch_trapid as trap_id,
+            t.trap_number as trap_number,
             c.catch_traptypeid as traptype_id,
             c.catch_userid as user_id,
             c.catch_catchtypeid as catchtype_id,
@@ -37,7 +38,8 @@
             ((#bigint:trap-number# IS NULL) OR (t.trap_number = #bigint:trap-number#)) AND
             ((#bigint:trapline-id# IS NULL) OR (tl.trapline_id = #bigint:trapline-id#))
         GROUP BY
-            c.catch_id
+            c.catch_id,
+            t.trap_number
         ORDER BY
             c.catch_loggedtimestamp DESC;
     ",
