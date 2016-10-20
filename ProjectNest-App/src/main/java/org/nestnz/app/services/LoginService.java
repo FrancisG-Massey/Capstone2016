@@ -45,7 +45,8 @@ public class LoginService {
 		LOGGED_IN,
 		LOGGED_OUT,
 		INVALID_CREDENTIALS,
-		SERVER_UNAVAILABLE;
+		SERVER_UNAVAILABLE,
+		UNKNOWN_ERROR;
 	}
 
     private static final Logger LOG = Logger.getLogger(LoginService.class.getName());
@@ -148,15 +149,21 @@ public class LoginService {
 					case 403://Invalid username/password
 						loginStatusProperty.set(LoginStatus.INVALID_CREDENTIALS);
 						break;
+					case -1:
+						LOG.log(Level.SEVERE, "Problem sending login request.");
+						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);	
+						break;
 					default://Some other error occured
 						LOG.log(Level.SEVERE, "Problem sending login request. Response="+dataSource.getResponseMessage());
-						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
+						loginStatusProperty.set(LoginStatus.UNKNOWN_ERROR);					
 					}
 			    });
 			} catch (IOException ex) {
 				LOG.log(Level.SEVERE, "Problem sending login request", ex);
-				Platform.runLater(() -> {
-					loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);});
+				Platform.runLater(() -> loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE));
+			} catch (RuntimeException ex) {
+				LOG.log(Level.SEVERE, "Problem sending login request", ex);
+				Platform.runLater(() -> loginStatusProperty.set(LoginStatus.UNKNOWN_ERROR));
 			}
     	}); 
     	return loginStatusProperty.getReadOnlyProperty();
@@ -195,6 +202,10 @@ public class LoginService {
 						sessionTokenProperty.set(null);
 						loginStatusProperty.set(LoginStatus.LOGGED_OUT);					
 						break;
+					case -1:
+						LOG.log(Level.SEVERE, "Problem sending logout request.");
+						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);	
+						break;
 					default://Some other error occured
 						LOG.log(Level.SEVERE, "Problem sending logout request. Response="+dataSource.getResponseMessage());
 						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
@@ -203,6 +214,9 @@ public class LoginService {
 			} catch (IOException ex) {
 				LOG.log(Level.SEVERE, "Problem sending logout request", ex);
 		    	Platform.runLater(() -> loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE));
+			} catch (RuntimeException ex) {
+				LOG.log(Level.SEVERE, "Problem sending logout request", ex);
+		    	Platform.runLater(() -> loginStatusProperty.set(LoginStatus.UNKNOWN_ERROR));
 			}
     	}); 
     }
