@@ -5,27 +5,27 @@
 </ul>
 
 <div class="jumbotron">
-<h2 class="text-center page-header">Trapline User Admin</h2>
+<h2 class="text-center page-header">Trapline User</h2>
 <p ng-if="!(volunteers.length > 0)">No Trapline User exist: </p>
 
   <div class="clearfix form-group">
-     <a href="#/volunteer-admin/{{trapline_id}}/{{trapline_name}}/{{users}}/add-volunteer" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap</a>
+     <a href="#/volunteer-admin/{{trapline_id}}/{{trapline_name}}/{{users}}/add-volunteer" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Volunteer</a>
   </div>
   <div ng-if="volunteers.length> 0">
-	    <table class="table table-condensed table-hover admin">
+	    <table class="table table-condensed admin">
         <thead>
           <tr>
             <th>ID</th>
-            <th>User Name</th>
+            <th>Full Name</th>
             <th>Email</th>
             <th>Start Date</th>
             <th>Permission</th>
           </tr>
         </thead>
         <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
-          <tr data-ng-click="setSelected();" class="{{volunteer == selected ? 'success' : ''}}">
+          <tr ng-class-odd="'active'">
             <td scope="row">{{volunteer.id}}</td>
-            <td>{{volunteer.username}}</td>
+            <td>{{volunteer.fullname}}</td>
             <td>{{volunteer.email}}</td>
             <td>{{formatDate(volunteer.created_timestamp) |  date:"dd MMMM yyyy"}}</td>
             <td>{{volunteer.admin?"Admin":"Volunteer"}}</td>

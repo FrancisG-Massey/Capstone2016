@@ -15,7 +15,7 @@
   </div>
 	
   <div ng-if="traps.length > 0">
-	<table class="table table-condensed table-hover admin">
+	<table class="table table-condensed admin">
     <thead>
       <tr>
         <th>Trap Number</th>
@@ -28,7 +28,7 @@
       </tr>
     </thead>
     <tbody data-ng-repeat="trap in traps[currentPage]">
-      <tr>
+      <tr ng-class-odd="'active'">
         <td scope="row">{{trap.number}}</td>
         <td>{{trap.coord_lat + ' '}}<b>N</b><br>{{trap.coord_long +
           ' '}}<b>E</b></td>
