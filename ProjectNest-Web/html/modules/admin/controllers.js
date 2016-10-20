@@ -216,7 +216,7 @@ angular
 									var marker, popupText;
 									for (var i = 0; i < traps.length; i++) {
 										trap = traps[i];
-										popupText = "<strong>Trap: " + trap.id
+										popupText = "<strong>Trap: " + trap.number
 												+ '</strong><br>'
 												+ trap.coord_lat + ' N<br>'
 												+ trap.coord_long + ' E';
@@ -459,14 +459,7 @@ angular
 														popupText);
 									}
 								}
-								// var popupText = "<strong>Trap: " +
-								// focus_trap.number + '</strong><br>' +
-								// focus_trap.coord_lat + ' N<br>' +
-								// focus_trap.coord_long + ' E';
 
-								// focus_trap.popup =
-								// L.marker([focus_trap.coord_lat,
-								// focus_trap.coord_long]).addTo(mymap).bindPopup(popupText);
 								console.log(focus_trap);
 								focus_trap.popup.openPopup();
 								mymap.setView([ focus_trap.coord_lat,
