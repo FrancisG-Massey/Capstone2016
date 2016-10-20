@@ -68,13 +68,15 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
     		if (trap.getId() == 0) {
     			createdTraps.add(trap);
 				LOG.log(Level.INFO, String.format("Detected newly created trap: %s", trap));
-    		}
-    		for (Catch c : trap.getCatches()) {
-				if (!c.getId().isPresent() && !loggedCatches.contains(c)) {
-					loggedCatches.add(new Pair<>(trap.getId(), c));
-					LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
+    		} else {
+				//Don't check for catches on a newly created trap, as we won't be able to send them to the server until we know their ID
+	    		for (Catch c : trap.getCatches()) {
+					if (!c.getId().isPresent() && !loggedCatches.contains(c)) {
+						loggedCatches.add(new Pair<>(trap.getId(), c));
+						LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
+					}
 				}
-			}
+    		}
     	}
     	
     	this.updateTask = BackgroundTasks.scheduleRepeating(() -> {
@@ -115,8 +117,13 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
 						remaining.set(remaining.get()-1);
 						loggedCatches.remove(c);
 						break;
-					case FAILED_NETWORK:
 					case FAILED_OTHER:
+						LOG.log(Level.WARNING, "Failed to send logged catch "+c+" (server responded with an error code) - removing from cache.");
+						loggedCatches.remove(c);
+						trapline.getTrap(c.getKey()).getCatches().remove(c.getValue());
+						remaining.set(remaining.get()-1);
+						break;
+					case FAILED_NETWORK:
 					case FAILED_UNAUTHORISED:
 						status.set(newStatus);
 						break;
@@ -149,8 +156,13 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
 						remaining.set(remaining.get()-1);
 						createdTraps.remove(t);
 						break;
-					case FAILED_NETWORK:
 					case FAILED_OTHER:
+						LOG.log(Level.WARNING, "Failed to send created trap "+t+" (server responded with an error code) - removing from cache.");
+						createdTraps.remove(t);
+						trapline.getTraps().remove(t);
+						remaining.set(remaining.get()-1);
+						break;
+					case FAILED_NETWORK:
 					case FAILED_UNAUTHORISED:
 						status.set(newStatus);
 						break;
@@ -178,10 +190,16 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
 		while (change.next()) {
 			if (change.wasUpdated()) {
 				for (Trap trap : change.getList().subList(change.getFrom(), change.getTo())) {
-					for (Catch c : trap.getCatches()) {
-						if (!c.getId().isPresent() && !loggedCatches.contains(c)) {
-							loggedCatches.add(new Pair<>(trap.getId(), c));
-							LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
+					if (trap.getId() == 0) {
+						createdTraps.add(trap);
+						LOG.log(Level.INFO, String.format("Detected newly created trap: %s", trap));
+					} else {
+						//Don't check for catches on a newly created trap, as we won't be able to send them to the server until we know their ID
+						for (Catch c : trap.getCatches()) {
+							if (!c.getId().isPresent() && !loggedCatches.contains(c)) {
+								loggedCatches.add(new Pair<>(trap.getId(), c));
+								LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
+							}
 						}
 					}
 				}
