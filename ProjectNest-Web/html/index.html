@@ -65,20 +65,10 @@ crossorigin="anonymous">
 				          <a href="void()" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin <span class="caret"></span></a>
 				          <ul class="dropdown-menu">
 				            <li><a href="#/trapline-admin">Traplines</a></li>
-				            <li role="separator" class="divider"></li>
-				            <li><a href="#">Users</a></li>
+				            <!-- <li role="separator" class="divider"></li> -->
+				            <li><a href="#/user-admin">Users</a></li>
 				          </ul>
 				        </li>						
-					
-						<!-- <li ng-if="globals.currentUser">
-							<a href="#/trapline-admin">
-								Admin
-							</a>
-							<!--<ul class="dropdown-menu" aria-labelledby="admin-dropdown">
-								<li><a href="#/trapline-admin">Trap</a></li>
-								<li><a href="#/-admin">User</a></li>
-							</ul>
-						</li>-->
 						<li data-ng-controller="LoginController" ng-if="globals.currentUser">
 							<a href="#" ng-click="logout()">Logout
 								({{globals.currentUser.username}})

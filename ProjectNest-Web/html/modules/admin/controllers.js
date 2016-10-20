@@ -586,27 +586,13 @@ angular
 									}
 								}
 							};
+							$scope.formatDate = function(date) {
+								var dateOut = new Date(date);
+								return dateOut;
+							};
 							console.log($scope.traplines);
 							console.log($scope.users);
 							
-							$scope.Save = function() {
-								// as json object
-								var data = {
-									"trapline_id" : parseInt($scope.trapline_id),
-									"number" : $scope.trapNumber,
-									"coord_long" : $scope.longtitude,
-									"coord_lat" : $scope.latitude,
-									"traptype_id" : $scope.typeId,
-									"status" : $scope.status,
-									"bait_id" : $scope.baitId
-								};
-
-								$http.post('https://www.nestnz.org/api/trap',
-										data).then(
-										function(data, status, header, config) {
-											$route.reload();
-										});
-							};
 						} ])
 		.controller(
 				'AdminEditTraplineController',
