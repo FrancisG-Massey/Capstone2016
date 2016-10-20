@@ -313,7 +313,7 @@ public class TraplineInfoView extends View {
         
         Label endTrapLabel = new Label("End Trap:");
         Spinner<Integer> endTrapSelector = new Spinner<>(minTrap, maxTrap, maxTrap);
-        endTrapSelector.getStyleClass().add(Spinner.STYLE_CLASS_SPLIT_ARROWS_VERTICAL);
+        endTrapSelector.getStyleClass().add(Spinner.STYLE_CLASS_SPLIT_ARROWS_HORIZONTAL);
         
         GridPane.setConstraints(startTrapLabel, 0, 0);
         GridPane.setConstraints(startTrapSelector, 1, 0);
