@@ -270,11 +270,7 @@ angular
 								var dateOut = new Date(date);
 								return dateOut;
 							};
-
-							$scope.addNew = function() {
-								$scope.selected = false;
-							};
-
+							
 							var pageLength = 10, numVolunteers = usersForTrapLine.length, newArray = [], pages = Math
 									.ceil(numVolunteers / pageLength);
 
@@ -290,10 +286,7 @@ angular
 							}
 							$scope.currentPage = 0;
 							$scope.volunteers = newArray;
-
-							$scope.setSelected = function(item) {
-								$scope.selected = this.volunteer;
-							};
+							console.log($scope.volunteers);
 
 							$scope.gap = 5;
 
@@ -320,7 +313,7 @@ angular
 							};
 
 							$scope.nextPage = function() {
-								if ($scope.currentPage < $scope.volunteers.length - 1) {
+								if ($scope.currentPage < $scope.traps.length - 1) {
 									$scope.currentPage++;
 								}
 							};
@@ -329,6 +322,7 @@ angular
 								// console.log(this.n);
 								$scope.currentPage = this.n;
 							};
+
 
 						} ])
 		.controller(
@@ -545,6 +539,74 @@ angular
 							$scope.users = $route.current.params.users;
 							console.log($scope.users);
 
+						} ])
+		.controller(
+				'AdminNewUserController',
+				[
+						'$scope',
+						'$rootScope',
+						'traplines',
+						'trapline_users',
+						'$route',
+						'$http',
+						'users',
+						function($scope, $rootScope, traplines, trapline_users, $route,
+								$http, users) {
+							// var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
+							$rootScope.hideHeader = true;
+							$scope.traplines = traplines;
+							$scope.trapline_users = trapline_users;
+							$scope.users = users;
+							
+							// get all traplines and trapline users.
+							// add the trapline users to their traplines 
+							var trapline, trapline_user;
+							for (var i = 0; i < $scope.traplines.length; i++) {
+								trapline = $scope.traplines[i];
+								trapline.trapline_users = [];
+								for (var x = 0; x < $scope.trapline_users.length; x++) {
+									trapline_user = $scope.trapline_users[x];
+									if (trapline_user.trapline_id == trapline.id) {
+										trapline.trapline_users.push(trapline_user);
+									}
+								}
+							};
+							
+							var user, trapline_registered;
+							for (var i = 0; i < $scope.users.length; i++) {
+								user = $scope.users[i];
+								user.registered = [];
+								for (var x = 0; x < $scope.traplines.length; x++) {
+									trapline_registered = $scope.traplines[x];
+									for(var z = 0; z < trapline_registered.trapline_users.length;z++){		
+										if (user.id == trapline_registered.trapline_users[z].user_id) {
+											user.registered.push(trapline_registered);
+										}
+									}
+								}
+							};
+							console.log($scope.traplines);
+							console.log($scope.users);
+							
+							$scope.Save = function() {
+								// as json object
+								var data = {
+									"trapline_id" : parseInt($scope.trapline_id),
+									"number" : $scope.trapNumber,
+									"coord_long" : $scope.longtitude,
+									"coord_lat" : $scope.latitude,
+									"traptype_id" : $scope.typeId,
+									"status" : $scope.status,
+									"bait_id" : $scope.baitId
+								};
+
+								$http.post('https://www.nestnz.org/api/trap',
+										data).then(
+										function(data, status, header, config) {
+											$route.reload();
+										});
+							};
 						} ])
 		.controller(
 				'AdminEditTraplineController',

@@ -367,26 +367,107 @@ var myApp = angular
             controller: 'AdminVolunteerController',
             templateUrl: 'modules/admin/views/volunteer-admin.html?'+new Date().getTime(),
             resolve: {
-                trapline_users: function($http, $route,$cookieStore,$rootScope){
-                    return $http
-                        .get('https://www.nestnz.org/api/trapline-user?trapline-id='+$route.current.params.traplineId)
-                        .then(function(response){
-                            return response.data;
+            	trapline_users: function($http, $route,$cookieStore,$rootScope){
+            		 return $http({
+                         method: "GET",
+                         url: 'https://www.nestnz.org/api/trapline-user',
+                         params: {
+                             '_': new Date().getTime(),
+                             'trapline-id': $route.current.params.traplineId
+                         }
+                     })
+                     .then(function(response){
+                         return response.data;
+                     }, function(errorResponse){
+                     	if(errorResponse.status==403){
+                     		$rootScope.globals = {};
+                     		$cookieStore.remove('globals');
+                     	}
+                     });                    
+                },
+                users: function($http, $route,$cookieStore,$rootScope){
+           		 return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/user',
+                        params: {
+                            '_': new Date().getTime()
+                        }
+                    })
+                    .then(function(response){
+                        return response;
                     }, function(errorResponse){
                     	if(errorResponse.status==403){
                     		$rootScope.globals = {};
                     		$cookieStore.remove('globals');
                     	}
-                    })
-                },
-                users: ['$http', function($http) {
-                    return $http.get('https://www.nestnz.org/api/user');}]
+                    });                    
+               }
             }
         })
         .when('/volunteer-admin/:traplineId/:traplineName/:users/add-volunteer', {
             controller: 'AdminNewVolunteerController',
             templateUrl: 'modules/admin/views/new_volunteer.html'
-        })        
+        }) 
+        .when("/user-admin",{
+            controller: 'AdminNewUserController',
+            templateUrl: 'modules/admin/views/user-admin.html?'+new Date().getTime(),
+            resolve: {
+            	traplines: function($http, $route,$cookieStore,$rootScope,$location){
+                    return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/trapline',
+                        params: {
+                            '_': new Date().getTime()
+                        }
+                    })
+                    .then(function(response){
+                        return response.data;
+                    },function(errorResponse){
+                    	if(errorResponse.status == 403){
+                            $rootScope.globals = {};
+                            $cookieStore.remove('globals');
+                            $location.path('/login');
+                    	} 	
+                    }
+                    );
+                },            	
+            	trapline_users: function($http, $route,$cookieStore,$rootScope){
+            		 return $http({
+                         method: "GET",
+                         url: 'https://www.nestnz.org/api/trapline-user',
+                         params: {
+                             '_': new Date().getTime()
+                         }
+                     })
+                     .then(function(response){
+                         return response.data;
+                     }, function(errorResponse){
+                     	if(errorResponse.status==403){
+                     		$rootScope.globals = {};
+                     		$cookieStore.remove('globals');
+                     	}
+                     });                    
+                },
+                users: function($http, $route,$cookieStore,$rootScope){
+           		 return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/user',
+                        params: {
+                            '_': new Date().getTime()
+                        }
+                    })
+                    .then(function(response){
+                        return response.data;
+                    }, function(errorResponse){
+                    	if(errorResponse.status==403){
+                    		$rootScope.globals = {};
+                    		$cookieStore.remove('globals');
+                    	}
+                    });                    
+               }
+            }
+        	
+        })
         .otherwise({
             templateUrl : 'templates/404.html'
         });
