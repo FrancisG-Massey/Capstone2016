@@ -39,7 +39,7 @@
         ng-click="prevPage()">« Prev</a></li>
 
       <li
-        ng-repeat="n in range(traps.length, currentPage, currentPage + gap) "
+        ng-repeat="n in range(volunteers.length, currentPage, currentPage + gap) "
         ng-class="{active: n == currentPage}" ng-click="setPage()"><a
         href ng-bind="n + 1">1</a></li>
 
