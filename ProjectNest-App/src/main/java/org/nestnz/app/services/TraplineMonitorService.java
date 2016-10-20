@@ -64,6 +64,19 @@ public class TraplineMonitorService implements ListChangeListener<Trap> {
     	this.trapline = Objects.requireNonNull(trapline);
     	this.networkService = networkService;
     	
+    	for (Trap trap : trapline.getTraps()) {
+    		if (trap.getId() == 0) {
+    			createdTraps.add(trap);
+				LOG.log(Level.INFO, String.format("Detected newly created trap: %s", trap));
+    		}
+    		for (Catch c : trap.getCatches()) {
+				if (!c.getId().isPresent() && !loggedCatches.contains(c)) {
+					loggedCatches.add(new Pair<>(trap.getId(), c));
+					LOG.log(Level.INFO, String.format("Detected unsent catch log: %s", c));
+				}
+			}
+    	}
+    	
     	this.updateTask = BackgroundTasks.scheduleRepeating(() -> {
     		if (networkService.isNetworkAvailable()) {
 	    		sendCatchesToServer();
