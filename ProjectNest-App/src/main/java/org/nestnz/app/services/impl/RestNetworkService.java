@@ -223,8 +223,48 @@ public class RestNetworkService implements NetworkService {
     	RestDataSource dataSource = client.createRestDataSource();
     	
 		if (loginService.getSessionToken() == null) {
-			//If a session token is not defined, it means the user must be logged out
-			Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));
+			if (retry) {
+				LOG.log(Level.INFO, "User is not yet logged in - sending request to log in using saved credentials");
+				ChangeListener<LoginStatus> onLogin = new ChangeListener<LoginStatus> () {
+					public void changed (ObservableValue<? extends LoginStatus> loginObs, 
+							LoginStatus oldLoginStatus, LoginStatus newLoginStatus) {
+						switch (newLoginStatus) {
+						case PENDING_LOGIN:
+						case PENDING_LOGOUT:
+						case LOGGED_OUT:
+							return;
+						case INVALID_CREDENTIALS:
+							//Old credentials no longer work
+							status.set(RequestStatus.FAILED_UNAUTHORISED);
+							break;
+						case LOGGED_IN:
+							//Successfully logged in
+							LOG.log(Level.INFO, "Logged in successfully. Resending request using created session token");
+							//Bind this status property to the result of the inner request
+							status.bind(processReadRequest(type, client, callback, false));
+							break;
+						case SERVER_UNAVAILABLE:
+							//Problem logging in due to sever unavailability
+							status.set(RequestStatus.FAILED_NETWORK);
+							break;
+						case UNKNOWN_ERROR:
+							//Problem logging in due to another error (most likely a bug with the app or the API)
+							status.set(RequestStatus.FAILED_OTHER);
+							break;
+						}
+						loginObs.removeListener(this);
+					}
+				};
+				
+				if (loginService.checkSavedCredentials()) {
+					loginService.loginStatusProperty().addListener(onLogin);					
+				} else {
+					Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));					
+				}
+			} else {
+				//If a session token is not defined, it means the user must be logged out
+				Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));
+			}
 			return status;
 		}
     	
@@ -307,8 +347,48 @@ public class RestNetworkService implements NetworkService {
 		RestDataSource dataSource = client.createRestDataSource();
     	
 		if (loginService.getSessionToken() == null) {
-			//If a session token is not defined, it means the user must be logged out
-			Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));
+			if (retry) {
+				LOG.log(Level.INFO, "User is not yet logged in - sending request to log in using saved credentials");
+				ChangeListener<LoginStatus> onLogin = new ChangeListener<LoginStatus> () {
+					public void changed (ObservableValue<? extends LoginStatus> loginObs, 
+							LoginStatus oldLoginStatus, LoginStatus newLoginStatus) {
+						switch (newLoginStatus) {
+						case PENDING_LOGIN:
+						case PENDING_LOGOUT:
+						case LOGGED_OUT:
+							return;
+						case INVALID_CREDENTIALS:
+							//Old credentials no longer work
+							status.set(RequestStatus.FAILED_UNAUTHORISED);
+							break;
+						case LOGGED_IN:
+							//Successfully logged in
+							LOG.log(Level.INFO, "Logged in successfully. Resending request using created session token");
+							//Bind this status property to the result of the inner request
+							status.bind(processCreateRequest(type, data, client, callback, false));
+							break;
+						case SERVER_UNAVAILABLE:
+							//Problem logging in due to sever unavailability
+							status.set(RequestStatus.FAILED_NETWORK);
+							break;
+						case UNKNOWN_ERROR:
+							//Problem logging in due to another error (most likely a bug with the app or the API)
+							status.set(RequestStatus.FAILED_OTHER);
+							break;
+						}
+						loginObs.removeListener(this);
+					}
+				};
+				
+				if (loginService.checkSavedCredentials()) {
+					loginService.loginStatusProperty().addListener(onLogin);					
+				} else {
+					Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));					
+				}
+			} else {
+				//If a session token is not defined, it means the user must be logged out
+				Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));
+			}
 			return status;
 		}
     	dataSource.getHeaders().remove("Session-Token");
