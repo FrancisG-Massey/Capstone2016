@@ -44,10 +44,12 @@ import org.nestnz.app.util.BackgroundTasks;
 
 import com.gluonhq.connect.GluonObservableObject;
 
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -185,11 +187,16 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
      * Note: This only updates the trapline metadata (name, ID, region, etc) - NOT the catch data or the traps themselves.
      * This method is generally used to add traplines the user can now access, or remove those they can no longer access
      */
-    public void refreshTraplines () {
-    	if (loadingProperty.get()) {
-    		return;
+    public ReadOnlyObjectProperty<RequestStatus> refreshTraplines () {
+    	ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>();
+		if (loadingProperty.get()) {
+			//TODO: Return the status of the currently running request
+			Platform.runLater(() -> status.set(RequestStatus.SUCCESS));
+	    	return status;
     	}
     	loadingProperty.set(true);
+    	
+    	Platform.runLater(() -> status.set(RequestStatus.PENDING));
     	
     	refreshRegions();//Reload the regions first
     	refreshCatchTypes();//Fetch the list of possible catch types
@@ -203,7 +210,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			}
 			Set<Integer> validLineIds = new HashSet<>();
 			
-			networkService.loadTraplines(trapline -> { 	
+			ReadOnlyObjectProperty<RequestStatus> innerStatus = networkService.loadTraplines(trapline -> { 	
 				validLineIds.add(trapline.getId());
 				
 	    		Trapline oldTrapline = getTrapline(trapline.getId());
@@ -213,7 +220,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	    		} else {
 	    			populateTrapline(oldTrapline, trapline);
 	    		}
-	    	}).addListener((obs, oldStatus, newStatus) -> {
+	    	});
+			
+			innerStatus.addListener((obs, oldStatus, newStatus) -> {
 	    		switch(newStatus) {
 				case SUCCESS:
 					//Remove any traplines which no longer exist
@@ -234,7 +243,10 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 					break;
 	    		}
 	    	});
+			
+			status.bind(innerStatus);
 		});
+		return status;
     }
     
     private void populateTrapline (Trapline output, Trapline input) {
