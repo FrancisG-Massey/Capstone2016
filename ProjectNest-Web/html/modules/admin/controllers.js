@@ -216,7 +216,7 @@ angular
 									var marker, popupText;
 									for (var i = 0; i < traps.length; i++) {
 										trap = traps[i];
-										popupText = "<strong>Trap: " + trap.id
+										popupText = "<strong>Trap: " + trap.number
 												+ '</strong><br>'
 												+ trap.coord_lat + ' N<br>'
 												+ trap.coord_long + ' E';
@@ -270,11 +270,7 @@ angular
 								var dateOut = new Date(date);
 								return dateOut;
 							};
-
-							$scope.addNew = function() {
-								$scope.selected = false;
-							};
-
+							
 							var pageLength = 10, numVolunteers = usersForTrapLine.length, newArray = [], pages = Math
 									.ceil(numVolunteers / pageLength);
 
@@ -290,10 +286,7 @@ angular
 							}
 							$scope.currentPage = 0;
 							$scope.volunteers = newArray;
-
-							$scope.setSelected = function(item) {
-								$scope.selected = this.volunteer;
-							};
+							console.log($scope.volunteers);
 
 							$scope.gap = 5;
 
@@ -320,7 +313,7 @@ angular
 							};
 
 							$scope.nextPage = function() {
-								if ($scope.currentPage < $scope.volunteers.length - 1) {
+								if ($scope.currentPage < $scope.traps.length - 1) {
 									$scope.currentPage++;
 								}
 							};
@@ -329,6 +322,7 @@ angular
 								// console.log(this.n);
 								$scope.currentPage = this.n;
 							};
+
 
 						} ])
 		.controller(
@@ -465,14 +459,7 @@ angular
 														popupText);
 									}
 								}
-								// var popupText = "<strong>Trap: " +
-								// focus_trap.number + '</strong><br>' +
-								// focus_trap.coord_lat + ' N<br>' +
-								// focus_trap.coord_long + ' E';
 
-								// focus_trap.popup =
-								// L.marker([focus_trap.coord_lat,
-								// focus_trap.coord_long]).addTo(mymap).bindPopup(popupText);
 								console.log(focus_trap);
 								focus_trap.popup.openPopup();
 								mymap.setView([ focus_trap.coord_lat,
@@ -545,6 +532,60 @@ angular
 							$scope.users = $route.current.params.users;
 							console.log($scope.users);
 
+						} ])
+		.controller(
+				'AdminNewUserController',
+				[
+						'$scope',
+						'$rootScope',
+						'traplines',
+						'trapline_users',
+						'$route',
+						'$http',
+						'users',
+						function($scope, $rootScope, traplines, trapline_users, $route,
+								$http, users) {
+							// var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
+							$rootScope.hideHeader = true;
+							$scope.traplines = traplines;
+							$scope.trapline_users = trapline_users;
+							$scope.users = users;
+							
+							// get all traplines and trapline users.
+							// add the trapline users to their traplines 
+							var trapline, trapline_user;
+							for (var i = 0; i < $scope.traplines.length; i++) {
+								trapline = $scope.traplines[i];
+								trapline.trapline_users = [];
+								for (var x = 0; x < $scope.trapline_users.length; x++) {
+									trapline_user = $scope.trapline_users[x];
+									if (trapline_user.trapline_id == trapline.id) {
+										trapline.trapline_users.push(trapline_user);
+									}
+								}
+							};
+							
+							var user, trapline_registered;
+							for (var i = 0; i < $scope.users.length; i++) {
+								user = $scope.users[i];
+								user.registered = [];
+								for (var x = 0; x < $scope.traplines.length; x++) {
+									trapline_registered = $scope.traplines[x];
+									for(var z = 0; z < trapline_registered.trapline_users.length;z++){		
+										if (user.id == trapline_registered.trapline_users[z].user_id) {
+											user.registered.push(trapline_registered);
+										}
+									}
+								}
+							};
+							$scope.formatDate = function(date) {
+								var dateOut = new Date(date);
+								return dateOut;
+							};
+							console.log($scope.traplines);
+							console.log($scope.users);
+							
 						} ])
 		.controller(
 				'AdminEditTraplineController',

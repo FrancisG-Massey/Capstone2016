@@ -6,7 +6,7 @@
 
 <div class="jumbotron">
 <h2 class="text-center page-header">Trap Admin</h2>
-<p ng-if="!(traps.length > 0)">No traps exist: </p>
+<p ng-if="!(traps.length > 0)">There are no traps for this trapline yet</p>
 
 
   <div class="clearfix form-group">
@@ -15,7 +15,7 @@
   </div>
 	
   <div ng-if="traps.length > 0">
-	<table class="table table-condensed table-hover admin">
+	<table class="table table-condensed admin">
     <thead>
       <tr>
         <th>Trap Number</th>
@@ -28,7 +28,7 @@
       </tr>
     </thead>
     <tbody data-ng-repeat="trap in traps[currentPage]">
-      <tr>
+      <tr ng-class-odd="'active'">
         <td scope="row">{{trap.number}}</td>
         <td>{{trap.coord_lat + ' '}}<b>N</b><br>{{trap.coord_long +
           ' '}}<b>E</b></td>

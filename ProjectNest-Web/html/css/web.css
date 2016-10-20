@@ -166,3 +166,6 @@ th, td{
    margin-right: auto;
    max-width: initial;
 }
+a[disabled="disabled"] {
+   pointer-events: none;
+}
