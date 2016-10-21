@@ -35,6 +35,7 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.collections.transformation.SortedList;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
@@ -59,6 +60,10 @@ public class TraplineListView extends View {
 	
 	private final TrapDataService dataService;
 	
+	/**
+	 * The date & time of the last trapline list update from the server. 
+	 * If this is null, or more than {@link #REFRESH_FREQUENCY} hours from the current time, the trapline list will be automatically requested from the API again if/when the view is re-opened. 
+	 */
 	private LocalDateTime lastTraplineFetch = null;
 
     public TraplineListView(TrapDataService dataService) {
@@ -67,7 +72,20 @@ public class TraplineListView extends View {
         
         ReadOnlyDoubleProperty deviceWidth = this.widthProperty();
         
-        traplineList = new CharmListView<>(dataService.getTraplines());
+        //Create an alphabetically sorted view of the trapline list, so traplines appear in alphabetical order
+        SortedList<Trapline> sortedList = new SortedList<>(dataService.getTraplines(), (t1, t2) -> {
+        	if (t1 == null && t2 == null) {
+                return 0;
+            } else if (t1 == null) {
+                return -1;
+            } else if (t2 == null) {
+                return 1;
+            } else {
+            	return t1.getName().compareToIgnoreCase(t2.getName());
+            }
+        });
+        
+        traplineList = new CharmListView<>(sortedList);
         traplineList.setHeadersFunction(Trapline::getRegion);
         traplineList.setConverter(new StringConverter <Region>() {
             @Override public String toString(Region r) {
