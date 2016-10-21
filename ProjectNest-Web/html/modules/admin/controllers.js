@@ -73,10 +73,22 @@ angular
 								            })
 								            .error(function(res){});
 								  };
+								  
+								  // date format for Iso8601
 									$scope.formatDate = function(date) {
-										var dateOut = JSON.parse(JSON.stringify(new Date(date)));
-										return dateOut;
+										 var parts = date.match(/\d+/g);
+										  var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+										  var isoDate = new Date(isoTime);
+
+										  return isoDate;
 									};
+									
+									// normal date format
+									$scope.format_Date = function(date) {
+										 var dateOut = new Date(date);
+										 return dateOut;
+									};									
+									
 							} 	
 					
 						])
@@ -119,9 +131,13 @@ angular
 						    
 							// formatting Date
 							$scope.formatDate = function(date) {
-								var dateOut = JSON.parse(JSON.stringify(new Date(date)));
-								return dateOut;
+								 var parts = date.match(/\d+/g);
+								  var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+								  var isoDate = new Date(isoTime);
+
+								  return isoDate;
 							};
+							
 							  // load catch history in json format.
 							$scope.load_history = function(trap){
 								console.log($scope.json_data);
@@ -267,8 +283,11 @@ angular
 							};
 
 							$scope.formatDate = function(date) {
-								var dateOut = JSON.parse(JSON.stringify(new Date(date)));
-								return dateOut;
+								 var parts = date.match(/\d+/g);
+								  var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+								  var isoDate = new Date(isoTime);
+
+								  return isoDate;
 							};
 							
 							var pageLength = 10, numVolunteers = usersForTrapLine.length, newArray = [], pages = Math
@@ -580,9 +599,13 @@ angular
 								}
 							};
 							$scope.formatDate = function(date) {
-								var dateOut = JSON.parse(JSON.stringify(new Date(date)));
-								return dateOut;
+								 var parts = date.match(/\d+/g);
+								  var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+								  var isoDate = new Date(isoTime);
+
+								  return isoDate;
 							};
+							
 							console.log($scope.traplines);
 							console.log($scope.users);
 							
