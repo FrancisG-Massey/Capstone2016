@@ -158,13 +158,15 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 					this.getApplication().showLayer("loading");
 					break;
 				case SERVER_UNAVAILABLE:
+				case UNKNOWN_ERROR:
 					checkSavedCredentials = false;
 					this.getApplication().hideLayer("loading");
 					getApplication().switchView(TraplineListView.NAME);
 					showResponse("The server is currently unavailable, so the traplines listed may be out of date.\n"
 							+ "To update the traplines listed, please turn on your internet and refresh this page using the buttom above.");
 					break;
-				default:
+				case LOGGED_OUT:
+				case PENDING_LOGOUT:
 					break;
 				}
 			} else {
@@ -182,12 +184,14 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 					this.getApplication().showLayer("loading");
 					break;
 				case SERVER_UNAVAILABLE:
+				case UNKNOWN_ERROR:
 					this.getApplication().hideLayer("loading");
 					passwordField.clear();
 					showResponse("We can't reach the Nest NZ server at the moment. \n"
 							+ "Make sure your internet connection is available and try again later.");				
 					break;
-				default:
+				case LOGGED_OUT:
+				case PENDING_LOGOUT:
 					break;
 				}
 			}

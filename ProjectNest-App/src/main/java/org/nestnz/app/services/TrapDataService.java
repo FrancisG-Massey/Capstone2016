@@ -39,13 +39,17 @@ import org.nestnz.app.parser.Cacheable;
 import org.nestnz.app.parser.ParserCatch;
 import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
+import org.nestnz.app.services.NetworkService.RequestStatus;
 import org.nestnz.app.util.BackgroundTasks;
 
 import com.gluonhq.connect.GluonObservableObject;
 
+import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -79,7 +83,11 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     
     public TrapDataService (CachingService cachingService, NetworkService networkService) throws IOException {
     	this.cachingService = Objects.requireNonNull(cachingService);
-    	this.networkService = networkService;
+    	this.networkService = Objects.requireNonNull(networkService);
+    }
+    
+    public boolean isNetworkAvailable () {
+    	return networkService.isNetworkAvailable();
     }
     
     public void initialise () {
@@ -179,11 +187,16 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
      * Note: This only updates the trapline metadata (name, ID, region, etc) - NOT the catch data or the traps themselves.
      * This method is generally used to add traplines the user can now access, or remove those they can no longer access
      */
-    public void refreshTraplines () {
-    	if (loadingProperty.get()) {
-    		return;
+    public ReadOnlyObjectProperty<RequestStatus> refreshTraplines () {
+    	ReadOnlyObjectWrapper<RequestStatus> status = new ReadOnlyObjectWrapper<>();
+		if (loadingProperty.get()) {
+			//TODO: Return the status of the currently running request
+			Platform.runLater(() -> status.set(RequestStatus.SUCCESS));
+	    	return status;
     	}
     	loadingProperty.set(true);
+    	
+    	Platform.runLater(() -> status.set(RequestStatus.PENDING));
     	
     	refreshRegions();//Reload the regions first
     	refreshCatchTypes();//Fetch the list of possible catch types
@@ -197,7 +210,7 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			}
 			Set<Integer> validLineIds = new HashSet<>();
 			
-			networkService.loadTraplines(trapline -> { 	
+			ReadOnlyObjectProperty<RequestStatus> innerStatus = networkService.loadTraplines(trapline -> { 	
 				validLineIds.add(trapline.getId());
 				
 	    		Trapline oldTrapline = getTrapline(trapline.getId());
@@ -207,7 +220,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	    		} else {
 	    			populateTrapline(oldTrapline, trapline);
 	    		}
-	    	}).addListener((obs, oldStatus, newStatus) -> {
+	    	});
+			
+			innerStatus.addListener((obs, oldStatus, newStatus) -> {
 	    		switch(newStatus) {
 				case SUCCESS:
 					//Remove any traplines which no longer exist
@@ -219,15 +234,19 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     					}
     				}
 					//Fall through
-				case FAILED:
 				case FAILED_UNAUTHORISED:
+				case FAILED_NETWORK:
+				case FAILED_OTHER:
 					loadingProperty.set(false);//Signal loading is complete
 					break;
 				case PENDING:
 					break;
 	    		}
 	    	});
+			
+			status.bind(innerStatus);
 		});
+		return status;
     }
     
     private void populateTrapline (Trapline output, Trapline input) {
@@ -260,16 +279,16 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 		output.getCatchTypes().addAll(catchTypeCopy.values());
     }
     
-    public void loadTrapline (Trapline trapline) {
+    public ReadOnlyObjectProperty<RequestStatus> loadTrapline (Trapline trapline) {
     	if (loadingProperty.get()) {
-    		return;
+    		return null;
     	}
     	loadingProperty.set(true);
     	
 		Set<Integer> validTrapIds = new HashSet<>();
 		validTrapIds.add(0);//0 = trap not yet created on server
     	
-    	networkService.loadTrapline(trapline, trap -> {
+		ReadOnlyObjectProperty<RequestStatus> status = networkService.loadTrapline(trapline, trap -> {
 			validTrapIds.add(trap.getId());
 			
     		Trap oldTrap = trapline.getTrap(trap.getId());
@@ -282,7 +301,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     			oldTrap.setLastReset(trap.getLastReset());
     			oldTrap.setStatus(trap.getStatus());
     		}
-    	}).addListener((obs, oldStatus, newStatus) -> {
+    	});
+		
+		status.addListener((obs, oldStatus, newStatus) -> {
     		switch(newStatus) {
 			case SUCCESS:				
 				Iterator<Trap> iterator = trapline.getTraps().iterator();
@@ -295,14 +316,17 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				trapline.setLastUpdated(LocalDateTime.now());
 				
 				//Fall through
-			case FAILED:
 			case FAILED_UNAUTHORISED:
+			case FAILED_NETWORK:
+			case FAILED_OTHER:
 				loadingProperty.set(false);//Signal loading is complete
 				break;
 			case PENDING:
 				break;
     		}
     	});
+		
+		return status;
     }
     
     protected void refreshRegions () {
@@ -316,8 +340,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     		switch(newStatus) {
 			case SUCCESS:
 				//Fall through
-			case FAILED:
 			case FAILED_UNAUTHORISED:
+			case FAILED_NETWORK:
+			case FAILED_OTHER:
 				//Signal region data has been fetched
 				appDataLoading.release();
 				break;
@@ -346,8 +371,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 				catchTypes.setLastServerFetch(LocalDateTime.now());
 				cachingService.storeCatchTypes(catchTypes);
 				//Fall through
-			case FAILED:
 			case FAILED_UNAUTHORISED:
+			case FAILED_NETWORK:
+			case FAILED_OTHER:
 				//Signal catch type data has been fetched
 				appDataLoading.release();
 				break;
@@ -363,6 +389,10 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	
 	public Map<Integer, CatchType> getCatchTypes() {
 		return catchTypes.getData();
+	}
+	
+	public TraplineMonitorService getTraplineUpdateService (Trapline trapline) {
+		return apiUpdateMonitors.get(trapline);
 	}
 
 	private final Set<Trapline> updatedTraplines = new HashSet<>();
@@ -416,7 +446,9 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 			} else if (c.wasRemoved()) {
 				for (Trapline t : c.getRemoved()) {
 					if (apiUpdateMonitors.containsKey(t)) {
-						t.getTraps().removeListener(apiUpdateMonitors.remove(t));
+						TraplineMonitorService s = apiUpdateMonitors.remove(t);
+						t.getTraps().removeListener(s);
+						s.cleanup();
 					}
 					removedTraplines.add(t);
 					updatedTraplines.remove(t);

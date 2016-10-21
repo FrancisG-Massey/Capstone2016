@@ -52,6 +52,9 @@ import com.gluonhq.connect.source.RestDataSource;
 import com.gluonhq.impl.connect.provider.RestListDataReader;
 import com.gluonhq.impl.connect.provider.RestObjectDataWriterAndRemover;
 
+import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
@@ -67,8 +70,33 @@ public class RestNetworkService implements NetworkService {
 	
 	private final LoginService loginService;
 	
+	private final ReadOnlyBooleanWrapper networkAvailableProperty = new ReadOnlyBooleanWrapper(true);
+	
 	public RestNetworkService (LoginService loginService) {
 		this.loginService = loginService;
+		
+		loginService.loginStatusProperty().addListener((obs, oldStatus, newStatus) -> {
+			if (newStatus == LoginStatus.SERVER_UNAVAILABLE
+					|| newStatus == LoginStatus.UNKNOWN_ERROR) {
+				networkAvailableProperty.set(false);
+			}
+		});
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#isNetworkAvailable()
+	 */
+	@Override
+	public boolean isNetworkAvailable() {
+		return networkAvailableProperty.get();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.nestnz.app.services.NetworkService#networkAvailableProperty()
+	 */
+	@Override
+	public ReadOnlyBooleanProperty networkAvailableProperty() {
+		return networkAvailableProperty.getReadOnlyProperty();
 	}
 
 	/* (non-Javadoc)
@@ -194,6 +222,52 @@ public class RestNetworkService implements NetworkService {
 		    	
     	RestDataSource dataSource = client.createRestDataSource();
     	
+		if (loginService.getSessionToken() == null) {
+			if (retry) {
+				LOG.log(Level.INFO, "User is not yet logged in - sending request to log in using saved credentials");
+				ChangeListener<LoginStatus> onLogin = new ChangeListener<LoginStatus> () {
+					public void changed (ObservableValue<? extends LoginStatus> loginObs, 
+							LoginStatus oldLoginStatus, LoginStatus newLoginStatus) {
+						switch (newLoginStatus) {
+						case PENDING_LOGIN:
+						case PENDING_LOGOUT:
+						case LOGGED_OUT:
+							return;
+						case INVALID_CREDENTIALS:
+							//Old credentials no longer work
+							status.set(RequestStatus.FAILED_UNAUTHORISED);
+							break;
+						case LOGGED_IN:
+							//Successfully logged in
+							LOG.log(Level.INFO, "Logged in successfully. Resending request using created session token");
+							//Bind this status property to the result of the inner request
+							status.bind(processReadRequest(type, client, callback, false));
+							break;
+						case SERVER_UNAVAILABLE:
+							//Problem logging in due to sever unavailability
+							status.set(RequestStatus.FAILED_NETWORK);
+							break;
+						case UNKNOWN_ERROR:
+							//Problem logging in due to another error (most likely a bug with the app or the API)
+							status.set(RequestStatus.FAILED_OTHER);
+							break;
+						}
+						loginObs.removeListener(this);
+					}
+				};
+				
+				if (loginService.checkSavedCredentials()) {
+					loginService.loginStatusProperty().addListener(onLogin);					
+				} else {
+					Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));					
+				}
+			} else {
+				//If a session token is not defined, it means the user must be logged out
+				Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));
+			}
+			return status;
+		}
+    	
     	dataSource.getHeaders().remove("Session-Token");
     	dataSource.addHeader("Session-Token", loginService.getSessionToken());
 		
@@ -213,6 +287,8 @@ public class RestNetworkService implements NetworkService {
 			if (newState == ConnectState.FAILED) {
 				switch (dataSource.getResponseCode()) {
 				case 204://No Content
+					networkAvailableProperty.set(true);
+					
 					status.set(RequestStatus.SUCCESS);//No data received, but the request was still successful
 					break;
 				case 403://Session timeout
@@ -228,7 +304,7 @@ public class RestNetworkService implements NetworkService {
 									status.bind(processReadRequest(type, client, callback, false));
 								} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
 									//Problem renewing session due to sever unavailability
-									status.set(RequestStatus.FAILED);
+									status.set(RequestStatus.FAILED_OTHER);
 								} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
 									//Old credentials no longer work
 									status.set(RequestStatus.FAILED_UNAUTHORISED);
@@ -242,13 +318,19 @@ public class RestNetworkService implements NetworkService {
 						status.set(RequestStatus.FAILED_UNAUTHORISED);
 					}
 					break;
+				case -1://Never received a HTTP response (probably a network error)
+					LOG.log(Level.WARNING, "Problem loading "+type+".", resultList.getException());
+					networkAvailableProperty.set(false);
+					status.set(RequestStatus.FAILED_NETWORK);
+					break;
 				default:
 					//Handle failure
-					status.set(RequestStatus.FAILED);
-					LOG.log(Level.SEVERE, "Problem loading "+type+". HTTP response: "+dataSource.getResponseMessage(), resultList.getException());
+					status.set(RequestStatus.FAILED_OTHER);
+					LOG.log(Level.SEVERE, "Problem loading "+type+". HTTP response: "+dataSource.getResponseCode()+" "+dataSource.getResponseMessage(), resultList.getException());
 					break;
 				}				
 			} else if (newState == ConnectState.SUCCEEDED) {
+				networkAvailableProperty.set(true);
 				status.set(RequestStatus.SUCCESS);
 			}
 		});
@@ -264,6 +346,51 @@ public class RestNetworkService implements NetworkService {
 		
 		RestDataSource dataSource = client.createRestDataSource();
     	
+		if (loginService.getSessionToken() == null) {
+			if (retry) {
+				LOG.log(Level.INFO, "User is not yet logged in - sending request to log in using saved credentials");
+				ChangeListener<LoginStatus> onLogin = new ChangeListener<LoginStatus> () {
+					public void changed (ObservableValue<? extends LoginStatus> loginObs, 
+							LoginStatus oldLoginStatus, LoginStatus newLoginStatus) {
+						switch (newLoginStatus) {
+						case PENDING_LOGIN:
+						case PENDING_LOGOUT:
+						case LOGGED_OUT:
+							return;
+						case INVALID_CREDENTIALS:
+							//Old credentials no longer work
+							status.set(RequestStatus.FAILED_UNAUTHORISED);
+							break;
+						case LOGGED_IN:
+							//Successfully logged in
+							LOG.log(Level.INFO, "Logged in successfully. Resending request using created session token");
+							//Bind this status property to the result of the inner request
+							status.bind(processCreateRequest(type, data, client, callback, false));
+							break;
+						case SERVER_UNAVAILABLE:
+							//Problem logging in due to sever unavailability
+							status.set(RequestStatus.FAILED_NETWORK);
+							break;
+						case UNKNOWN_ERROR:
+							//Problem logging in due to another error (most likely a bug with the app or the API)
+							status.set(RequestStatus.FAILED_OTHER);
+							break;
+						}
+						loginObs.removeListener(this);
+					}
+				};
+				
+				if (loginService.checkSavedCredentials()) {
+					loginService.loginStatusProperty().addListener(onLogin);					
+				} else {
+					Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));					
+				}
+			} else {
+				//If a session token is not defined, it means the user must be logged out
+				Platform.runLater(() -> status.set(RequestStatus.FAILED_UNAUTHORISED));
+			}
+			return status;
+		}
     	dataSource.getHeaders().remove("Session-Token");
     	dataSource.addHeader("Session-Token", loginService.getSessionToken());
 		
@@ -277,24 +404,26 @@ public class RestNetworkService implements NetworkService {
     			
 				switch (dataSource.getResponseCode()) {
 				case 201://Created successfully
+					networkAvailableProperty.set(true);
+					
 					List<String> locationHeaders = dataSource.getResponseHeaders().get("Location");
 					if (locationHeaders.isEmpty()) {
 						LOG.log(Level.WARNING, "Missing 'Location' header in creation response for "+data);
-						status.set(RequestStatus.FAILED);
+						status.set(RequestStatus.FAILED_OTHER);
 					} else {
 						int id;
 						try {
 							id = extractIdFromRedirect(locationHeaders.get(0));
 						} catch (RuntimeException ex) {
 							LOG.log(Level.WARNING, "Could not find ID in redirect string: "+locationHeaders.get(0), ex);
-							status.set(RequestStatus.FAILED);
+							status.set(RequestStatus.FAILED_OTHER);
 							return;
 						}
 						callback.accept(id);
 						status.set(RequestStatus.SUCCESS);
 					}
 					break;
-				case 403://Session timeout
+				case 403://Session timeout					
 					if (retry) {
 						ChangeListener<LoginStatus> onRenewal = new ChangeListener<LoginStatus> () {
 							public void changed (ObservableValue<? extends LoginStatus> loginObs, 
@@ -307,7 +436,7 @@ public class RestNetworkService implements NetworkService {
 									status.bind(processCreateRequest(type, data, client, callback, false));
 								} else if (newLoginStatus == LoginStatus.SERVER_UNAVAILABLE) {
 									//Problem renewing session due to sever unavailability
-									status.set(RequestStatus.FAILED);
+									status.set(RequestStatus.FAILED_OTHER);
 								} else if (newLoginStatus == LoginStatus.INVALID_CREDENTIALS) {
 									//Old credentials no longer work
 									status.set(RequestStatus.FAILED_UNAUTHORISED);
@@ -321,9 +450,14 @@ public class RestNetworkService implements NetworkService {
 						status.set(RequestStatus.FAILED_UNAUTHORISED);
 					}
 					break;
+				case -1://Never received a HTTP response (probably a network error)
+					LOG.log(Level.WARNING, "Failed to send "+data+" to server.", result.getException());
+					networkAvailableProperty.set(false);
+					status.set(RequestStatus.FAILED_NETWORK);
+					break;
 				default:
 					LOG.log(Level.WARNING, "Failed to send "+data+" to server. HTTP response: "+dataSource.getResponseMessage(), result.getException());
-					status.set(RequestStatus.FAILED);
+					status.set(RequestStatus.FAILED_OTHER);
 					break;
 				}  		
     		}

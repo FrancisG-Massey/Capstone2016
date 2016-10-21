@@ -35,12 +35,15 @@ import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
 
 import com.gluonhq.charm.glisten.application.MobileApplication;
+import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.Swatch;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.StorageService;
 
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 
 @License(key="482637c8-d766-40fa-942e-f96a11d31da8")
 public class NestApplication extends MobileApplication {
@@ -91,6 +94,17 @@ public class NestApplication extends MobileApplication {
     	return retrieveView(name)
 				.map(view -> (T) view)
 				.orElseThrow(() -> new IllegalArgumentException("View "+name+" not created!"));
+    }
+    
+    public void showNotification (String message) {
+    	Dialog<Button> dialog = new Dialog<>();
+		dialog.setContent(new Label(message));
+		Button okButton = new Button("OK");
+		okButton.setOnAction(e -> {
+			dialog.hide();
+		});
+		dialog.getButtons().add(okButton);
+		dialog.showAndWait();
     }
 
     @Override

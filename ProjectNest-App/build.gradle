@@ -6,7 +6,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'org.javafxports:jfxmobile-plugin:1.0.10-SNAPSHOT'
+        classpath 'org.javafxports:jfxmobile-plugin:1.1.0'
     }
 }
 
@@ -44,49 +44,24 @@ repositories {
     maven {
        url 'https://oss.sonatype.org/content/repositories/snapshots'
     }
-    if (project.hasProperty('gluonNexusUsername') && project.hasProperty('gluonNexusPassword')) {
-    	hasGluonLogin = true
-	    maven {
-	    	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-oss-daily/' 
-		  	credentials { 
-		    	username gluonNexusUsername
-		    	password gluonNexusPassword
-		  	} 
-		}
-	    maven {
-	    	url 'http://nexus.gluonhq.com/nexus/content/repositories/gluon-private-releases/' 
-		  	credentials { 
-		    	username gluonNexusUsername
-		    	password gluonNexusPassword
-		  	} 
-		}
-	}
 }
 
 mainClassName = 'org.nestnz.app.NestApplication'
 
 dependencies {
-    compile 'com.gluonhq:charm-glisten:3.0.1-b7'
-    compile 'com.gluonhq:connect:1.0.2-SNAPSHOT'
+    compile 'com.gluonhq:charm-glisten:4.0.0'
+    compile 'com.gluonhq:connect:1.1.0'
     compile 'com.gluonhq:maps:1.0.1-SNAPSHOT'
     
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.+'
-
-    androidRuntime 'com.gluonhq:charm-glisten-android:3.0.1-b7'
-    
-    iosRuntime 'com.gluonhq:charm-glisten-ios:3.0.1-b7'
-    
-    desktopRuntime 'com.gluonhq:charm-glisten-desktop:3.0.1-b7'    
+    testCompile 'org.mockito:mockito-core:2.+'  
 }
 
 jfxmobile {
 	downConfig {
-        version '3.0.0-SNAPSHOT'
+        version '3.0.0'
         plugins 'position', 'settings', 'storage', 'vibration'
     }
-
-	javafxportsVersion = hasGluonLogin ? '8.60.d161002' : '8.60.7'
 
     android {
         manifest = 'src/android/AndroidManifest.xml'

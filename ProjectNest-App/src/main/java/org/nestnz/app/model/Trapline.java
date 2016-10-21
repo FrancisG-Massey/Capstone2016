@@ -46,7 +46,7 @@ public final class Trapline {
 	 */
 	private final ObservableList<Trap> traps = FXCollections.observableArrayList(trap -> {
 		return new Observable[] { trap.numberProperty(), trap.latitudeProperty(), trap.longitudeProperty(),
-				trap.lastResetProperty(), trap.getCatches(), trap.statusProperty() };
+				trap.lastResetProperty(), trap.getCatches(), trap.statusProperty(), trap.idProperty() };
 	});
 	
 	/**

@@ -107,6 +107,16 @@ public class NavigationView extends View {
     int[] trapNumberLookup;
     
     /**
+     * The number of the first active trap in the trapline
+     */
+    int firstTrap;
+    
+    /**
+     * The number of the last active trap in the trapline
+     */
+    int lastTrap;
+    
+    /**
      * The number of the first trap to use in the navigation sequence
      */
     int startTrap;
@@ -209,8 +219,8 @@ public class NavigationView extends View {
     			targetCoordsProperty.set(null);
     		} else {
     			targetCoordsProperty.set(new Position(newV.getLatitude(), newV.getLongitude()));
-    			prev.setVisible(hasPreviousTrap());
-    			next.setVisible(hasNextTrap());
+    			prev.setVisible(hasPreviousTrap(false));
+    			next.setVisible(hasNextTrap(false));
     		}
     	});
     	
@@ -343,6 +353,7 @@ public class NavigationView extends View {
     
     /**
      * Go back to the previous trap in the trapline
+     * WARNING: This method assumes a "previous trap" exists, so {@link #hasPreviousTrap()} should always be called before calling this method
      */
     public void previousTrap () {
 		int prevNumber = trapProperty.get().getNumber()-step;
@@ -355,7 +366,8 @@ public class NavigationView extends View {
     }
     
     /**
-     * Jump to the next trap in the trapline
+     * Jump to the next trap in the trapline.
+     * WARNING: This method assumes a "next trap" exists, so {@link #hasNextTrap()} should always be called before calling this method
      */
     public void nextTrap() {
 		int nextNumber = trapProperty.get().getNumber()+step;
@@ -369,28 +381,54 @@ public class NavigationView extends View {
     
     /**
      * Checks whether a trap exists prior to the selected trap
-     * @return True if a previous trap exists, false if this is the first trap in the line
+     * Uses the sequence set by {@link #setNavigationSequence(int, int, int)} to determine the first trap to use
+     * @return True if a previous trap exists, false if this is the first trap available
      */
     public boolean hasPreviousTrap () {
-    	int prevNumber = trapProperty.get().getNumber()-step;
-		while (canTraverseNext(step < 0, prevNumber, startTrap) && trapNumberLookup[prevNumber] == -1) {
-			//Skip traps which don't exist (or are currently inactive)
-			prevNumber -= step;
-		}
-    	return canTraverseNext(step < 0, prevNumber, startTrap);
+    	return hasPreviousTrap(true);
     }
     
     /**
-     * Checks whether another trap exists after the current one
-     * @return True if a next trap exists, false if this is the last trap in the trapline
+     * Checks whether a trap exists before to the selected trap
+     * If useSequence is true, uses the start trap set by {@link #setNavigationSequence(int, int, int)} to determine the first trap
+     * If useSequence is false, uses the first trap in the trapline as the first trap
+     * @param useSequence Whether to use the sequence set by {{@link #setNavigationSequence(int, int, int)}
+     * @return True if a previous trap exists, false if this is the first trap available
+     */
+    public boolean hasPreviousTrap (boolean useSequence) {
+    	int limit = useSequence ? startTrap : firstTrap;
+    	int prevNumber = trapProperty.get().getNumber()-step;
+		while (canTraverseNext(step < 0, prevNumber, limit) && trapNumberLookup[prevNumber] == -1) {
+			//Skip traps which don't exist (or are currently inactive)
+			prevNumber -= step;
+		}
+    	return canTraverseNext(step < 0, prevNumber, limit);
+    }
+    
+    /**
+     * Checks whether another trap exists after the selected trap.
+     * Uses the sequence set by {@link #setNavigationSequence(int, int, int)} to determine the last trap to use
+     * @return True if a next trap exists, false if this is the last trap available
      */
     public boolean hasNextTrap () {
+    	return hasNextTrap(true);
+    }
+    
+    /**
+     * Checks whether another trap exists after the current one.
+     * If useSequence is true, uses the end trap set by {@link #setNavigationSequence(int, int, int)} to determine the last trap
+     * If useSequence is false, uses the last trap in the trapline as the last trap
+     * @param useSequence Whether to use the sequence set by {{@link #setNavigationSequence(int, int, int)}
+     * @return True if a next trap exists, false if this is the last trap available
+     */
+    public boolean hasNextTrap (boolean useSequence) {
+    	int limit = useSequence ? endTrap : lastTrap;
     	int nextNumber = trapProperty.get().getNumber()+step;
-		while (canTraverseNext(step > 0, nextNumber, endTrap) && trapNumberLookup[nextNumber] == -1) {
+		while (canTraverseNext(step > 0, nextNumber, limit) && trapNumberLookup[nextNumber] == -1) {
 			//Skip traps which don't exist (or are currently inactive)
 			nextNumber += step;
 		}
-    	return canTraverseNext(step > 0, nextNumber, endTrap);
+    	return canTraverseNext(step > 0, nextNumber, limit);
     }
     
     private boolean canTraverseNext (boolean reversed, int number, int limit) {
@@ -427,8 +465,8 @@ public class NavigationView extends View {
     		Trap t = trapsTmp.get(i);
     		trapNumberLookup[t.getNumber()] = i;
     	}
-    	startTrap = trapsTmp.get(0).getNumber();
-    	endTrap = highestTrap.getNumber();
+    	firstTrap = startTrap = trapsTmp.get(0).getNumber();
+    	lastTrap = endTrap = highestTrap.getNumber();
     	step = 1;
     	
     	//Sort the traps by trap number
@@ -451,6 +489,13 @@ public class NavigationView extends View {
     	assert step != 0 : "step is zero!";//Can't have a step of zero, else we'll never move anywhere!
     	assert Math.abs(endTrap - startTrap) >= Math.abs(step) : "step is too high! It should be no greater than the number of traps in the sequence!";
     	assert step > 0 ? startTrap <= endTrap : startTrap >= endTrap : "step runs in the wrong direction! step="+step+", end="+endTrap+", start="+startTrap;//
+    	
+    	if (step < 0 != this.step < 0) {
+    		//If the navigation is to run in reverse and wasn't previously (or vice versa), swap the first & last trap numbers around.
+    		int tmp = this.firstTrap;
+    		this.firstTrap = this.lastTrap;
+    		this.lastTrap = tmp;
+    	}
     	
     	this.startTrap = startTrap;
     	this.endTrap = endTrap;
