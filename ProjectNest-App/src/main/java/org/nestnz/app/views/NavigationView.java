@@ -32,6 +32,7 @@ import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
+import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
 import com.gluonhq.charm.down.Services;
@@ -95,9 +96,15 @@ public class NavigationView extends View {
 	public static final String NAME = "navigation";
 
     private static final Logger LOG = Logger.getLogger(NavigationView.class.getName());
-    
+        
+    /**
+     * The button used to access the previous trap in the trapline
+     */
     final Button prev = MaterialDesignIcon.ARROW_BACK.button(evt -> previousTrap());;
     
+    /**
+     * The button used to access the next trap in the trapline
+     */
     final Button next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
     
     /**
@@ -132,30 +139,62 @@ public class NavigationView extends View {
      */
     int step;
     
-    final ObservableList<Trap> orderedTraps;
-    
-    final IntegerProperty currentTrapIndex = new SimpleIntegerProperty(0);
-    
+    /**
+     * The trapline currently selected for navigation
+     */
     final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
     
+    /**
+     * Contains all traps in the trapline ordered by number
+     */
+    final ObservableList<Trap> orderedTraps;
+    
+    /**
+     * The index of {@link #orderedTraps} used to find the currently selected trap
+     */
+    final IntegerProperty currentTrapIndex = new SimpleIntegerProperty(0);
+    
+    /**
+     * The currently selected trap in the trapline
+     */
     final ObjectProperty<Trap> trapProperty = new SimpleObjectProperty<>();
     
+    /**
+     * The coordinates of the selected trap
+     */
     final ObjectProperty<Position> targetCoordsProperty = new SimpleObjectProperty<>();
     
+    /**
+     * The distance, in meters, to the selected trap defined in {@link #trapProperty}
+     */
     final DoubleProperty distanceToTrap = new SimpleDoubleProperty();
     
     final Dialog<CatchType> catchSelectDialog;
 	
+    /**
+     * The map used to show the user's current position relative to nearby traps
+     */
 	final MapView map = new MapView();
 	
+	/**
+	 * The layer used for laying out the user's current position & the position of nearby traps
+	 */
 	final TrapPositionLayer trapPositionLayer = new TrapPositionLayer();
+	
+	/**
+	 * The provider of all trapline data. Used in NavigationView specifically for displaying the list of catch types
+	 */
+	final TrapDataService trapDataService;
 
-    public NavigationView() {
-        this(false);
+    public NavigationView(TrapDataService dataService) {
+        this(dataService, false);
     }
     
-    protected NavigationView(boolean test) {
-    	super(NAME);        
+    protected NavigationView(TrapDataService dataService, boolean test) {
+    	super(NAME);
+    	
+    	this.trapDataService = Objects.requireNonNull(dataService);
+    	
     	orderedTraps = trapPositionLayer.getTraps();
         //setShowTransitionFactory(BounceInRightTransition::new);
         
@@ -173,6 +212,9 @@ public class NavigationView extends View {
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
     }
     
+    /**
+     * Constructs & adds the controls used by the view
+     */
     private void initControls () {
     	HBox topBox = new HBox();
     	topBox.setId("top-box");
@@ -239,6 +281,9 @@ public class NavigationView extends View {
     	});
     }
     
+    /**
+     * Start listening for new GPS positions
+     */
     private void initMonitors () {
     	Services.get(PositionService.class).ifPresent(gpsService -> {
     		trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty());
@@ -303,7 +348,7 @@ public class NavigationView extends View {
         column2.setPercentWidth(50);
         controls.getColumnConstraints().addAll(column1, column2);
     	
-    	Button empty = makeOptionButton(0);    	
+    	Button empty = makeOptionButton(0);
     	Button option2 = makeOptionButton(1);
     	
     	Button other = new Button("Other");
@@ -318,6 +363,12 @@ public class NavigationView extends View {
     	return dialog;
     }
     
+    /**
+     * Constructs one of the selection buttons for the catch selection screen.
+     * Binds the catch type displayed on this button to {@link CatchType#EMPTY} if place is 0, or to one of the top three catches for the trapline if place is between 1 and 3.
+     * @param place The button placement (ranges from 0 to 3)
+     * @return The catch selection button
+     */
     private Button makeOptionButton (int place) {
     	ObjectBinding<CatchType> catchType;
     	if (place == 0) {
@@ -337,6 +388,7 @@ public class NavigationView extends View {
     		}, traplineProperty);
     	}
     	Button button = new Button();
+    	button.getStyleClass().add("catch-select-option");
     	button.textProperty().bind(Bindings.createStringBinding(() -> catchType.get().getName(), catchType));
     	button.setMaxSize(1000, 1000);
     	//button.getStyleClass().add("large-button");
@@ -398,11 +450,11 @@ public class NavigationView extends View {
     public boolean hasPreviousTrap (boolean useSequence) {
     	int limit = useSequence ? startTrap : firstTrap;
     	int prevNumber = trapProperty.get().getNumber()-step;
-		while (canTraverseNext(step < 0, prevNumber, limit) && trapNumberLookup[prevNumber] == -1) {
+		while (canReach(step > 0, prevNumber, limit) && trapNumberLookup[prevNumber] == -1) {
 			//Skip traps which don't exist (or are currently inactive)
 			prevNumber -= step;
 		}
-    	return canTraverseNext(step < 0, prevNumber, limit);
+    	return canReach(step > 0, prevNumber, limit);
     }
     
     /**
@@ -424,15 +476,24 @@ public class NavigationView extends View {
     public boolean hasNextTrap (boolean useSequence) {
     	int limit = useSequence ? endTrap : lastTrap;
     	int nextNumber = trapProperty.get().getNumber()+step;
-		while (canTraverseNext(step > 0, nextNumber, limit) && trapNumberLookup[nextNumber] == -1) {
+		while (canReach(step < 0, nextNumber, limit) && trapNumberLookup[nextNumber] == -1) {
 			//Skip traps which don't exist (or are currently inactive)
 			nextNumber += step;
 		}
-    	return canTraverseNext(step > 0, nextNumber, limit);
+    	return canReach(step < 0, nextNumber, limit);
     }
     
-    private boolean canTraverseNext (boolean reversed, int number, int limit) {
-    	return reversed ? number <= limit : number >= limit;
+    /**
+     * Checks whether the specified trap number can be reached, given the specified limit.
+     * Helper method for {@link #hasNextTrap(boolean)} and {@link #hasPreviousTrap(boolean)}
+     * 
+     * @param reversed True if the check should be run backwards (i.e. make sure limit is less than the desired number)
+     * @param number The number of the desired trap
+     * @param limit The maximum number available in the sequence
+     * @return True if {@code number} can be reached, false otherwise
+     */
+    private boolean canReach (boolean reversed, int number, int limit) {
+    	return reversed ? number >= limit : number <= limit ;
     }
     
     /**

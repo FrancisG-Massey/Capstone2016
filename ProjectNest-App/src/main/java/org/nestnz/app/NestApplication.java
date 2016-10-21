@@ -64,7 +64,7 @@ public class NestApplication extends MobileApplication {
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));
-        addViewFactory(NavigationView.NAME, () -> new NavigationView());
+        addViewFactory(NavigationView.NAME, () -> new NavigationView(trapDataService));
         addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService, mapLoadingService));
         addViewFactory(AddTrapView.NAME, () -> new AddTrapView());
         
