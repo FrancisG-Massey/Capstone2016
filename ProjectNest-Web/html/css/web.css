@@ -169,3 +169,7 @@ th, td{
 a[disabled="disabled"] {
    pointer-events: none;
 }
+
+.btn-round-sm{
+border-radius: 15px;
+}

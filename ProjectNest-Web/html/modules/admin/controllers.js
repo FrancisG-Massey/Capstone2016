@@ -74,7 +74,7 @@ angular
 								            .error(function(res){});
 								  };
 									$scope.formatDate = function(date) {
-										var dateOut = new Date(date);
+										var dateOut = JSON.parse(JSON.stringify(new Date(date)));
 										return dateOut;
 									};
 							} 	
@@ -103,7 +103,7 @@ angular
 							$scope.trap_type = trap_type;
 							// get all catch types
 							$scope.catch_types = catch_types;
-							
+							console.log($scope.traps);
 							// load catch history when the page loads and save them into a scope variable
 							//console.log($scope.trapline_id);
 						    var config = {
@@ -119,7 +119,7 @@ angular
 						    
 							// formatting Date
 							$scope.formatDate = function(date) {
-								var dateOut = new Date(date);
+								var dateOut = JSON.parse(JSON.stringify(new Date(date)));
 								return dateOut;
 							};
 							  // load catch history in json format.
@@ -267,7 +267,7 @@ angular
 							};
 
 							$scope.formatDate = function(date) {
-								var dateOut = new Date(date);
+								var dateOut = JSON.parse(JSON.stringify(new Date(date)));
 								return dateOut;
 							};
 							
@@ -580,7 +580,7 @@ angular
 								}
 							};
 							$scope.formatDate = function(date) {
-								var dateOut = new Date(date);
+								var dateOut = JSON.parse(JSON.stringify(new Date(date)));
 								return dateOut;
 							};
 							console.log($scope.traplines);
