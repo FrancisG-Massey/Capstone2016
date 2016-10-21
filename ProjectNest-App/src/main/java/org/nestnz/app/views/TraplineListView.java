@@ -33,6 +33,8 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
@@ -63,6 +65,8 @@ public class TraplineListView extends View {
         super(NAME);
         this.dataService = dataService;
         
+        ReadOnlyDoubleProperty deviceWidth = this.widthProperty();
+        
         traplineList = new CharmListView<>(dataService.getTraplines());
         traplineList.setHeadersFunction(Trapline::getRegion);
         traplineList.setConverter(new StringConverter <Region>() {
@@ -80,6 +84,12 @@ public class TraplineListView extends View {
         	
         	{
         		this.setGraphic(button);
+        		
+        		//Prevent long trapline names from expanding the size of buttons to cause side scrolling
+        		//NOTE: This assumes a total left & right padding of less than 16 for the parent cell. Higher padding values will cause the scroll bar to re-appear
+        		double padding = 16;
+        		button.maxWidthProperty().bind(Bindings.subtract(deviceWidth, padding));
+        		
         		button.setOnAction(evt -> {
         			LOG.log(Level.INFO, "Pressed trapline: "+trapline);
         			TraplineInfoView infoView = ((NestApplication) TraplineListView.this.getApplication()).lookupView(TraplineInfoView.NAME);
