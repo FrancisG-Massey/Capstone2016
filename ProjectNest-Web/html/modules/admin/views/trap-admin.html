@@ -35,7 +35,7 @@
         <td>{{trap.status? "active":"inactive"}}</td>
         <td>{{formatDate(trap.created) | date:"dd MMMM yyyy"}}</td>
         <td>{{formatDate(trap.last_reset)| date:"dd MMMM yyyy"}}</td>
-        <td><a herf="#" ng-click="load_history(trap)" class="btn btn-sm btn-primary btn-round-sm" data-toggle="modal" data-target="#catch-history">View Catch History</a></td>
+        <td><a herf="#" ng-click="load_history(trap)" class="btn btn-sm btn-primary btn-round-sm" data-toggle="modal" data-target="#catch-history">View</a></td>
         <td><a href="#/trap-admin/{{trap.id}}/{{trapline_name}}/edit-trap" class="btn btn-primary btn-round-sm btn-sm">Edit</a></td>
       </tr>
     </tbody>
