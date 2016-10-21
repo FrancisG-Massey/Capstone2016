@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,24 @@ public class DBInterfaceTests {
         JsonArray jArray = new JsonParser().parse(result).getAsJsonArray();
         
         assertTrue(true);
+    }
+    
+    /**
+     * Test of resultSetAsCSV method, of class Common.
+     * @throws java.sql.SQLException
+     * @throws java.io.IOException
+     */
+    @Test
+    public void ResultSetAsCSVReturnsString() throws SQLException, IOException {
+        
+        Statement st = conn.createStatement();
+        ResultSet rsh = st.executeQuery("SELECT 1::bigint AS test, 2::text as test2");
+        
+        // Call the method
+        String result = Common.resultSetAsCSV(rsh);
+        
+        // An exception will be thrown here if the dataset cannot be parsed as JSON.
+        assertTrue("Returned CSV string has null length!", result.length() > 0);
     }
 
     /**
@@ -508,7 +527,7 @@ public class DBInterfaceTests {
         try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {
             // Prepare the parameter map
             Map<String, String> datasetParams = new HashMap<>();
-            datasetParams.put("some-date", "28-09-2016");
+            datasetParams.put("some-date", "2016-09-28");
             datasetParams.put("some-null", null);
 
             // Prepare the parameter order store
@@ -727,11 +746,12 @@ public class DBInterfaceTests {
      * Test of bindDynamicParameters method, of class Common.
      * Ensure that non-timestamps in timestamp fields throw an exception.
      * @throws SQLException
+     * @throws java.time.format.DateTimeParseException
      * @throws java.text.ParseException
      * @throws java.lang.NumberFormatException
      */
-    @Test(expected=ParseException.class)
-    public void BindDynamicParametersBadTimestampsThrowsParseEx() throws SQLException, NumberFormatException, ParseException {
+    @Test(expected=DateTimeParseException.class)
+    public void BindDynamicParametersBadTimestampsThrowsParseEx() throws DateTimeParseException, SQLException, NumberFormatException, ParseException {
         String sqlQuery = "SELECT ? AS test";
         // Prepare the parameter map
         try (PreparedStatement st = conn.prepareStatement(sqlQuery)) {

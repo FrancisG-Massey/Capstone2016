@@ -11,7 +11,6 @@ import com.berry.BCrypt;
 import java.sql.*;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.logging.Level;
@@ -59,11 +58,14 @@ public class SessionServlet extends HttpServlet {
         ServletContext sc = this.getServletContext();
         propPath = sc.getRealPath("/WEB-INF/dbconfig.properties");
         
+        LOG.log(Level.INFO, "Initializing RequestServlet @{0}", sc.getContextPath());
+        
         // Attempt the initial connection to the database.
         try {
             Common.getNestDS(propPath);
+            LOG.log(Level.INFO, "Connection successfully established to the database");
         } catch (IOException ex) {
-        	LOG.log(Level.SEVERE, "Failed to initialise database connection", ex);
+            LOG.log(Level.SEVERE, "Failed to initialise database connection", ex);
         }
     }
     
@@ -74,64 +76,9 @@ public class SessionServlet extends HttpServlet {
     public void destroy() {
         try {
             Common.closeNestDS();
+            LOG.log(Level.INFO, "Connection to datasource successfully closed");
         } catch (SQLException ex) {
             LOG.log(Level.WARNING, "Unable to close datasource object", ex);
-        }
-    }
-    
-    /**
-     * Display session debug info in a get for now
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        // TODO: Remove this before production
-        
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("text/html;charset=UTF-8");
-        
-        try (PrintWriter out = response.getWriter()) {
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet NestSessionServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet NestSessionServlet at " + request.getContextPath() + "</h1>");
-            
-            
-            final String sqlQuery = "SELECT session_id, session_userid, substring(session_token from 1 for 31)||'xxxxx' AS session_token, session_createdtimestamp FROM session;";
-            //out.println("<p>dbconfig.properties filepath: \"" + propPath + "\"</p>");
-            out.println("<p>Querying: \"" + sqlQuery + "\"</p>");
-            
-            try (
-                Connection conn = Common.getNestDS(propPath).getConnection();
-                PreparedStatement st = conn.prepareStatement(sqlQuery);
-                ResultSet rs = st.executeQuery();
-            ) {
-                ResultSetMetaData rsmd = rs.getMetaData();
-                int columnsNumber = rsmd.getColumnCount();
-                out.println("<p>" + columnsNumber + " columns found!</p><p>");
-                while (rs.next()) {
-                    
-                    for (int i = 1; i <= columnsNumber; i++) {
-                        if (i > 1) out.print(",  ");
-                        out.println(rsmd.getColumnName(i) + ": " + rs.getString(i) );
-                    }
-                    out.println("<br/>");
-                }
-            } catch (IOException | SQLException ex) {
-            	LOG.log(Level.SEVERE, "Problem executing query", ex);
-                out.println("IO Error: " + ex.getMessage());
-            }
-            out.println("</p>");
-            out.println("</body>");
-            out.println("</html>");
         }
     }
 
@@ -147,10 +94,13 @@ public class SessionServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        LOG.log(Level.INFO, "Received request:\n{0}", request.toString());
+        
         // Check for a well-formed basic auth header.
         final String auth = request.getHeader("Authorization");
         if (auth == null || !auth.startsWith("Basic ")) {
             // No basic auth header found, or header is not well-formed
+            LOG.log(Level.INFO, "No basic auth header, or header is poorly formed. Returning 401...\n{0}", response.toString());
             response.addHeader("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -164,6 +114,7 @@ public class SessionServlet extends HttpServlet {
         final int delimiterIndex = decodedCredentials.indexOf(":");
         if (delimiterIndex < 1) {
             // Header is not well-formed
+            LOG.log(Level.INFO, "Basic auth header is not well formed. Returning 401...\n{0}", response.toString());
             response.addHeader("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -175,7 +126,7 @@ public class SessionServlet extends HttpServlet {
         
         // Get the user's id and hashed password from the DB
         long dbUserID; String dbPassword;
-        final String sqlQuery = "SELECT user_id, user_password FROM public.users WHERE user_name = ?;";
+        final String sqlQuery = "SELECT user_id, user_password FROM public.users WHERE user_name = ? AND user_isinactive = false;";
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
             PreparedStatement sth = conn.prepareStatement(sqlQuery);
@@ -187,16 +138,18 @@ public class SessionServlet extends HttpServlet {
                     rsh.next();
                     dbPassword = rsh.getString("user_password");
                     dbUserID = rsh.getLong("user_id");
+                    LOG.log(Level.INFO, "User '{0}' with id '{1}' has successfully logged in!", new Object[]{inputUsername, Long.toString(dbUserID)});
                 } else {
-                    // No such-named user is registered in the database.
-                    LOG.log(Level.INFO, "Failed login attempt from {0} with unrecognised username: \"{1}\" and password: \"{2}\"", 
-                            new Object[]{request.getRemoteHost(), inputUsername, inputPassword});
+                    // No such-named active user is registered in the database.
+                    LOG.log(Level.INFO, "Failed login attempt from {0} with unrecognised username: \"{1}\" and password: \"{2}\"\nReturning 403...\n{3}", 
+                            new Object[]{request.getRemoteAddr(), inputUsername, inputPassword, response.toString()});
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
             }
         } catch (SQLException | IOException ex) {
-        	LOG.log(Level.SEVERE, "Problem executing query", ex);
+        	LOG.log(Level.SEVERE, "Problem executing login query: \n{0}\nReturning 500...\n{1}", 
+                        new Object[]{ex.getMessage(), response.toString()});
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
@@ -204,8 +157,8 @@ public class SessionServlet extends HttpServlet {
         // Compare the two passwords, returning a fail if they don't match
         if (!BCrypt.checkpw(inputPassword, dbPassword)) {
             // User exists but password attempt is incorrect
-            LOG.log(Level.INFO, "Failed login attempt from {0} with recognised username: \"{1}\" and password: \"{2}\"", 
-                    new Object[]{request.getRemoteHost(), inputUsername, inputPassword});
+            LOG.log(Level.INFO, "Failed login attempt from {0} with recognised username: \"{1}\" and password: \"{2}\"\nReturning 403...\n{3}", 
+                    new Object[]{request.getRemoteAddr(), inputUsername, inputPassword, response.toString()});
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -230,12 +183,15 @@ public class SessionServlet extends HttpServlet {
                 throw new SQLException("Failed to create new session.");
             }
          } catch (SQLException | IOException ex) {
-         	LOG.log(Level.SEVERE, "Unable to execute query to create new session record", ex);
+         	LOG.log(Level.SEVERE, "Unable to execute new session query:\n{0}\nReturning 500...\n{1}", 
+                        new Object[]{ex.getMessage(), response.toString()});
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
         
         // Return the new session id to the client
+        LOG.log(Level.INFO, "Session created for user: '{0}', token: {1}\nReturning 200...\n{2}", 
+                new Object[]{inputUsername, newSessionToken, response.toString()});
         response.addHeader("Session-Token", newSessionToken);
         response.setStatus(HttpServletResponse.SC_CREATED);
     }
@@ -252,17 +208,20 @@ public class SessionServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        LOG.log(Level.INFO, "Received request:\n{0}\n", request.toString());
         
         // Check for a "Session-Token" header with regex validation
         final String sessionToken = request.getHeader("Session-Token");
         final String uuidRegex = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
         if (sessionToken == null || !sessionToken.matches(uuidRegex)) {
+            LOG.log(Level.WARNING, "No session token supplied, or session token is not a valid token format!\nReturning 400...\n{0}",
+                    response.toString());
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
         
-        // Attempt to delete any sessions matching the session token        
-        final String sql = "DELETE FROM public.session WHERE session_token = ?;";
+        // Attempt to delete any sessions matching the session token plus any expired sessions
+        final String sql = "DELETE FROM public.session WHERE (session_token = ?) OR (session_expirestimestamp < now()::timestamp);";
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
             PreparedStatement sth = conn.prepareStatement(sql);
@@ -273,9 +232,16 @@ public class SessionServlet extends HttpServlet {
             sth.close();
             
             // Return a response appropriate to whether we actually logged out or the session did not exist/was expired
-            response.setStatus((rows>=1)? HttpServletResponse.SC_NO_CONTENT : HttpServletResponse.SC_NOT_FOUND);
+            if (rows >= 1) {
+                LOG.log(Level.INFO, "Session {0} deleted successfully!\nReturning 203...\n{1}", new Object[]{sessionToken, response.toString()});
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            } else {
+                LOG.log(Level.INFO, "Session gone/not found!\nReturning 404...\n{1}", new Object[]{sessionToken, response.toString()});
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            }
         } catch (SQLException ex) {
-        	LOG.log(Level.SEVERE, "Unable to execute query to delete session record", ex);
+        	LOG.log(Level.SEVERE, "Unable to execute query to delete session record!\n{0}Returning 500...\n{1}", 
+                        new Object[]{ex.getMessage(), response.toString()});
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }    

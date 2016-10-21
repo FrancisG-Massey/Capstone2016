@@ -1,27 +1,26 @@
 {
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
+    ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin,
-                user_isinactive
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             tlu.traplineuser_id as id,
             tlu.traplineuser_userid as user_id,
             tlu.traplineuser_traplineid as trapline_id,
             tlu.traplineuser_isadmin as admin
         FROM
-            logged_user lu,
             traplineuser tlu
         WHERE
-            (lu.user_isinactive = false) AND
-            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
+            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (tlu.traplineuser_id = #bigint:id#)) AND
             ((#bigint:user-id# IS NULL) OR (tlu.traplineuser_userid = #bigint:user-id#)) AND
             ((#bigint:trapline-id# IS NULL) OR (tlu.traplineuser_traplineid = #bigint:trapline-id#)) AND
@@ -29,18 +28,39 @@
         GROUP BY
             tlu.traplineuser_id
         ORDER BY
-            tlu.traplineuser_id
+            tlu.traplineuser_id;
     ",
     "POST" : "
-        INSERT INTO traplineuser
-            (traplineuser_userid, traplineuser_traplineid, traplineuser_isadmin)
+        INSERT INTO traplineuser (
+            traplineuser_userid,
+            traplineuser_traplineid,
+            traplineuser_isadmin
+        )
         SELECT
-            #bigint:user_id#, #bigint:trapline_id#, #boolean:admin#
+            #bigint:user_id#,
+            #bigint:trapline_id#,
+            #boolean:admin#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND 
+            (#bigint:user_id# IS NOT NULL) AND (#bigint:trapline_id# IS NOT NULL)
         RETURNING
-            traplineuser_id
+            traplineuser_id;
     ",
-    "PUT" : "",
-    "DELETE" : ""
+    "PUT" : "
+        UPDATE traplineuser
+        SET
+            traplineuser_userid = #bigint:user_id#,
+            traplineuser_traplineid = #bigint:trapline_id#,
+            traplineuser_isadmin = #boolean:admin#
+        WHERE 
+            traplineuser_id = #bigint:id#
+        RETURNING
+            traplineuser_id;
+    ",
+    "DELETE" : "
+        DELETE FROM traplineuser
+        WHERE 
+            traplineuser_id = #bigint:id#
+        RETURNING traplineuser_id;
+    "
 }

@@ -1,42 +1,72 @@
 {
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
+    ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin,
-                user_isinactive
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             ct.catchtype_id as id,
             ct.catchtype_name as name,
-            ct.catchtype_imagefilename as img_filename
+            ct.catchtype_imagefilename as img_filename,
+            ct.catchtype_isinactive as inactive
         FROM
-            logged_user lu,
             catchtype ct
         WHERE
-            (lu.user_isinactive = false) AND
             ((#bigint:id# IS NULL) OR (ct.catchtype_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%'))) AND
+            
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (ct.catchtype_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (ct.catchtype_isinactive = true)))
+
         GROUP BY
             ct.catchtype_id
         ORDER BY
-            ct.catchtype_id
+            ct.catchtype_id;
     ",
     "POST" : "
-        INSERT INTO catchtype
-            (catchtype_name, catchtype_imagefilename)
+        INSERT INTO catchtype (
+            catchtype_name,
+            catchtype_imagefilename
+        )
         SELECT
-            #string:name#, #string:img_filename#
+            #string:name#,
+            #string:img_filename#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND 
+            (#string:name# IS NOT NULL)
         RETURNING
-            catchtype_id
+            catchtype_id;
     ",
-    "PUT" : "",
-    "DELETE" : ""
+    "PUT" : "
+        UPDATE catchtype
+        SET
+            catchtype_name = #string:name#,
+            catchtype_imagefilename = #string:img_filename#
+        WHERE 
+            catchtype_id = #bigint:id#
+        RETURNING
+            catchtype_id;
+    ",
+    "DELETE" : "
+        UPDATE catchtype
+        SET
+            catchtype_isinactive = true
+        WHERE
+            catchtype_id = #bigint:id#
+        RETURNING catchtype_id;
+
+        DELETE FROM catchtype
+        WHERE 
+            (catchtype_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT catch_catchtypeid FROM catch));
+    "
 }

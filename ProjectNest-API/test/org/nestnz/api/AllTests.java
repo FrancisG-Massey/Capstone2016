@@ -21,7 +21,10 @@ import org.junit.runners.Suite;
     org.nestnz.api.ConfigFileTests.class,
     org.nestnz.api.SimpleTests.class,
     //org.nestnz.api.DBConnectTests.class,
-    org.nestnz.api.DBInterfaceTests.class
+    org.nestnz.api.DBInterfaceTests.class,
+    org.nestnz.api.NestHttpSessionTests.class,
+    org.nestnz.api.NestHttpGetTests.class,
+    org.nestnz.api.NestHttpPostTests.class
 })
 public class AllTests {
     // Run the test suite to impose a bit nicer execution order on test classes
@@ -37,6 +40,8 @@ public class AllTests {
         // As the tests don't execute withint the servlet container, we don't
         // have access to this context and need to simulate the base path here.
         // Assumes tests run from './build/test/classes/' and we want './build/'
+        // This will be different if we build from gradle instead of netbeans,
+        // but we won't have time to sort his out so maybe in the future...
         if (servletContextPath != null) {
             return servletContextPath;
         }
@@ -49,5 +54,9 @@ public class AllTests {
         catch (URISyntaxException ex) {
             return null;
         }
+    }
+    
+    public static String getTestServerBaseUrl() {
+        return "http://localhost:8084/api";
     }
 }

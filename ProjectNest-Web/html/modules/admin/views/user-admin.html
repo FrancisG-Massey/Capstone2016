@@ -1,0 +1,37 @@
+<ul class="breadcrumb">
+  <li><a href="/#" >Home</a></li>
+  <li class="active">Admin</li>  
+</ul>
+<div class="jumbotron">
+<h2 class="page-header text-center">Users</h2>
+
+<div class="form-group">
+   <a href="#/trapline-admin/add-newtrapline" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add User</a>  
+</div>
+
+<div class="row">  
+	<div class= "table-responsive" ng-if="users.length > 0"  ng-init="parentIndex = region">
+      <table style="table-layout:fixed;" class="table table-condensed admin" >
+		<thead>
+          <tr>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Start Date</th>
+            <th>Permission</th>
+            <th>Trapline</th>
+          </tr>
+		</thead>
+        <tbody data-ng-repeat="user in users">
+          <tr ng-class-odd="'active'">
+            <td scope="row">{{user.fullname}}</td>
+            <td>{{user.email}}</td>
+            <td>{{formatDate(user.created_timestamp) |  date:"dd MMMM yyyy"}}</td>
+            <td>{{user.admin?"Admin":"Volunteer"}}</td>
+            <td ng-if="user.registered.length > 0"><a href='#/trap-admin/{{user.registered[0].id}}/{{user.registered[0].name}}' class='btn btn-sm btn-primary'>{{user.registered[0].name}}</a></td>
+          	<td ng-if="user.registered.length <=0"><a disabled="disabled" class='btn btn-sm btn-info'>Not registered</a></td>
+          </tr>    
+        </tbody>
+      </table>
+    </div>
+</div>
+</div>
