@@ -534,26 +534,43 @@ angular
 
 						} ])
 		.controller(
-				'AdminNewVolunteerController',
+				'AdminNewUserController',
 				[
 						'$scope',
 						'$rootScope',
 						'$route',
+						'$http',
 						function($scope, $rootScope,
-								$route) {
+								$route,$http) {
 							//var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
-							$scope.trapline_id = $route.current.params.traplineId;
-							$scope.trapline_name = $route.current.params.traplineName;
-							console.log($scope.trapline_id);
-							console.log($scope.trapline_name);
-							$scope.users = $route.current.params.users;
-							console.log($scope.users);
+
+							$scope.Save = function() {
+								console.log($scope.email);
+								console.log($scope.fullName);
+								console.log($scope.phone);
+								console.log($scope.permission);
+								
+								var data = {
+									"email" : $scope.email,
+									"fullname" : $scope.fullName,
+									"phone" : $scope.phone,
+									"admin" : $scope.permission=="true",
+									"password" : $scope.password
+										};
+
+								$http.post(
+										'https://www.nestnz.org/api/user',
+										data).then(
+										function(data, status, header, config) {
+											$route.reload();
+										});
+							};
 
 						} ])
 		.controller(
-				'AdminNewUserController',
+				'AdminUserController',
 				[
 						'$scope',
 						'$rootScope',

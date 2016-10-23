@@ -195,8 +195,7 @@ var myApp = angular
                 },
                 trapline:function($http, $route,$cookieStore,$rootScope){
                     return $http
-                    .get("https://www.nestnz.org/api/trapline/"+$route.current.params.traplineId+"/_=1477196937831"
-                    		+"&_="+new Date().getTime())
+                    .get("https://www.nestnz.org/api/trapline/"+$route.current.params.traplineId+"/_="+new Date().getTime())
                     .then(function(response){
                         return response.data;
                 }, function(errorResponse){
@@ -411,12 +410,12 @@ var myApp = angular
                }
             }
         })
-        .when('/volunteer-admin/:traplineId/:traplineName/:users/add-volunteer', {
-            controller: 'AdminNewVolunteerController',
-            templateUrl: 'modules/admin/views/new_volunteer.html'
+        .when('/user-admin/add-user', {
+            controller: 'AdminNewUserController',
+            templateUrl: 'modules/admin/views/new_user.html?'+new Date().getTime()
         }) 
         .when("/user-admin",{
-            controller: 'AdminNewUserController',
+            controller: 'AdminUserController',
             templateUrl: 'modules/admin/views/user-admin.html?'+new Date().getTime(),
             resolve: {
             	traplines: function($http, $route,$cookieStore,$rootScope,$location){
