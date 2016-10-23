@@ -173,3 +173,47 @@ a[disabled="disabled"] {
 .btn-round-sm{
 border-radius: 15px;
 }
+
+/* danger button - styling colour */
+.btn-danger {
+	background-color: #FFF;
+    color: #ac2925;
+    border-color: #d2322d;
+    border-radius: 25px;
+}
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active {
+	background-color: #d2322d;
+    color: #FFF;
+    border-color: #ac2925;
+}
+
+ /* primary button - styling colour */
+.btn-primary {
+    background-color: #FFF;
+    color: #285e8e;
+    border-color: #3276b1;
+    border-radius: 25px;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active    {
+    background-color: #3276b1;
+    color: #FFF;
+    border-color: #285e8e;
+}
+/* success button */
+.btn-success {
+    background-color: #FFF;
+    color: #398439;
+    border-color: #47a447;
+    border-radius: 25px;
+}
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active    {
+    background-color: #47a447;
+    color: #FFF;
+    border-color: #398439;
+}
