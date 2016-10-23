@@ -371,8 +371,13 @@ public class RequestServlet extends HttpServlet {
                     new Object[]{ex.getMessage(), response.toString()});
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
-        } catch (IOException | SQLException ex) {
-            LOG.log(Level.INFO, "IO/SQL error while executing queries:\n{0}\n{1}\nReturning 500...", 
+        } catch (SQLException ex) {
+            LOG.log(Level.INFO, "SQL error while executing queries:\n{0}\n{1}Returning 400...", 
+                    new Object[]{ex.getMessage(), response.toString()});
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "IO error while executing queries:\n{0}\n{1}\nReturning 500...", 
                     new Object[]{ex.getMessage(), response.toString()});
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
