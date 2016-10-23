@@ -189,11 +189,11 @@ ALTER TABLE public.region
 CREATE TABLE public.users
 (
     user_id bigint NOT NULL DEFAULT nextval('users_user_id_seq'::regclass),
-    user_name text NOT NULL,
+    user_name text,
     user_password text NOT NULL,
     user_contactfullname text,
     user_contactphone text,
-    user_contactemail text,
+    user_contactemail text NOT NULL,
     user_createdtimestamp timestamp without time zone NOT NULL DEFAULT now()::timestamp,
     user_createduserid bigint,
     user_isadmin boolean NOT NULL DEFAULT FALSE,
@@ -205,11 +205,12 @@ CREATE TABLE public.users
     CONSTRAINT username_unique UNIQUE (user_name),
     CONSTRAINT useremail_unique UNIQUE (user_contactemail),
 
-    -- Phone numbers must be of length 8-15 inclusive, and contain only numerals
-    CONSTRAINT valid_phone CHECK (user_contactphone IS NULL OR user_contactphone ~ '^\d{5,14}$'::text),
+    -- Usernames and emails can not overlap or contain colons (interferes with basic auth)
+    CONSTRAINT username_noatsymbol CHECK ((user_name NOT LIKE '%@%') AND (user_name NOT LIKE '%:%')),
+    CONSTRAINT useremail_format CHECK ((user_contactemail LIKE '%_@__%.__%') AND (user_contactemail NOT LIKE '%:%')),
 
-    -- Usernames must be at least 3 characters long and not contain colons (interferes with basic auth)
-    CONSTRAINT valid_username CHECK (user_name ~ '^[^:]{3,}$'::text)
+    -- Phone numbers must be of reasonable length, and contain only numerals
+    CONSTRAINT valid_phone CHECK (user_contactphone IS NULL OR user_contactphone ~ '^\d{5,15}$'::text)
 )
 WITH (
     OIDS=FALSE
@@ -222,9 +223,9 @@ ALTER TABLE public.users
 -- This should be disabled in production for obvious reasons.
 
 INSERT INTO public.users 
-    (user_name, user_password, user_createduserid, user_isadmin, user_isinactive)
+    (user_name, user_contactemail, user_password, user_createduserid, user_isadmin, user_isinactive)
 VALUES
-    ('nestrootadmin', '$2a$12$H5MJurSvPZZJb5ahrxhrFOHQFBvISnUoMb8VzxJ6ktogzSwA420o.', 1, TRUE, FALSE);
+    ('nestrootadmin', 'admin@nestnz.org', '$2a$12$H5MJurSvPZZJb5ahrxhrFOHQFBvISnUoMb8VzxJ6ktogzSwA420o.', 1, TRUE, FALSE);
 
 
 -- Table: public.session
