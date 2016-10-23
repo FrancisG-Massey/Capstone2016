@@ -184,7 +184,7 @@ public class NavigationView extends View {
 	/**
 	 * The provider of all trapline data. Used in NavigationView specifically for displaying the list of catch types
 	 */
-	final TrapDataService trapDataService;
+	final TrapDataService trapDataService; 
 
     public NavigationView(TrapDataService dataService) {
         this(dataService, false);
@@ -221,7 +221,7 @@ public class NavigationView extends View {
     	
     	topBox.setAlignment(Pos.CENTER);
     	
-        Label distanceLabel = new Label("0.0");
+    	Label distanceLabel = new Label("0.0");
         distanceLabel.setId("distance-label");
         
         distanceLabel.textProperty().bind(Bindings.format("%1.0f m", distanceToTrap));
@@ -285,12 +285,18 @@ public class NavigationView extends View {
      * Start listening for new GPS positions
      */
     private void initMonitors () {
-    	Services.get(PositionService.class).ifPresent(gpsService -> {
-    		trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty());
+    	Optional<PositionService> gpsService = Services.get(PositionService.class);
+    	if (!gpsService.isPresent()) {
+    		map.setVisible(false);
+    		Label label = new Label("GPS is not supported on this device!");
+    		setCenter(label);
+    	}
+    	gpsService.ifPresent(service -> {
+    		trapPositionLayer.currentPositionProperty().bind(service.positionProperty());
         	
-        	distanceToTrap.bind(Bindings.createDoubleBinding(() -> gpsService.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
-        				getDistance(gpsService.getPosition(), targetCoordsProperty.get()), 
-        					gpsService.positionProperty(), targetCoordsProperty));
+        	distanceToTrap.bind(Bindings.createDoubleBinding(() -> service.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
+        				getDistance(service.getPosition(), targetCoordsProperty.get()), 
+        					service.positionProperty(), targetCoordsProperty));
     	});
     }
     

@@ -91,6 +91,8 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
     }
     
     public void initialise () {
+    	traplines.addListener(this);//Listen for changes to the traplines
+    	
     	GluonObservableObject<Cacheable<Map<Integer, CatchType>>> results = cachingService.fetchCatchTypes();
     	
     	if (results.isInitialized()) {//This means no cached file was found
@@ -399,7 +401,6 @@ public final class TrapDataService implements ListChangeListener<Trapline> {
 	private final Set<Trapline> removedTraplines = new HashSet<>();
     
     private void watchForChanges () {
-    	traplines.addListener(this);//Listen for changes to the traplines
     	
     	//Every 5 seconds, check if there are any traplines awaiting update. If there are, save them to the cache 
     	BackgroundTasks.scheduleRepeating(() -> {
