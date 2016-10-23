@@ -65,7 +65,7 @@
             false
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#string:username# IS NOT NULL) AND (#string:password# IS NOT NULL)
+            (#string:email# IS NOT NULL) AND (#string:password# IS NOT NULL)
         RETURNING
             user_id;
     ",

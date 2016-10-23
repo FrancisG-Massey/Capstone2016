@@ -126,7 +126,9 @@ public class SessionServlet extends HttpServlet {
         
         // Get the user's id and hashed password from the DB
         long dbUserID; String dbPassword;
-        final String sqlQuery = "SELECT user_id, user_password FROM public.users WHERE ((user_name = ?) OR (user_contactemail = ?)) AND user_isinactive = false;";
+        final String sqlQuery = "SELECT user_id, user_password FROM public.users WHERE "
+                + "((user_name IS NOT NULL) AND (user_name = ?)) OR "
+                + "((user_contactemail = ?)) AND (user_isinactive = false);";
         try (
             Connection conn = Common.getNestDS(propPath).getConnection();
             PreparedStatement sth = conn.prepareStatement(sqlQuery);
