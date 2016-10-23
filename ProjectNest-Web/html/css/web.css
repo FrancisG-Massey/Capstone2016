@@ -155,11 +155,6 @@ th, td{
 	text-align:center;
 }
 
-#404page{
-	background-image: url("deadrodent.jpg");
-    	background-repeat: no-repeat;
-    	background-position: left top;
-}
 .fullWidth {
    width: 100%;
    margin-left: auto;
@@ -172,6 +167,10 @@ a[disabled="disabled"] {
 
 .btn-round-sm{
 border-radius: 15px;
+}
+
+.btn-info {
+    border-radius: 25px;
 }
 
 /* danger button - styling colour */

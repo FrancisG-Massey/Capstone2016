@@ -66,17 +66,24 @@ var myApp = angular
                     }
                     );
                 },
-                region:function($http, $route,$cookieStore,$rootScope){
-                    return $http
-                    .get('https://www.nestnz.org/api/region')
+                region: function($http, $route,$cookieStore,$rootScope,$location){
+                    return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/region',
+                        params: {
+                            '_': new Date().getTime()
+                        }
+                    })
                     .then(function(response){
                         return response;
-                }, function(errorResponse){
-                	if(errorResponse.status==403){
-                		$rootScope.globals = {};
-                		$cookieStore.remove('globals');
-                	}
-                } )
+                    },function(errorResponse){
+                    	if(errorResponse.status == 403){
+                            $rootScope.globals = {};
+                            $cookieStore.remove('globals');
+                            $location.path('/login');
+                    	} 	
+                    }
+                    );
                 },
                 baits:function($http, $route,$cookieStore,$rootScope){
                         return $http
@@ -146,7 +153,7 @@ var myApp = angular
                     }
         }
         })
-         .when('/trapline-admin/:regionId/:traplineId/:traplineName/edit-trapline',{
+         .when('/trapline-admin/:traplineId/:traplineName/edit-trapline',{
             controller: 'AdminEditTraplineController',
             templateUrl: 'modules/admin/views/edit_trapline.html?'+new Date().getTime(),
             resolve: {
@@ -188,7 +195,7 @@ var myApp = angular
                 },
                 trapline:function($http, $route,$cookieStore,$rootScope){
                     return $http
-                    .get('https://www.nestnz.org/api/trapline/?'+$route.current.params.traplineId+'&'+$route.current.params.regionId
+                    .get("https://www.nestnz.org/api/trapline/"+$route.current.params.traplineId+"/_=1477196937831"
                     		+"&_="+new Date().getTime())
                     .then(function(response){
                         return response.data;
