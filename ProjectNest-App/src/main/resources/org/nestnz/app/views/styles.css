@@ -35,3 +35,10 @@
   -fx-text-box-border: red;
   -fx-focus-color: red;
 }
+
+.gps-notice {
+	-fx-text-fill: red;
+	-fx-font-size: 1.5em;
+	-fx-text-alignment: center;
+	-fx-wrap-text: true;
+}

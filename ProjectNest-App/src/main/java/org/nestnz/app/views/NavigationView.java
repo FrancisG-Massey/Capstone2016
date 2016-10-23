@@ -223,6 +223,7 @@ public class NavigationView extends View {
     	
     	Label distanceLabel = new Label("0.0");
         distanceLabel.setId("distance-label");
+        distanceLabel.visibleProperty().bind(Bindings.isNotNull(trapPositionLayer.currentPositionProperty()));
         
         distanceLabel.textProperty().bind(Bindings.format("%1.0f m", distanceToTrap));
         HBox.setHgrow(distanceLabel, Priority.ALWAYS);
@@ -252,7 +253,6 @@ public class NavigationView extends View {
 
 		map.setZoom(MapLoadingService.ZOOM);
 		map.addLayer(trapPositionLayer);
-		setCenter(map);
     	
     	
     	trapProperty.addListener((obs, oldV, newV) -> {
@@ -287,14 +287,25 @@ public class NavigationView extends View {
     private void initMonitors () {
     	Optional<PositionService> gpsService = Services.get(PositionService.class);
     	if (!gpsService.isPresent()) {
-    		map.setVisible(false);
     		Label label = new Label("GPS is not supported on this device!");
+    		label.getStyleClass().add("gps-notice");
     		setCenter(label);
     	}
     	gpsService.ifPresent(service -> {
     		trapPositionLayer.currentPositionProperty().bind(service.positionProperty());
+    		Label label = new Label("Waiting for GPS coordinates...\nMake sure you have location services turned on");
+    		label.getStyleClass().add("gps-notice");		
+			setCenter(label);
         	
-        	distanceToTrap.bind(Bindings.createDoubleBinding(() -> service.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
+    		Bindings.isNotNull(service.positionProperty()).addListener((obs, wasPresent, isPresent) -> {
+    			if (isPresent) {
+    				setCenter(map);
+    			} else {    				
+    				setCenter(label);
+    			}
+    		});
+    		
+        	distanceToTrap.bind(Bindings.createDoubleBinding(() -> service.getPosition() == null || targetCoordsProperty.get() == null ? Double.POSITIVE_INFINITY :
         				getDistance(service.getPosition(), targetCoordsProperty.get()), 
         					service.positionProperty(), targetCoordsProperty));
     	});
