@@ -25,6 +25,14 @@
                 WHERE 
                     tlu.traplineuser_userid = #bigint:logged-user-id#
             ) cte_ha
+        ),
+        loggeduser_traplines AS (
+            SELECT 
+                tlu.traplineuser_traplineid as tl_id
+            FROM 
+                traplineuser tlu
+            WHERE 
+                traplineuser_userid = #bigint:logged-user-id#
         )
         SELECT
             u.user_id as id, 
@@ -39,10 +47,10 @@
             (#boolean:logged-user-isadmin# OR (u.user_id = #bigint:logged-user-id#)) as can_edit
         FROM
             users u
-            LEFT JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id,
+            JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id,
             has_admin ha
         WHERE
-            ((ha.is_admin = true) OR (u.user_id = #bigint:logged-user-id#)) AND
+            ((ha.is_admin = true) OR (u.user_id = #bigint:logged-user-id#) OR (tlu.traplineuser_userid IN (SELECT tl_id from loggeduser_traplines))) AND
             ((#bigint:id# IS NULL) OR (u.user_id = #bigint:id#)) AND
             ((#bigint:created-user-id# IS NULL) OR (u.user_createduserid = #bigint:created-user-id#)) AND
             ((#string:name# IS NULL) OR (lower(u.user_name) LIKE lower('%' || #string:name# || '%'))) AND
