@@ -627,6 +627,47 @@ angular
 							console.log($scope.users);
 							
 						} ])
+			.controller(
+				'AdminEditUserController',
+				[
+						'$scope',
+						'$rootScope',
+						'$route',
+						'$http',
+						'user',
+						'$location',
+						function($scope, $rootScope,
+								$route,$http,user,$location) {
+							//var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
+							$rootScope.hideHeader = true;
+							$scope.user = user[0];
+							console.log($scope.user);
+							
+							// set the admin options, currently 2 options.
+							$scope.options = [["Admin",true],["Volunteer",false]];					
+							$scope.Edit = function() {
+								console.log($scope.user.email);
+								console.log($scope.user.fullname);
+								console.log($scope.user.phone);
+								var data = {
+									"email" : $scope.user.email,
+									"fullname" : $scope.user.fullname,
+									"phone" : $scope.user.phone,
+									"admin" : $scope.user.admin,
+									"password" : $scope.user.password
+										};
+
+							$http.put(
+									'https://www.nestnz.org/api/user/'
+									+ $scope.user.id,
+									$scope.user).then(
+									function(data, status, header, config) {
+									$location.path('/user-admin');
+								});
+							};
+
+						} ])
 		.controller(
 				'AdminEditTraplineController',
 				[

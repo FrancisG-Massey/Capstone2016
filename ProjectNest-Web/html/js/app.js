@@ -414,6 +414,26 @@ var myApp = angular
             controller: 'AdminNewUserController',
             templateUrl: 'modules/admin/views/new_user.html?'+new Date().getTime()
         }) 
+        
+        .when('/user-admin/:userId/edit-user', {
+            controller: 'AdminEditUserController',
+            templateUrl: 'modules/admin/views/edit_user.html?'+new Date().getTime(),
+            resolve: {
+            user:function($http, $route,$cookieStore,$rootScope){
+                return $http
+                .get("https://www.nestnz.org/api/user/"+$route.current.params.userId+"/_="+new Date().getTime())
+                .then(function(response){
+                    return response.data;
+            }, function(errorResponse){
+            	if(errorResponse.status==403){
+            		$rootScope.globals = {};
+            		$cookieStore.remove('globals');
+            	}
+            });
+            }
+            }
+            })
+        
         .when("/user-admin",{
             controller: 'AdminUserController',
             templateUrl: 'modules/admin/views/user-admin.html?'+new Date().getTime(),
