@@ -58,7 +58,7 @@
         SELECT
             #bigint:trap_id#,
             #bigint:traptype_id#,
-            1,
+            #bigint:logged-user-id#,
             #bigint:catchtype_id#,
             #bigint:bait_id#,
             #string:note#,

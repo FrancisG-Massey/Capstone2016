@@ -99,7 +99,7 @@
             #string:phone#,
             #string:email#,
             now()::timestamp,
-            1,
+            #bigint:logged-user-id#,
             CASE WHEN (#boolean:logged-user-isadmin# = true) THEN (#boolean:admin#) ELSE (false) END,
             false
         FROM has_admin ha
