@@ -306,8 +306,8 @@ public class NavigationView extends View {
     	gpsService.ifPresent(service -> {
     		trapPositionLayer.currentPositionProperty().bind(service.positionProperty());
     		Label label = new Label("Waiting for GPS coordinates...\nMake sure you have location services turned on");
-    		label.getStyleClass().add("gps-notice");		
-			setCenter(label);
+    		label.getStyleClass().add("gps-notice");
+			setCenter(service.getPosition() == null ? label : map);
         	
     		Bindings.isNotNull(service.positionProperty()).addListener((obs, wasPresent, isPresent) -> {
     			if (isPresent) {
