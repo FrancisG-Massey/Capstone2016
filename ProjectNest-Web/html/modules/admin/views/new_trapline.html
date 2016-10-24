@@ -5,7 +5,7 @@
 </ul>
 <div class="jumbotron">
 <h2 class="text-center page-header">New Trapline</h2>
-      <form ng-submit="Save()">
+      <form ng-submit="Save()" name="saveForm">
       <div class="row">
       	<div class="col-lg-10 col-lg-offset-1">
 		<div class="well">
@@ -40,7 +40,7 @@
             </select>
         </div>
         <div class="clearfix form-group">
-          <button class="btn btn-success pull-right" type="submit">Save</button>
+          <button ng-disabled="saveForm.$invalid" class="btn btn-success pull-right" type="submit">Save</button>
         </div>
         </div>
         </div>

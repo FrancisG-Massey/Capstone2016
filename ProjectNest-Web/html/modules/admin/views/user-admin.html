@@ -6,7 +6,7 @@
 <h2 class="page-header text-center">Users</h2>
 
 <div class="form-group">
-   <a href="#/trapline-admin/add-newtrapline" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add User</a>  
+ <a href="#/user-admin/add-user" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add User</a>
 </div>
 
 <div class="row">  
@@ -19,6 +19,7 @@
             <th>Start Date</th>
             <th>Permission</th>
             <th>Trapline</th>
+            <th>Action</th>
           </tr>
 		</thead>
         <tbody data-ng-repeat="user in users">
@@ -29,6 +30,7 @@
             <td>{{user.admin?"Admin":"Volunteer"}}</td>
             <td ng-if="user.registered.length > 0"><a href='#/trap-admin/{{user.registered[0].id}}/{{user.registered[0].name}}' class='btn btn-sm btn-primary'>{{user.registered[0].name}}</a></td>
           	<td ng-if="user.registered.length <=0"><a disabled="disabled" class='btn btn-sm btn-info'>Not registered</a></td>
+          	<td><a href="#/user-admin/{{user.id}}/edit-user" class="btn btn-primary btn-round-sm btn-sm">Edit</a></td>
           </tr>    
         </tbody>
       </table>

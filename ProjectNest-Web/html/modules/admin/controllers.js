@@ -534,26 +534,43 @@ angular
 
 						} ])
 		.controller(
-				'AdminNewVolunteerController',
+				'AdminNewUserController',
 				[
 						'$scope',
 						'$rootScope',
 						'$route',
+						'$http',
 						function($scope, $rootScope,
-								$route) {
+								$route,$http) {
 							//var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
-							$scope.trapline_id = $route.current.params.traplineId;
-							$scope.trapline_name = $route.current.params.traplineName;
-							console.log($scope.trapline_id);
-							console.log($scope.trapline_name);
-							$scope.users = $route.current.params.users;
-							console.log($scope.users);
+
+							$scope.Save = function() {
+								console.log($scope.email);
+								console.log($scope.fullName);
+								console.log($scope.phone);
+								console.log($scope.permission);
+								
+								var data = {
+									"email" : $scope.email,
+									"fullname" : $scope.fullName,
+									"phone" : $scope.phone,
+									"admin" : $scope.permission=="true",
+									"password" : $scope.password
+										};
+
+								$http.post(
+										'https://www.nestnz.org/api/user',
+										data).then(
+										function(data, status, header, config) {
+											$route.reload();
+										});
+							};
 
 						} ])
 		.controller(
-				'AdminNewUserController',
+				'AdminUserController',
 				[
 						'$scope',
 						'$rootScope',
@@ -609,6 +626,47 @@ angular
 							console.log($scope.traplines);
 							console.log($scope.users);
 							
+						} ])
+			.controller(
+				'AdminEditUserController',
+				[
+						'$scope',
+						'$rootScope',
+						'$route',
+						'$http',
+						'user',
+						'$location',
+						function($scope, $rootScope,
+								$route,$http,user,$location) {
+							//var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
+							$rootScope.hideHeader = true;
+							$scope.user = user[0];
+							console.log($scope.user);
+							
+							// set the admin options, currently 2 options.
+							$scope.options = [["Admin",true],["Volunteer",false]];					
+							$scope.Edit = function() {
+								console.log($scope.user.email);
+								console.log($scope.user.fullname);
+								console.log($scope.user.phone);
+								var data = {
+									"email" : $scope.user.email,
+									"fullname" : $scope.user.fullname,
+									"phone" : $scope.user.phone,
+									"admin" : $scope.user.admin,
+									"password" : $scope.user.password
+										};
+
+							$http.put(
+									'https://www.nestnz.org/api/user/'
+									+ $scope.user.id,
+									$scope.user).then(
+									function(data, status, header, config) {
+									$location.path('/user-admin');
+								});
+							};
+
 						} ])
 		.controller(
 				'AdminEditTraplineController',

@@ -1,0 +1,69 @@
+<ul class="breadcrumb">
+  <li><a href="/#" >Home</a></li>
+  <li><a href="/#/user-admin" >Admin</a></li>
+  <li class="active">Add new user</li>  
+</ul>
+
+<div class="jumbotron">
+  <h2 class="text-center page-header">New User</h2>
+  <form  ng-submit="Save()" name="saveForm">
+    <div class="row">
+		<div class="col-lg-10 col-lg-offset-1">
+		  <div class="well">
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label>User Email Address</label>
+            <div>
+              <input type="email" placeholder="Enter email" class="form-control" ng-model="email" required>
+            </div>
+          </div>
+          <div class="col-md-6 form-group">  
+            <label>User Full Name</label>
+            <div>
+              <input type="text" placeholder="Enter full name" class="form-control" ng-model="fullName" required>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 form-group">
+            <label>User Phone</label>
+            <div>
+              <input type="text" placeholder="Enter contact number" class="form-control" ng-model="phone" required>
+            </div>
+          </div>
+		      <div class="col-md-6 form-group">
+		        <label>User Permission</label>
+		        <select class="form-control" ng-model="permission">
+		          <option value="" disabled selected>Select permission</option>
+		          <option ng-value=true>Admin</option>
+		          <option ng-value=false>Volunteer</option> 
+		        </select>
+		      </div>
+        </div>
+          <div class="row">
+          <div class="col-md-6 form-group">
+            <label>User Password</label>
+            <div>
+              <input  type="password" placeholder="Enter new password" class="form-control" ng-model="password" ng-required="true">
+            </div> 
+             
+          </div>
+          <div class="col-md-6 form-group">
+            <label>Confirm User Password</label>
+            <div>
+              <input  type="password" placeholder="Confirm password" class="form-control" ng-model="confirmPassword" ng-required="true">
+            </div>
+                 <span ng-show="password !== confirmPassword">Password mismatch</span>
+          </div>        
+        </div>
+          
+    	<div class="clearfix" style="margin-top:8px; margin-bottom: 20px">
+		<div class="pull-right" style="margin-top: 10px;">
+        <button ng-disabled="saveForm.$invalid" class="btn btn-success" type="submit">Save</button>
+      </div>
+      </div>
+	</div>
+</div>
+</div>
+  </form>
+  </div>
