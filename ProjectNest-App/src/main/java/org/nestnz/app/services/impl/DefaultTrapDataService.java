@@ -385,7 +385,7 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
     		if (catchTypes.getData().containsKey(catchType.getId())) {
     			CatchType oldType = catchTypes.getData().get(catchType.getId());
     			oldType.setName(catchType.getName());
-    			oldType.setImage(catchType.getImage());
+    			oldType.setImageUrl(catchType.getImageUrl());
 			} else {
 				catchTypes.getData().put(catchType.getId(), catchType);				
 			}

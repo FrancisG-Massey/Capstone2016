@@ -31,6 +31,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionModel;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -57,8 +58,15 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
 				super.updateItem(item, empty);
 				if (!empty && item != null) {
 					setText(item.getName());
+					if (item.getImageUrl() != null) {
+						ImageView imageView = new ImageView(item.getImage());
+						imageView.setPreserveRatio(true);
+						imageView.setFitHeight(100);
+						setGraphic(imageView);
+					}
 				} else {
 					setText(null);
+					setGraphic(null);
 				}
 			}
 		});

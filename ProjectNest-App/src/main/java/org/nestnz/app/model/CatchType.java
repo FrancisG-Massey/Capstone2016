@@ -20,6 +20,7 @@ import java.net.URL;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.image.Image;
 
 public class CatchType {
 	
@@ -33,16 +34,18 @@ public class CatchType {
 	
 	private final StringProperty nameProperty = new SimpleStringProperty();
 	
-	private URL image;  
+	private URL imageUrl;
+	
+	private Image image;
 	
 	public CatchType(int id) {
 		this.id = id;
 	}
 
-	public CatchType(int id, String name, URL image) {
+	public CatchType(int id, String name, URL imageUrl) {
 		this.id = id;
 		this.nameProperty.set(name);
-		this.image = image;
+		this.imageUrl = imageUrl;
 	}
 
 	public int getId() {
@@ -61,12 +64,19 @@ public class CatchType {
 		return nameProperty;
 	}
 
-	public URL getImage() {
-		return image;
+	public URL getImageUrl() {
+		return imageUrl;
 	}
 	
-	public void setImage (URL image) {
-		this.image = image;
+	public void setImageUrl (URL image) {
+		this.imageUrl = image;
+	}
+	
+	public Image getImage () {
+		if (image == null && imageUrl != null) {
+			image = new Image(imageUrl.toExternalForm(), true);
+		}
+		return image;
 	}
 
 	@Override
@@ -99,6 +109,6 @@ public class CatchType {
 
 	@Override
 	public String toString() {
-		return "CatchType [id=" + id + ", name=" + nameProperty.get() + ", image=" + image + "]";
+		return "CatchType [id=" + id + ", name=" + nameProperty.get() + ", imageUrl=" + imageUrl + "]";
 	}
 }

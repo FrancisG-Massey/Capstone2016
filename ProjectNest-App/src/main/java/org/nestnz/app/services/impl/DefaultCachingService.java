@@ -170,7 +170,7 @@ public class DefaultCachingService implements CachingService {
 							CatchType c = new CatchType(pct.getId());
 							c.setName(pct.getName());
 							if (pct.getImageUrl() != null) {
-								c.setImage(new URL(pct.getImageUrl()));
+								c.setImageUrl(new URL(pct.getImageUrl()));
 							}
 							catchTypes.getData().put(c.getId(), c);
 						}
@@ -206,8 +206,8 @@ public class DefaultCachingService implements CachingService {
 			ParserCatchType pct = new ParserCatchType();
 			pct.setId(c.getId());
 			pct.setName(c.getName());
-			if (c.getImage() != null) {
-				pct.setImageUrl(c.getImage().toExternalForm());
+			if (c.getImageUrl() != null) {
+				pct.setImageUrl(c.getImageUrl().toExternalForm());
 			}
 			storeObject.getData().add(pct);
 		}		
