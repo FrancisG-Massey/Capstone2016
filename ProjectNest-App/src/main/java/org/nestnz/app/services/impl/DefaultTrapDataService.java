@@ -289,9 +289,6 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
 		if (ct != null) {
 			output.getCatchTypes().add(ct);
 		}
-		
-		//Then add whatever's left over
-		output.getCatchTypes().addAll(catchTypeCopy.values());
     }
     
     /* (non-Javadoc)
@@ -376,12 +373,15 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
     		catchTypes.setData(new HashMap<>());
     	}
     	
+		Set<Integer> validCatchIds = new HashSet<>();
+    	
     	networkService.loadCatchTypes(catchType -> {
     		if (catchType.getId() == CatchType.OTHER.getId()
     				|| catchType.getId() == CatchType.EMPTY.getId()) {
     			//Don't add 'empty' or 'other' catch types to the list
     			return;
     		}
+    		validCatchIds.add(catchType.getId());
     		if (catchTypes.getData().containsKey(catchType.getId())) {
     			CatchType oldType = catchTypes.getData().get(catchType.getId());
     			oldType.setName(catchType.getName());
@@ -392,6 +392,13 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
     	}).addListener((obs, oldStatus, newStatus) -> {
     		switch(newStatus) {
 			case SUCCESS:
+				Iterator<CatchType> iterator = catchTypes.getData().values().iterator();
+				while (iterator.hasNext()) {
+					CatchType trap = iterator.next();
+					if (!validCatchIds.contains(trap.getId())) {
+						iterator.remove();
+					}
+				}
 				catchTypes.setLastServerFetch(LocalDateTime.now());
 				cachingService.storeCatchTypes(catchTypes);
 				//Fall through

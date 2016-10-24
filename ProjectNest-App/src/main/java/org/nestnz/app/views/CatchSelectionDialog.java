@@ -83,18 +83,7 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     	if (place == 0) {
     		catchType = Bindings.createObjectBinding(() -> CatchType.EMPTY);
     	} else {
-    		catchType = Bindings.valueAt(catchTypes, place-1);/*Bindings.createObjectBinding(() -> {
-    			CatchType t;
-    			if (traplineProperty.get() == null) {
-    				t =  CatchType.EMPTY;
-    			} else if (traplineProperty.get().getCatchTypes().size() < place) {
-    	    		LOG.log(Level.WARNING, "Trapline lacks a catch type entry at place "+place+" (only "+traplineProperty.get().getCatchTypes().size()+" available)");
-    				t = CatchType.EMPTY;//TODO: Currently puts another 'empty' entry down if nothing is specified. Should something else be put instead?
-    			} else {
-    				t = traplineProperty.get().getCatchTypes().get(place-1);
-    			}    			
-    			return Objects.requireNonNull(t, "Invalid catch type at "+place);//Make sure we don't have a 'null' catch type anywhere 
-    		}, traplineProperty);*/
+    		catchType = Bindings.valueAt(catchTypes, place-1);
     	}
     	Button button = new Button();
     	button.getStyleClass().add("catch-select-option");
