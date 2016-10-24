@@ -73,7 +73,6 @@ public class AddTrapView extends View {
 				confirmAddTrap(lastTrapPosition);
 			}
 		});
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
 	
 	private void confirmAddTrap (Position position) {

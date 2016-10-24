@@ -141,7 +141,6 @@ public class TraplineListView extends View {
         
         setCenter(traplineList);
 		menu = buildMenu();
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
         
     }
 	

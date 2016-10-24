@@ -123,7 +123,6 @@ public class TraplineInfoView extends View {
         
 		menu = buildMenu();
 		getApplication().addLayerFactory("trapline-info-menu", () -> menu);
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
     
     private void initControls () {

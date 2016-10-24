@@ -222,8 +222,6 @@ public class NavigationView extends View {
         } else {
         	catchSelectDialog = null;
         }
-                
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
     }
     
     /**

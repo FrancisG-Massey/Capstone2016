@@ -113,6 +113,6 @@ public class NestApplication extends MobileApplication {
     public void postInit(Scene scene) {
         Swatch.GREEN.assignTo(scene);
 
-        scene.getStylesheets().add(NestApplication.class.getResource("style.css").toExternalForm());
+        scene.getStylesheets().add(NestApplication.class.getResource("styles.css").toExternalForm());
     }
 }
