@@ -16,11 +16,9 @@
  *******************************************************************************/
 package org.nestnz.app.views;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
@@ -36,6 +34,7 @@ import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
+import org.nestnz.app.services.TrapDataService;
 
 import javafx.embed.swing.JFXPanel;
 
@@ -60,6 +59,8 @@ public class TestNavigationView {
 	
 	Trapline trapline;
 	
+	TrapDataService dataService = mock(TrapDataService.class);
+	
 	Trap trap1;	
 	Trap trap2;
 	Trap trap3;
@@ -67,7 +68,7 @@ public class TestNavigationView {
 
 	@Before
 	public void setUp() throws Exception {
-		navView = new NavigationView(null, true);
+		navView = new NavigationView(dataService, true);
 		trapline = new Trapline(10, "Test trapline", new Region(20, "Test Region"), "Test Start");
 		trap1 = new Trap(100, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
 		trap2 = new Trap(102, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());

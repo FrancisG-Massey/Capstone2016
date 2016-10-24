@@ -371,7 +371,7 @@ public class TraplineInfoView extends View {
     
     private void refreshTrapline () {
     	NestApplication app = (NestApplication) this.getApplication();
-    	dataService.loadTrapline(trapline).addListener((obs, oldStatus, newStatus) -> {
+    	dataService.refreshTrapline(trapline).addListener((obs, oldStatus, newStatus) -> {
     		String message = null;
     		switch (newStatus) {
 			case PENDING:

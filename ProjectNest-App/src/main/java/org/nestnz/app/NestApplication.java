@@ -28,6 +28,7 @@ import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.services.impl.DefaultCachingService;
 import org.nestnz.app.services.impl.GluonMapLoadingService;
 import org.nestnz.app.services.impl.RestNetworkService;
+import org.nestnz.app.services.impl.DefaultTrapDataService;
 import org.nestnz.app.views.AddTrapView;
 import org.nestnz.app.views.LoginView;
 import org.nestnz.app.views.NavigationView;
@@ -76,11 +77,12 @@ public class NestApplication extends MobileApplication {
     	LoginService loginService = LoginService.getInstance();
         CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
         NetworkService networkService = new RestNetworkService(loginService);
-        trapDataService = new TrapDataService(cachingService, networkService);
+        DefaultTrapDataService trapDataService = new DefaultTrapDataService(cachingService, networkService);
         
         mapLoadingService = new GluonMapLoadingService(appStoragePath);
         
         trapDataService.initialise();
+        this.trapDataService = trapDataService;
     }
     
     /**
