@@ -24,6 +24,7 @@ import javafx.beans.property.StringProperty;
 public class CatchType {
 	
 	public static final CatchType EMPTY = new CatchType(-1, "Empty", null);
+	public static final CatchType OTHER = new CatchType(10000, "Other", null);
 	
 	/**
 	 * The internal server ID of the catch type
@@ -32,8 +33,8 @@ public class CatchType {
 	
 	private final StringProperty nameProperty = new SimpleStringProperty();
 	
-	private URL image;
-
+	private URL image;  
+	
 	public CatchType(int id) {
 		this.id = id;
 	}
@@ -73,7 +74,6 @@ public class CatchType {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + id;
-		result = prime * result + ((image == null) ? 0 : image.hashCode());
 		result = prime * result + ((nameProperty.get() == null) ? 0 : nameProperty.get().hashCode());
 		return result;
 	}
@@ -88,11 +88,6 @@ public class CatchType {
 			return false;
 		CatchType other = (CatchType) obj;
 		if (id != other.id)
-			return false;
-		if (image == null) {
-			if (other.image != null)
-				return false;
-		} else if (!image.equals(other.image))
 			return false;
 		if (nameProperty.get() == null) {
 			if (other.nameProperty.get() != null)

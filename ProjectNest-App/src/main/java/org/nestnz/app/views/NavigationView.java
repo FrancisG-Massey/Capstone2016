@@ -21,9 +21,11 @@ import static org.nestnz.app.util.NavigationTools.getDistance;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,7 +49,6 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -59,8 +60,6 @@ import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
@@ -204,7 +203,22 @@ public class NavigationView extends View {
         initControls();
         if (!test) {
         	initMonitors();
-            catchSelectDialog = makeCatchDialog();
+        	CatchSelectionDialog catchSelectDialog = new CatchSelectionDialog();
+        	
+            traplineProperty.addListener((obs, oldLine, newLine) -> {
+            	//Watch for trapline changes. 
+            	//When found, change the order of catch types so the most common ones for the trapline appear at the top
+            	if (newLine != null) {
+            		catchSelectDialog.getCatchTypes().clear();
+	            	Set<CatchType> catchTypes = new HashSet<>(dataService.getCatchTypes().values());
+	            	for (CatchType ct : newLine.getCatchTypes()) {
+	            		catchTypes.remove(ct);
+	            		catchSelectDialog.getCatchTypes().add(ct);
+	            	}
+	            	catchSelectDialog.getCatchTypes().addAll(catchTypes);
+            	}
+            });
+            this.catchSelectDialog = catchSelectDialog;
         } else {
         	catchSelectDialog = null;
         }
@@ -347,77 +361,6 @@ public class NavigationView extends View {
         	});
         	loggedCatch.setCatchType(catchType);
     	});
-    }
-    
-    /**
-     * Builds the catch selection dialog, used by {@link #showLogCatchDialog()}. This only ever needs to be called once when the view is created
-     * @return The dialog used to select the creature caught in the active trap
-     */
-    private final Dialog<CatchType> makeCatchDialog () {
-    	Dialog<CatchType> dialog = new Dialog<>(true);
-    	GridPane controls = new GridPane();
-    	dialog.setContent(controls);
-    	dialog.setTitleText("Select Catch");
-    	
-    	ColumnConstraints column1 = new ColumnConstraints();
-        column1.setPercentWidth(50);
-        ColumnConstraints column2 = new ColumnConstraints();
-        column2.setPercentWidth(50);
-        controls.getColumnConstraints().addAll(column1, column2);
-    	
-    	Button empty = makeOptionButton(0);
-    	Button option2 = makeOptionButton(1);
-    	
-    	Button other = new Button("Other");
-    	other.setMaxSize(1000, 1000);
-    	other.getStyleClass().add("large-button");
-    	GridPane.setConstraints(other, 0, 1, 2, 1);//Set as center cell (spans both rows)
-
-    	Button option3 = makeOptionButton(2);
-    	Button option4 = makeOptionButton(3);
-    	
-    	controls.getChildren().addAll(empty, option2, option3, option4, other);
-    	return dialog;
-    }
-    
-    /**
-     * Constructs one of the selection buttons for the catch selection screen.
-     * Binds the catch type displayed on this button to {@link CatchType#EMPTY} if place is 0, or to one of the top three catches for the trapline if place is between 1 and 3.
-     * @param place The button placement (ranges from 0 to 3)
-     * @return The catch selection button
-     */
-    private Button makeOptionButton (int place) {
-    	ObjectBinding<CatchType> catchType;
-    	if (place == 0) {
-    		catchType = Bindings.createObjectBinding(() -> CatchType.EMPTY);
-    	} else {
-    		catchType = Bindings.createObjectBinding(() -> {
-    			CatchType t;
-    			if (traplineProperty.get() == null) {
-    				t =  CatchType.EMPTY;
-    			} else if (traplineProperty.get().getCatchTypes().size() < place) {
-    	    		LOG.log(Level.WARNING, "Trapline lacks a catch type entry at place "+place+" (only "+traplineProperty.get().getCatchTypes().size()+" available)");
-    				t = CatchType.EMPTY;//TODO: Currently puts another 'empty' entry down if nothing is specified. Should something else be put instead?
-    			} else {
-    				t = traplineProperty.get().getCatchTypes().get(place-1);
-    			}    			
-    			return Objects.requireNonNull(t, "Invalid catch type at "+place);//Make sure we don't have a 'null' catch type anywhere 
-    		}, traplineProperty);
-    	}
-    	Button button = new Button();
-    	button.getStyleClass().add("catch-select-option");
-    	button.textProperty().bind(Bindings.createStringBinding(() -> catchType.get().getName(), catchType));
-    	button.setMaxSize(1000, 1000);
-    	//button.getStyleClass().add("large-button");
-    	GridPane.setConstraints(button, place % 2, place > 1 ? 2 : 0);
-    	GridPane.setHgrow(button, Priority.ALWAYS);
-    	GridPane.setVgrow(button, Priority.ALWAYS);
-    	button.setOnAction(evt -> {
-    		LOG.log(Level.FINE, "Selected catch: "+catchType.get());
-    		catchSelectDialog.setResult(catchType.get());
-    		catchSelectDialog.hide();
-    	});
-    	return button;
     }
     
     /**

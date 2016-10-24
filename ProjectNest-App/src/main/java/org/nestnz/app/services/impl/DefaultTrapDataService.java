@@ -377,6 +377,11 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
     	}
     	
     	networkService.loadCatchTypes(catchType -> {
+    		if (catchType.getId() == CatchType.OTHER.getId()
+    				|| catchType.getId() == CatchType.EMPTY.getId()) {
+    			//Don't add 'empty' or 'other' catch types to the list
+    			return;
+    		}
     		if (catchTypes.getData().containsKey(catchType.getId())) {
     			CatchType oldType = catchTypes.getData().get(catchType.getId());
     			oldType.setName(catchType.getName());
