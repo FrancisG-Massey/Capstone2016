@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.nestnz.app.views;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,15 +25,27 @@ import org.nestnz.app.model.CatchType;
 
 import com.gluonhq.charm.glisten.control.Dialog;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.SetChangeListener;
+import javafx.css.PseudoClass;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionModel;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -47,6 +61,21 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     private final ObservableList<CatchType> catchTypes = FXCollections.observableArrayList();
     
     private final ListView<CatchType> fullSelectionList = new ListView<>(catchTypes);
+    
+    /**
+     * A button used only to get the css background styles for catch type buttons
+     */
+    private final Button dummyButton = new Button();
+    
+    /**
+     * A button used only to get the css hover background styles for catch type buttons
+     */
+    private final Button dummyHoverButton = new Button();
+    
+    /**
+     * A css {@link PseudoClass} representing a catch selection button containing an image
+     */
+    private final PseudoClass imageButtonClass = PseudoClass.getPseudoClass("image");
 
 	public CatchSelectionDialog () {
 		super(true);//Make this a full screen dialog
@@ -117,7 +146,14 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     	Button option3 = makeOptionButton(2);
     	Button option4 = makeOptionButton(3);
     	
-    	controls.getChildren().addAll(empty, option2, option3, option4, other);
+    	dummyButton.setVisible(false);
+    	dummyButton.getStyleClass().add("catch-select-option");
+    	
+    	dummyHoverButton.setVisible(false);
+    	dummyHoverButton.getStyleClass().add("catch-select-option");
+    	dummyHoverButton.pseudoClassStateChanged(PseudoClass.getPseudoClass("hover"), true);
+    	
+    	controls.getChildren().addAll(empty, option2, option3, option4, other, dummyButton, dummyHoverButton);
 	}
 	
 	public ObservableList<CatchType> getCatchTypes () {
@@ -140,6 +176,8 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     	Button button = new Button();
     	button.getStyleClass().add("catch-select-option");
     	
+    	addBackgroundLoader(button, catchType);
+    	
     	button.textProperty().bind(Bindings.createStringBinding(() -> catchType.get() == null ? "..." : catchType.get().getName(), catchType));
     	button.setMaxSize(1000, 1000);
     	//button.getStyleClass().add("large-button");
@@ -153,4 +191,53 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     	});
     	return button;
     }
+    
+    private void addBackgroundLoader (Button button, ObjectBinding<CatchType> catchType) {    	
+    	ObjectProperty<Background> bgProperty = new SimpleObjectProperty<>();
+    	button.backgroundProperty().bind(bgProperty);
+    	
+    	BooleanProperty useHoverBackground = new SimpleBooleanProperty(false);
+    	
+    	//Listen for changes to the button's hover state - when hovered over, use the hover background
+    	button.getPseudoClassStates().addListener((SetChangeListener<PseudoClass>) change -> {
+    		if (change.wasAdded() && change.getElementAdded() == PseudoClass.getPseudoClass("hover")) {
+    			useHoverBackground.set(true);
+    		} else if (change.wasRemoved() && change.getElementRemoved() == PseudoClass.getPseudoClass("hover")) {
+    			useHoverBackground.set(false);
+    		}
+    	});
+    	
+    	//Re-construct the background any time something changes (hover state, background css, catch type)
+    	InvalidationListener listener = obs -> {
+    		if (obs == dummyButton.backgroundProperty() && useHoverBackground.get()) {
+    			//If we're currently using the hover background & the regular background changes, ignore the change
+    			return;
+    		}
+    		if (obs == dummyHoverButton.backgroundProperty() && !useHoverBackground.get()) {
+    			//If we're currently using the regular background & the hover background changes, ignore the change
+    			return;
+    		}
+    		Background bg = dummyButton.getBackground();
+    		if (useHoverBackground.get()) {
+    			bg = dummyHoverButton.getBackground();
+    		}
+    		if (catchType.get() != null && catchType.get().getImageUrl() != null) {
+    			button.pseudoClassStateChanged(imageButtonClass, true);
+    			List<BackgroundImage> bgImages = new ArrayList<>();
+    			bgImages.add(new BackgroundImage(catchType.get().getImage(), BackgroundRepeat.NO_REPEAT,
+    					BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, BackgroundSize.DEFAULT));
+    			bg = new Background(bg == null ? null : bg.getFills(), bgImages);    			
+    		} else {
+    			button.pseudoClassStateChanged(imageButtonClass, false);    			
+    		}
+			bgProperty.set(bg);
+    	};
+    	
+    	//Watch for changes on the regular & dummy buttons, the catch type, and whether it's currently hovered over
+    	dummyButton.backgroundProperty().addListener(listener);
+    	dummyHoverButton.backgroundProperty().addListener(listener);
+    	catchType.addListener(listener);
+    	useHoverBackground.addListener(listener);
+    }
+    
 }
