@@ -14,6 +14,7 @@ apply plugin: 'org.javafxports.jfxmobile'
 apply plugin: 'eclipse'
 apply plugin: 'pmd'
 apply plugin: 'jdepend'
+apply plugin: 'jacoco'
 
 task jdependReport(dependsOn: jdependMain, group: 'verification', description: 'Generates a HTML report after executing jdepend checks.') << {
    ant.xslt(
