@@ -6,11 +6,16 @@
 	-fx-max-width: 1000px;
 	-fx-max-height: 1000px;
 	-fx-padding: 1.5em;
+	-fx-font-size: 1.5em;	
+}
+
+#catch-select-list .list-cell {
+	-fx-padding: 1.5em;
 	-fx-font-size: 1.5em;
 }
 
 .catch-select-option {
-	
+	-fx-background-color: red;
 }
 
 .prev {

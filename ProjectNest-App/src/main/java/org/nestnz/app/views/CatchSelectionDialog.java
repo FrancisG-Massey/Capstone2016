@@ -28,6 +28,9 @@ import javafx.beans.binding.ObjectBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -40,12 +43,34 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     private static final Logger LOG = Logger.getLogger(CatchSelectionDialog.class.getName());
     
     private final ObservableList<CatchType> catchTypes = FXCollections.observableArrayList();
+    
+    private final ListView<CatchType> fullSelectionList = new ListView<>(catchTypes);
 
 	public CatchSelectionDialog () {
 		super(true);//Make this a full screen dialog
 		
-		GridPane controls = new GridPane();		
-    	setContent(controls);
+		fullSelectionList.setId("catch-select-list");
+		fullSelectionList.setCellFactory(list -> new ListCell<CatchType>() {
+			@Override
+			protected void updateItem(CatchType item, boolean empty) {
+				super.updateItem(item, empty);
+				if (!empty && item != null) {
+					setText(item.getName());
+				} else {
+					setText(null);
+				}
+			}
+		});
+		//Since setContent() doesn't dynamically update content, we need to use a wrapper layout and call setCenter() to change the controls while the dialog is open
+		BorderPane wrapper = new BorderPane();
+    	setContent(wrapper);
+		
+		GridPane controls = new GridPane();
+		wrapper.setCenter(controls);
+		
+    	//Whenever the dialog is shown, display the first selection screen
+		setOnShowing(evt -> wrapper.setCenter(controls));
+		
     	setTitleText("Select Catch");
     	
     	ColumnConstraints column1 = new ColumnConstraints();
@@ -61,6 +86,11 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     	other.setMaxSize(1000, 1000);
     	other.getStyleClass().add("large-button");
     	GridPane.setConstraints(other, 0, 1, 2, 1);//Set as center cell (spans both rows)
+    	
+    	other.setOnAction(evt -> {
+    		LOG.log(Level.INFO, "Opened 'other' option screen...");
+    		wrapper.setCenter(fullSelectionList);
+    	});
 
     	Button option3 = makeOptionButton(2);
     	Button option4 = makeOptionButton(3);
@@ -87,6 +117,7 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     	}
     	Button button = new Button();
     	button.getStyleClass().add("catch-select-option");
+    	
     	button.textProperty().bind(Bindings.createStringBinding(() -> catchType.get() == null ? "..." : catchType.get().getName(), catchType));
     	button.setMaxSize(1000, 1000);
     	//button.getStyleClass().add("large-button");
