@@ -70,6 +70,17 @@
             u.user_id;
     ",
     "POST" : "
+        WITH has_admin AS (
+            SELECT (count(*) > 0)::boolean as is_admin
+            FROM (
+                SELECT 1 WHERE #boolean:logged-user-isadmin# = true
+                UNION
+                SELECT 1 FROM traplineuser tlu
+                WHERE
+                (tlu.traplineuser_isadmin = true) AND
+                (tlu.traplineuser_userid = #bigint:logged-user-id#)
+            ) cte_ha
+        )
         INSERT INTO users (
             user_name,
             user_password,
@@ -89,11 +100,15 @@
             #string:email#,
             now()::timestamp,
             1,
-            #boolean:admin#,
+            CASE WHEN (#boolean:logged-user-isadmin# = true) THEN (#boolean:admin#) ELSE (false) END,
             false
+        FROM has_admin ha
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#string:email# IS NOT NULL) AND (#string:password# IS NOT NULL)
+            (#string:email# IS NOT NULL) AND (#string:password# IS NOT NULL) AND
+
+            -- Only permit admins or trapline-admins to create new users.
+            (ha.is_admin = true)
         RETURNING
             user_id;
     ",

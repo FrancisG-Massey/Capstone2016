@@ -46,7 +46,10 @@
             #string:name#
         WHERE
             (#bigint:id# IS NULL) AND
-            (#string:name# IS NOT NULL)
+            (#string:name# IS NOT NULL) AND
+
+            -- Only permit admins to create regions
+            (#boolean:logged-user-isadmin# = true)
         RETURNING
             region_id;
     ",

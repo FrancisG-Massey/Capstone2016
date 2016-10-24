@@ -48,6 +48,17 @@
             tt.traptype_id;
     ",
     "POST" : "
+         WITH has_admin AS (
+            SELECT (count(*) > 0)::boolean as is_admin
+            FROM (
+                SELECT 1 WHERE #boolean:logged-user-isadmin# = true
+                UNION
+                SELECT 1 FROM traplineuser tlu
+                WHERE
+                (tlu.traplineuser_isadmin = true) AND
+                (tlu.traplineuser_userid = #bigint:logged-user-id#)
+            ) cte_ha
+        )
         INSERT INTO traptype (
             traptype_name,
             traptype_model,
@@ -57,8 +68,12 @@
             #string:name#,
             #string:model#,
             #string:note#
+        FROM has_admin ha
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND
+
+            -- Only permit admins or trapline-admins to create trap-types.
+            (ha.is_admin = true)
         RETURNING
             traptype_id;
     ",

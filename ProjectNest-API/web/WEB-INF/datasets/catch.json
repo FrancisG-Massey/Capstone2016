@@ -64,9 +64,15 @@
             #string:note#,
             #timestamp:logged#,
             #string:img_filename#
+        FROM
+            traplineuser tlu
+            JOIN trap t ON t.trap_traplineid = tlu.traplineuser_traplineid
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#bigint:trap_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL)
+            (#bigint:trap_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL) AND
+
+            -- Only permit enrolled trapline-users to log catches
+            (tlu.traplineuser_userid = #bigint:logged-user-id#) AND (t.trap_id = #bigint:trap_id#)
         RETURNING
             catch_id;
     "
