@@ -330,10 +330,6 @@ public class NavigationView extends View {
 		Trap forTrap = trapProperty.get();
     	catchSelectDialog.setTitleText(String.format("Log catch #%d", forTrap.getNumber()));
     	catchSelectDialog.showAndWait().ifPresent(catchType -> {
-        	getApplication().showMessage(String.format("Logged %s in trap #%d", 
-        			catchType.getName(), forTrap.getNumber())/*, "Change", evt -> {
-        		modifyCatch(loggedCatch);
-        	}*/);
         	if (catchType != CatchType.EMPTY) {
         		Catch loggedCatch = new Catch(catchType);
         		forTrap.getCatches().add(loggedCatch);
@@ -341,6 +337,10 @@ public class NavigationView extends View {
         	if (hasNextTrap()) {
         		nextTrap();
         	}
+        	getApplication().showMessage(String.format("Logged %s in trap #%d", 
+        			catchType.getName(), forTrap.getNumber())/*, "Change", evt -> {
+        		modifyCatch(loggedCatch);
+        	}*/);
     	});
     }
     

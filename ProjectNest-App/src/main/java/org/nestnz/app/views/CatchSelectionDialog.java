@@ -30,6 +30,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionModel;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -61,6 +62,16 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
 				}
 			}
 		});
+		SelectionModel<CatchType> selectionModel = fullSelectionList.getSelectionModel();
+		selectionModel.selectedItemProperty().addListener((obs, oldItem, newItem) -> {
+			if (newItem != null) {
+				LOG.log(Level.FINE, "Selected catch: "+newItem);
+	    		setResult(newItem);
+	    		hide();
+			}
+		});
+		
+		
 		//Since setContent() doesn't dynamically update content, we need to use a wrapper layout and call setCenter() to change the controls while the dialog is open
 		BorderPane wrapper = new BorderPane();
     	setContent(wrapper);
@@ -69,7 +80,10 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
 		wrapper.setCenter(controls);
 		
     	//Whenever the dialog is shown, display the first selection screen
-		setOnShowing(evt -> wrapper.setCenter(controls));
+		setOnShowing(evt -> {
+			wrapper.setCenter(controls);
+    		selectionModel.clearSelection();
+		});
 		
     	setTitleText("Select Catch");
     	
