@@ -1,43 +1,78 @@
 {
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
+    ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin,
-                user_isinactive
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             b.bait_id as id,
             b.bait_name as name,
             b.bait_imagefilename as img_filename,
-            b.bait_note as note
+            b.bait_note as note,
+            b.bait_isinactive as inactive
         FROM
-            logged_user lu,
             bait b
         WHERE
-            (lu.user_isinactive = false) AND
             ((#bigint:id# IS NULL) OR (b.bait_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%'))) AND 
+            
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (b.bait_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (b.bait_isinactive = true)))
+            
         GROUP BY
             b.bait_id
         ORDER BY
-            b.bait_id
+            b.bait_id;
     ",
     "POST" : "
-        INSERT INTO bait
-            (bait_name, bait_imagefilename, bait_note)
+        INSERT INTO bait (
+            bait_name,
+            bait_imagefilename,
+            bait_note
+        )
         SELECT
-            #string:name#, #string:img_filename#, #string:note#
+            #string:name#,
+            #string:img_filename#,
+            #string:note#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND 
+            (#string:name# IS NOT NULL)
         RETURNING
-            bait_id
+            bait_id;
     ",
-    "PUT" : "",
-    "DELETE" : ""
+    "PUT" : "
+        UPDATE bait
+        SET
+            bait_name = #string:name#,
+            bait_imagefilename = #string:img_filename#,
+            bait_note = #string:note#
+        WHERE
+            bait_id = #bigint:id#
+        RETURNING
+            bait_id;
+    ",
+    "DELETE" : "
+        UPDATE bait
+        SET
+            bait_isinactive = true
+        WHERE
+            bait_id = #bigint:id#
+        RETURNING bait_id;
+
+        DELETE FROM bait
+        WHERE 
+            (bait_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT trapline_defaultbaitid FROM trapline)) AND
+            (#bigint:id# NOT IN (SELECT trap_baitid FROM trap)) AND
+            (#bigint:id# NOT IN (SELECT catch_baitid FROM catch));
+    "
 }

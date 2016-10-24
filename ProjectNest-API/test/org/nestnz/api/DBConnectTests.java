@@ -65,8 +65,8 @@ public class DBConnectTests {
     @Test
     public void TestDatabaseConnects() throws IOException, SQLException {
         // Load the db config properties
-        DataSource dsProd = Common.getNestDS(dbConfigPathTest);
-        Connection conn = dsProd.getConnection();
+        DataSource dsTest = Common.getNestDS(dbConfigPathTest);
+        Connection conn = dsTest.getConnection();
         Statement st = conn.createStatement();
         ResultSet rsh = st.executeQuery("SELECT 1;");
         
@@ -74,7 +74,7 @@ public class DBConnectTests {
         rsh.close();
         st.close();
         conn.close();
-        dsProd.close();
+        dsTest.close();
     }
 
     /**

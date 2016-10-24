@@ -1,8 +1,25 @@
 {
+    "before" : "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
+    ",
+
     "GET" : "
-        SELECT 1
+        SELECT 1;
     ",
     "POST" : "",
     "PUT" : "",
-    "DELETE" : ""
+    "DELETE" : "",
+
+    "after" : "
+        SELECT 1;
+    "
 }

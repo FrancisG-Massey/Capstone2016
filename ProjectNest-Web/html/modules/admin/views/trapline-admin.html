@@ -1,68 +1,76 @@
+<ul class="breadcrumb">
+  <li><a href="/#" >Home</a></li>
+  <li class="active">Admin</li>  
+</ul>
+<div class="jumbotron">
+<h2 class="page-header text-center">Available Regions</h2>
 
-<div class="page-header">
-<h1 class="text-center" style="margin-top: -50px; ">Available Regions</h1>
+<div class="form-group">
+   <a href="#/trapline-admin/add-newtrapline" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap Line</a>  
 </div>
- <div class="row"> 
-    <div class="col-sm-7">  
-    <div style="padding-bottom: 20px;">
-    <a ng-click="addNew()" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap Line</a>  
-	</div>
-	<div ng-repeat="region in regions" ng-init="parentIndex = region">
-      <table style="table-layout:fixed" class="table table-condensed table-hover admin" >
+
+<div class="row">  
+	<div class= "table-responsive" ng-if="region.traplines.length > 0" ng-repeat="region in regions" ng-init="parentIndex = region">
+      <table style="table-layout:fixed;" class="table table-condensed admin" >
       	<caption class="text-left"><strong>{{region.name}}</strong></caption>
+		<thead>
+			<tr>
+				<th>Trapline Name</th>
+				<th>Start</th>
+				<th>End</th>
+				<th>Traps</th>
+				<th>Volunteers</th>
+				<th>Catch History</th>
+				<th>Action</th>
+			</tr>
+		</thead>
 		<tbody data-ng-repeat="trapline in region.traplines">
-          <tr data-ng-click="setSelected(parentIndex)" class="{{trapline == selected ? 'success' : ''}}">
+          <tr  ng-class-odd="'active'">
             <td scope="row">{{trapline.name}}</td>
-            <td><a href="#/trap-admin/{{trapline.id}}">View Traps</a></td>
-            <td><a href="#/volunteer-admin/{{trapline.id}}">View Volunteers</a></td>
+            <td>{{trapline.start_tag}}</td>
+            <td>{{trapline.end_tag}}</td>
+            <td><a href="#/trap-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-sm btn-primary">View Traps</a></td>
+            <td><a href="#/volunteer-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-sm btn-primary">View Volunteers</a></td>
+            <td><a herf="#" ng-click="loadjson(trapline); loadcsv(trapline);" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#catch-history">View Catch History</a></td>
+            <td><a href="#/trapline-admin/{{trapline.region_id}}/{{trapline.id}}/{{trapline.name}}/edit-trapline" class="btn btn-sm btn-primary">Edit</a></td>
           </tr>    
         </tbody>
       </table>
     </div>
+</div>
+<div class="modal fade" id="catch-history" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg"" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Catch History</h4>
+      </div>
+        <div class="modal-body">
+		  <h5 class="text-center"><strong>{{active_trapline.region.name}}</strong><br><br><i>{{active_trapline.name}}</i><br></h5>
+          <table class="table table-striped" id="tblGrid">
+            <thead id="tblHead">
+              <tr>
+                <th>Trap</th>
+                <th>Catch</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody data-ng-repeat="catch in json_data">
+              <tr>
+              	<td>{{catch.trap}}</td>
+                <td>{{catch.catch}}</td>
+                <td>{{formatDate(catch.date) | date:"dd MMMM yyyy"}}</td>
+              </tr>
+            </tbody>
+          </table>
+	        <div class="modal-footer">
+	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	          <button type="submit" class="btn btn-primary">Export</button>
+	        </div>
+	      </div>
     </div>
-    
-    <div class="col-sm-5"> 
-      <div class="well">
-        <h3 style="margin-top: 0">{{selected.id ? 'Trapline ID: ' + selected.id : 'Add New Trapline'}}</h3>
-        <!--  <p>: <strong>d</strong></p>-->
-        <div class="row">
-          <div class="col-md-6 form-group">
-            <label>Name</label>
-            <div>
-              <input type="text" class="form-control" value ="{{selected.name}}">
-            </div>
-          </div>
-		  <div class="col-md-6 form-group">
-			<label>Region</label>
-			<select class="form-control">
-			<option data-ng-selected="region.name == selected.region.name"
-			value="{{region.name}}" data-ng-repeat="region in regions">{{region.name}}</option>
-			</select>
-		</div>
-		</div>
-        <div class="row">
-          <div class="col-md-6 form-group">
-            <label>Start</label>
-            <div>
-              <input type="text" class="form-control" value ="{{selected.start_tag}}">
-            </div>
-          </div>
-          <div class="col-md-6 form-group">  
-            <label>End</label>
-            <div>
-              <input type="text" class="form-control" value ="{{selected.end_tag}}">
-            </div>
-          </div>
-        </div>
-        
-    	<div class="clearfix">
-		<div class="pull-right" style="margin-top: 10px;">
-        <button class="btn btn-success" type="button" ng-if="!selected">Save</button>
-        <div ng-if="selected">
-        <button class="btn btn-success" type="button">Edit</button>
-        <button class="btn btn-danger" type="button">Delete</button>
-        </div>
-      </div>
-      </div>
-	</div>
+  </div>
+</div>
 </div>

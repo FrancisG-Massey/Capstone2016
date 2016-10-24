@@ -22,7 +22,7 @@ angular.module('Authentication')
             		//$rootScope.globals.currentUser.loggedIn = true;
             		
             		console.log($rootScope.globals.currentUser);
-                    $location.path('/');
+                    $location.path('/trapline-admin');
                 } else {
                 	//$rootScope.globals.loggedIn=false;
                 	$scope.dataLoading = false;

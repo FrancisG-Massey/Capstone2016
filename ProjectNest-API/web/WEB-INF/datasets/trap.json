@@ -1,16 +1,17 @@
 {
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
+    ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin,
-                user_isinactive
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             t.trap_id as id,
             t.trap_traplineid as trapline_id,
@@ -21,39 +22,88 @@
             t.trap_status as status,
             t.trap_createdtimestamp as created,
             t.trap_lastresettimestamp as last_reset,
-            t.trap_baitid as bait_id
+            t.trap_baitid as bait_id,
+            t.trap_isinactive as inactive
         FROM
-            logged_user lu,
             trap t
             LEFT JOIN trapline tl
                 ON tl.trapline_id = t.trap_traplineid
             LEFT JOIN traplineuser tlu
                 ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            (lu.user_isinactive = false) AND
-            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
+            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (t.trap_id = #bigint:id#)) AND
             ((#bigint:number# IS NULL) OR (t.trap_number = #bigint:number#)) AND
             ((#bigint:trapline-id# IS NULL) OR (t.trap_traplineid = #bigint:trapline-id#)) AND
             ((#bigint:trap-type-id# IS NULL) OR (t.trap_traptypeid = #bigint:trap-type-id#)) AND
             ((#integer:status# IS NULL) OR (t.trap_status = #integer:status#)) AND
-            ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#))
+            ((#bigint:bait-id# IS NULL) OR (t.trap_baitid = #bigint:bait-id#)) AND
+
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (t.trap_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (t.trap_isinactive = true)))
+
         GROUP BY
             t.trap_id
         ORDER BY
             t.trap_traplineid,
-            t.trap_number
+            t.trap_number;
     ",
     "POST" : "
-        INSERT INTO trap
-            (trap_traplineid, trap_number, trap_coordx, trap_coordy, trap_traptypeid, trap_createdtimestamp, trap_lastresettimestamp, trap_baitid)
+        INSERT INTO trap (
+            trap_traplineid,
+            trap_number,
+            trap_coordx,
+            trap_coordy,
+            trap_traptypeid,
+            trap_status,
+            trap_createdtimestamp,
+            trap_lastresettimestamp,
+            trap_baitid
+        )
         SELECT
-            #bigint:trapline_id#, #bigint:number#, #numeric:coord_long#, #numeric:coord_lat#, #bigint:traptype_id#, #timestamp:created#, #timestamp:last_reset#, #bigint:bait_id#
+            #bigint:trapline_id#,
+            #bigint:number#,
+            #numeric:coord_long#,
+            #numeric:coord_lat#,
+            #bigint:traptype_id#,
+            #bigint:status#,
+            #timestamp:created#,
+            #timestamp:last_reset#,
+            #bigint:bait_id#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND
+            (#bigint:trapline_id# IS NOT NULL)
         RETURNING
-            trap_id
+            trap_id;
     ",
-    "PUT" : "",
-    "DELETE" : ""
+    "PUT" : "
+        UPDATE trap
+        SET
+            trap_traplineid = #bigint:trapline_id#,
+            trap_number = #bigint:number#,
+            trap_coordx = #numeric:coord_long#,
+            trap_coordy = #numeric:coord_lat#,
+            trap_traptypeid = #bigint:traptype_id#,
+            trap_status = #bigint:status#,
+            trap_lastresettimestamp = #timestamp:last_reset#,
+            trap_baitid = #bigint:bait_id#
+        WHERE 
+            trap_id = #bigint:id#
+        RETURNING
+            trap_id;
+    ",
+    "DELETE" : "
+        UPDATE trap
+        SET
+            trap_isinactive = true
+        WHERE
+            trap_id = #bigint:id#
+        RETURNING trap_id;
+
+        DELETE FROM trap
+        WHERE 
+            (trap_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT catch_trapid FROM catch));
+    "
 }

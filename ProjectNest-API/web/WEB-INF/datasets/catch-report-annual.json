@@ -1,0 +1,52 @@
+{
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es;
+    ",
+    "GET" : "
+        WITH catchsums AS (
+            SELECT
+                r.region_name,
+                tl.trapline_name,
+                extract(month FROM c.catch_loggedtimestamp)  AS catchmonth
+            FROM catch c 
+                INNER JOIN trap t ON t.trap_id = c.catch_trapid
+                INNER JOIN trapline tl on tl.trapline_id = t.trap_traplineid
+                INNER JOIN region r on r.region_id = tl.trapline_regionid
+            WHERE 
+                (extract(year FROM c.catch_loggedtimestamp) = #integer:year#) AND
+                (tl.trapline_isinactive = false)
+        )
+
+        SELECT
+            region_name AS Region,
+            trapline_name AS Trapline,
+            sum (CASE WHEN catchmonth = 1 THEN 1 ELSE 0 END) AS January,
+            sum (CASE WHEN catchmonth = 2 THEN 1 ELSE 0 END) AS February,
+            sum (CASE WHEN catchmonth = 3 THEN 1 ELSE 0 END) AS March,
+            sum (CASE WHEN catchmonth = 4 THEN 1 ELSE 0 END) AS April,
+            sum (CASE WHEN catchmonth = 5 THEN 1 ELSE 0 END) AS May,
+            sum (CASE WHEN catchmonth = 6 THEN 1 ELSE 0 END) AS June,
+            sum (CASE WHEN catchmonth = 7 THEN 1 ELSE 0 END) AS July,
+            sum (CASE WHEN catchmonth = 8 THEN 1 ELSE 0 END) AS August,
+            sum (CASE WHEN catchmonth = 9 THEN 1 ELSE 0 END) AS September,
+            sum (CASE WHEN catchmonth = 10 THEN 1 ELSE 0 END) AS October,
+            sum (CASE WHEN catchmonth = 11 THEN 1 ELSE 0 END) AS November,
+            sum (CASE WHEN catchmonth = 12 THEN 1 ELSE 0 END) AS December
+        FROM
+            catchsums cs
+        GROUP BY
+            region_name,
+            trapline_name
+        ORDER BY
+            region_name,
+            trapline_name
+    "
+}

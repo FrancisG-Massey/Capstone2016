@@ -1,189 +1,111 @@
+<ul class="breadcrumb">
+  <li><a href="/#" >Home</a></li>
+  <li><a href="/#/trapline-admin" >Admin</a></li>
+  <li class="active">{{trapline_name}}</li>  
+</ul>
 
-<div class="page-header">
-	<h1 class="text-center" style="margin-top: -50px;">Trap Admin</h1>
+<div class="jumbotron">
+<h2 class="text-center page-header">Trap Admin</h2>
+<p ng-if="!(traps.length > 0)">There are no traps for this trapline yet</p>
+
+
+  <div class="clearfix form-group">
+     <a href="#/trap-admin/{{trapline_id}}/{{trapline_name}}/add-new" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Trap</a>
+     <button ng-if="traps.length > 0" type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#trapline-map">View Map</button>
+  </div>
+	
+  <div ng-if="traps.length > 0">
+	<table class="table table-condensed admin">
+    <thead>
+      <tr>
+        <th>Trap Number</th>
+        <th>Location</th>
+        <th>Status</th>
+        <th>Last Reset</th>
+        <th>Placed Date</th>
+        <th>Catch History</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody data-ng-repeat="trap in traps[currentPage]">
+      <tr ng-class-odd="'active'">
+        <td scope="row">{{trap.number}}</td>
+        <td>{{trap.coord_lat + ' '}}<b>N</b><br>{{trap.coord_long +
+          ' '}}<b>E</b></td>
+        <td>{{trap.status? "active":"inactive"}}</td>
+        <td>{{formatDate(trap.created) | date:"dd MMMM yyyy"}}</td>
+        <td>{{formatDate(trap.last_reset)| date:"dd MMMM yyyy"}}</td>
+        <td><a herf="#" ng-click="load_history(trap)" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#catch-history">View Catch History</a></td>
+        <td><a href="#/trap-admin/{{trap.id}}/{{trapline_name}}/edit-trap" class="btn btn-sm btn-primary">Edit</a></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      <li ng-class="{disabled: currentPage == 0}"><a href
+        ng-click="prevPage()">« Prev</a></li>
+
+      <li
+        ng-repeat="n in range(traps.length, currentPage, currentPage + gap) "
+        ng-class="{active: n == currentPage}" ng-click="setPage()"><a
+        href ng-bind="n + 1">1</a></li>
+
+      <li ng-class="{disabled: (currentPage) == traps.length - 1}"><a
+        href ng-click="nextPage()">Next »</a></li>
+    </ul>
+  </nav>  
 </div>
-<ol class="breadcrumb">
-  <li><a href="" ng-click="$back()" return false>{{line_selected.name}}</a></li>
-  <li class="active">Trapline id: {{trapline_id}}</li>  
-</ol>
-<div class="row">
-	<div class="col-sm-7">
-	<div style="padding-bottom: 20px;">
-		<a ng-click="addNew()" id="addButton"><span
-			class="glyphicon glyphicon-plus"></span> Add Trap</a>
-			</div>
-		<table class="table table-condensed table-hover admin">
-			<thead>
-				<tr>
-					<th>Trap Number</th>
-					<th>Location</th>
-					<th>Status</th>
-					<th>Last Reset</th>
-					<th>Placed Date</th>
-				</tr>
-			</thead>
-			<tbody data-ng-repeat="trap in traps[currentPage]">
-				<tr data-ng-click="setSelected();"
-					class="{{trap == selected ? 'success' : ''}}">
-					<td scope="row">{{trap.number}}</td>
-					<td>{{trap.coord_lat + ' '}}<b>S</b>{{' ' + trap.coord_long +
-						' '}}<b>E</b></td>
-					<td>{{trap.status? "active":"inactive"}}</td>
-					<td>{{trap.created | date:"dd/MM/yyyy 'at' h:mma"}}</td>
-					<td>{{trap.last_reset| date:"dd/MM/yyyy 'at' h:mma"}}</td>
-				</tr>
-			</tbody>
-		</table>
 
-		<nav aria-label="Page navigation">
-			<ul class="pagination">
-				<li ng-class="{disabled: currentPage == 0}"><a href
-					ng-click="prevPage()">« Prev</a></li>
-
-				<li
-					ng-repeat="n in range(traps.length, currentPage, currentPage + gap) "
-					ng-class="{active: n == currentPage}" ng-click="setPage()"><a
-					href ng-bind="n + 1">1</a></li>
-
-				<li ng-class="{disabled: (currentPage) == traps.length - 1}"><a
-					href ng-click="nextPage()">Next »</a></li>
-			</ul>
-		</nav>
-	</div>
-
-	<div class="col-sm-5">
-	<!--  <div class="clearfix" style="margin-bottom: 40px;">
-	 	<div class="pull-right">
-			<button  ng-click="goBack()" type="button" class="btn btn-default">
-				<span class="glyphicon glyphicon-arrow-left"></span> Back
-		</button>
-		</div>
-		</div>
-		-->
-		<div class="well clearfix">
-			<h3 style="margin-top: 0; margin-bottom: 25px">
-				{{selected.id ? 'Trap Number: ' + selected.number : 'Add New Trap'}}
-				<div class="btn-group pull-right" data-toggle="buttons">
-					<label
-						ng-class="{ 'btn btn-default': true, 'active': selected.status == 1 }">
-						<input type="radio" id="option2" autocomplete="off"
-						ng-checked="selected.status == 'active'">Active
-					</label> <label
-						ng-class="{ 'btn btn-default': true, 'active': selected.status == 0 }">
-						<input type="radio" id="option3" autocomplete="off"
-						ng-checked="selected.status == 'inactive'">Inactive
-					</label>
-				</div>
-
-			</h3>
-
-			<div class="row">
-				<div class="col-md-6 form-group">
-					<label>Latitude</label>
-					<div class="input-group">
-						<input type="number" class="form-control"
-							value="{{selected.coord_lat}}"> <span
-							class="input-group-addon">S</span>
-					</div>
-				</div>
-				<div class="col-md-6 form-group">
-					<label>Longitude</label>
-					<div class="input-group">
-						<input type="number" class="form-control"
-							value="{{selected.coord_long}}"> <span
-							class="input-group-addon">E</span>
-					</div>
-				</div>
-			</div>
-
-			<div class="row">
-				<div class="col-md-6 form-group">
-					<label>Bait type</label>
-					<select class="form-control">
-						<option data-ng-selected="bait.id == selected.bait_id"
-							value="{{bait.id}}" data-ng-repeat="bait in baits">{{bait.name}}</option>
-					</select>
-				</div>
-				<div class="col-md-6 form-group">
-					<label>Trap type</label>
-					<select class="form-control">
-						<option data-ng-selected="type.id == selected.traptype_id"
-							value="{{type.id}}" data-ng-repeat="type in trap_type">{{type.name}}</option>
-					</select>
-				</div>
-			</div>
-			
-	<div class="clearfix" style="margin-top:8px; margin-bottom: 30px">
-	  <div>
-	  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#damage-history" >View Damage History </button>
-	  <button type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#catch-history" >View Catch History</button>
-	  <div class="modal fade" id="damage-history" tabindex="-1" role="dialog">
+<div class="modal fade" id="trapline-map" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg"" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">{{trapline_name}} Traps</h4>
+      </div>
+      <div class="modal-body">
+        <div data-ng-show="showMap()" class="map big-map" id="mapid"></div>
+      </div>
+      <div class="modal-footer">
+       <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="catch-history" tabindex="-1" role="dialog">
 	    <div class="modal-dialog" role="document">
 	      <div class="modal-content">
 	        <div class="modal-header">
 	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 	            <span aria-hidden="true">&times;</span>
 	          </button>
-	          <h4 class="modal-title">View Damage History</h4>
-	        </div>
-	        <div class="modal-body">
-	        </div>
-	        <div class="modal-footer">
-	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-	          <button type="button" class="btn btn-primary">Save</button>
-	        </div>
-	      </div>
-	    </div>
-	  </div>
-	  </div>
-	  <div class="modal fade" id="catch-history" tabindex="-1" role="dialog">
-	    <div class="modal-dialog" role="document">
-	      <div class="modal-content">
-	        <div class="modal-header">
-	          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	            <span aria-hidden="true">&times;</span>
-	          </button>
-	          <h4 class="modal-title">View Catch History</h4>
+	          <h4 class="modal-title">Catch History</h4>
 	        </div>
         <div class="modal-body">
-		  <h5 class="text-center"><strong>{{line_selected.name}}</strong><br><br>Trapline number:{{trapline_id}}</h5>
+		  <h5 class="text-center"><strong>{{trapline_name}}</strong><br><br><i>Trap number: {{active_trap.number}}</i></h5>
           <table class="table table-striped" id="tblGrid">
             <thead id="tblHead">
               <tr>
-                <th>Name</th>
-                <th>Notes</th>
-                <th>Date </th>
-                <th>Image</th>
+                <th>Catch</th>
+                <th>Date</th>
               </tr>
             </thead>
-            <tbody data-ng-repeat="catch in catches">
+            <tbody data-ng-repeat="catch in trap_history">
               <tr>
-              	<td>{{catch.catch_type.name}}</td>
-                <td>{{catch.note}}</td>
-                <td>{{catch.logged | date:"dd/MM/yyyy 'at' h:mma"}}</td>
-                <td><a href=/#/catch.img_filename>View Image</td>
+                <td>{{catch.catch}}</td>
+                <td>{{formatDate(catch.date) | date:"dd MMMM yyyy"}}</td>
               </tr>
             </tbody>
           </table>
 	        <div class="modal-footer">
 	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-	          <button type="button" class="btn btn-primary">Export</button>
 	        </div>
 	      </div>
 	    </div>
 	  </div>
 	</div>
-
-	<div id="mapid"></div>
-
-	<div class="clearfix">
-	<div class = "pull-right" style="margin-top: 10px;">
-		<button class="btn btn-success" type="button"  ng-if="!selected" >Save</button>
-		<div ng-if="selected">
-		<button class="btn btn-success" type="button" >Edit</button>
-		<button class="btn btn-danger" type="button">Delete</button>
-		</div>
-		</div>
-	</div>
-	</div>
-	</div>
+</div>
+    

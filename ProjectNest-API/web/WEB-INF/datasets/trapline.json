@@ -1,19 +1,22 @@
 {
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
+    ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin,
-                user_isinactive
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        ),
+        WITH cc AS (
+            -- Common Catches
+            -- This may get slow, but we can probably abstract to a view later if required
+            -- Likely can be better implemented with a window function, but time is of the essence...
 
-        -- Common Catches
-        -- This may get slow, but we can abstract to a view later if required
-        cc AS (
             SELECT
                 tl.trapline_id,
                 c.catch_catchtypeid,
@@ -24,6 +27,9 @@
                 JOIN catchtype ct ON ct.catchtype_id = c.catch_catchtypeid
                 JOIN trap t ON t.trap_id = c.catch_trapid
                 JOIN trapline tl ON tl.trapline_id = t.trap_traplineid
+            WHERE
+                -- Exclude 'other' from becoming a common catch-type
+                c.catch_catchtypeid <> 10000
             GROUP BY
                 tl.trapline_id,
                 c.catch_catchtypeid,
@@ -41,33 +47,80 @@
             tl.trapline_imagefilename AS img_filename,
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 0) AS common_ct_id_1,
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 1) AS common_ct_id_2,
-            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3
+            (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3,
+            tl.trapline_defaultbaitid AS default_bait_id,
+            tl.trapline_defaulttraptypeid AS default_traptype_id,
+            tl.trapline_isinactive as inactive
         FROM
-            logged_user lu,
             trapline tl
             LEFT JOIN traplineuser tlu
                 ON tlu.traplineuser_traplineid = tl.trapline_id
         WHERE
-            (lu.user_isinactive = false) AND
-            ((lu.user_isadmin = true) OR (tlu.traplineuser_userid = lu.user_id)) AND
+            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (tl.trapline_id = #bigint:id#)) AND
             ((#bigint:region-id# IS NULL) OR (tl.trapline_regionid = #bigint:region-id#)) AND
-            ((#string:name# IS NULL) OR (lower(tl.trapline_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(tl.trapline_name) LIKE lower('%' || #string:name# || '%'))) AND
+
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (tl.trapline_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (tl.trapline_isinactive = true)))
+
         GROUP BY
             tl.trapline_id
         ORDER BY
-            tl.trapline_id
+            tl.trapline_id;
     ",
     "POST" : "
-        INSERT INTO trapline
-            (trapline_name, trapline_regionid, trapline_starttag, trapline_endtag, trapline_imagefilename)
+        INSERT INTO trapline (
+            trapline_name,
+            trapline_regionid,
+            trapline_starttag,
+            trapline_endtag,
+            trapline_imagefilename,
+            trapline_defaultbaitid,
+            trapline_defaulttraptypeid
+        )
         SELECT
-            #string:name#, #bigint:region_id#, #string:start_tag#, #string:end_tag#, #string:img_filename#
+            #string:name#,
+            #bigint:region_id#,
+            #string:start_tag#,
+            #string:end_tag#,
+            #string:img_filename#,
+            #bigint:default_bait_id#,
+            #bigint:default_traptype_id#
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND
+            (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL)
         RETURNING
-            trapline_id
+            trapline_id;
     ",
-    "PUT" : "",
-    "DELETE" : ""
+    "PUT" : "
+        UPDATE trapline
+        SET
+            trapline_name = #string:name#,
+            trapline_regionid = #bigint:region_id#,
+            trapline_starttag = #string:start_tag#,
+            trapline_endtag = #string:end_tag#,
+            trapline_imagefilename = #string:img_filename#,
+            trapline_defaultbaitid = #bigint:default_bait_id#,
+            trapline_defaulttraptypeid = #bigint:default_traptype_id#
+        WHERE 
+            trapline_id = #bigint:id#
+        RETURNING
+            trapline_id;
+    ",
+    "DELETE" : "
+        UPDATE trapline
+        SET
+            trapline_isinactive = true
+        WHERE
+            trapline_id = #bigint:id#
+        RETURNING trapline_id;
+
+        DELETE FROM trapline
+        WHERE 
+            (trapline_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT traplineuser_traplineid FROM traplineuser)) AND
+            (#bigint:id# NOT IN (SELECT trap_traplineid FROM trap));
+    "
 }

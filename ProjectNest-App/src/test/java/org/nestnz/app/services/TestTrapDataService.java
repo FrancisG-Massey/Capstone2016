@@ -47,6 +47,7 @@ import org.nestnz.app.parser.Cacheable;
 import org.nestnz.app.parser.ParserRegion;
 import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
+import org.nestnz.app.services.impl.DefaultTrapDataService;
 
 import com.gluonhq.connect.GluonObservableObject;
 
@@ -71,7 +72,7 @@ public class TestTrapDataService {
         }
     }
 	
-	TrapDataService dataService;
+	DefaultTrapDataService dataService;
 	CachingService cachingService = mock(CachingService.class);
 	NetworkService networkService = mock(NetworkService.class);
 
@@ -80,7 +81,7 @@ public class TestTrapDataService {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		dataService = new TrapDataService(cachingService, networkService);
+		dataService = new DefaultTrapDataService(cachingService, networkService);
 		
 		GluonObservableObject<Cacheable<Map<Integer, CatchType>>> results = new GluonObservableObject<>();	    
 		Cacheable<Map<Integer, CatchType>> catchTypes = new Cacheable<>();    	

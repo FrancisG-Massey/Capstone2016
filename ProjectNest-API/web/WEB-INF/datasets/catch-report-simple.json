@@ -1,0 +1,34 @@
+{
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es;
+    ",
+    "GET" : "
+        SELECT 
+            c.catch_loggedtimestamp::date as date,
+            t.trap_number as trap,
+            ct.catchtype_name as catch
+        FROM
+            catch c
+            LEFT JOIN catchtype ct
+                ON ct.catchtype_id = c.catch_catchtypeid
+            LEFT JOIN trap t
+                ON t.trap_id = c.catch_trapid
+            LEFT JOIN trapline tl
+                ON tl.trapline_id = t.trap_traplineid
+        WHERE
+            ((#bigint:trapline-id# IS NOT NULL) AND (tl.trapline_id = #bigint:trapline-id#)) AND 
+            ((#date:min-date#::date IS NULL) OR (c.catch_loggedtimestamp::date >= #date:min-date#::date)) AND
+            ((#date:max-date#::date IS NULL) OR (c.catch_loggedtimestamp::date <= #date:max-date#::date))
+        ORDER BY
+            c.catch_loggedtimestamp::date ASC,
+            t.trap_number ASC;
+    "
+}

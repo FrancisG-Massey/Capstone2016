@@ -85,9 +85,7 @@ public class LoginView extends View implements ChangeListener<LoginStatus> {
 		setupControls();
 	}
 	
-	private void setupControls () {
-		getStylesheets().add(LoginView.class.getResource("styles.css").toExternalForm());
-		
+	private void setupControls () {		
 		VBox controls = new VBox(30);
 		controls.setAlignment(Pos.CENTER);
 		

@@ -1,43 +1,77 @@
 {
+    "before": "
+        SELECT
+            es.user_id,
+            es.user_isadmin,
+            es.session_expirestimestamp
+        FROM 
+            extend_session(
+                #string:session-token#::text, 
+                #string:session-timeout#::interval
+            ) es 
+        WHERE es IS NOT NULL;
+    ",
     "GET" : "
-        WITH logged_user AS (
-            SELECT
-                user_id,
-                user_isadmin,
-                user_isinactive
-            FROM users u
-            JOIN session s ON u.user_id = s.session_userid
-            WHERE (#string:session-token# IS NOT NULL) AND (s.session_token = #string:session-token#)
-            LIMIT 1
-        )
-
         SELECT 
             tt.traptype_id as id,
             tt.traptype_name as name,
             tt.traptype_model as model,
-            tt.traptype_note as note
+            tt.traptype_note as note,
+            tt.traptype_isinactive as inactive
         FROM 
-            logged_user lu,
             traptype tt
         WHERE
-            (lu.user_isinactive = false) AND
             ((#bigint:id# IS NULL) OR (tt.traptype_id = #bigint:id#)) AND
-            ((#string:name# IS NULL) OR (lower(tt.traptype_name) LIKE lower('%' || #string:name# || '%')))
+            ((#string:name# IS NULL) OR (lower(tt.traptype_name) LIKE lower('%' || #string:name# || '%'))) AND
+
+            -- Only allow admins to filter by inactive flag, return only active by default
+            ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (tt.traptype_isinactive = false)) OR 
+            ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (tt.traptype_isinactive = true)))
+
         GROUP BY
             tt.traptype_id
         ORDER BY
-            tt.traptype_id
+            tt.traptype_id;
     ",
     "POST" : "
-        INSERT INTO traptype
-            (traptype_name, traptype_model, traptype_note)
+        INSERT INTO traptype (
+            traptype_name,
+            traptype_model,
+            traptype_note
+        )
         SELECT
-            #string:name#, #string:model#, #string:note#
+            #string:name#,
+            #string:model#,
+            #string:note#
         WHERE
             (#bigint:id# IS NULL)
         RETURNING
-            traptype_id
+            traptype_id;
     ",
-    "PUT" : "",
-    "DELETE" : ""
+    "PUT" : "
+        UPDATE traptype
+        SET
+            traptype_name = #string:name#,
+            traptype_model = #string:model#,
+            traptype_note = #string:note#
+        WHERE 
+            traptype_id = #bigint:id#
+        RETURNING
+            traptype_id;
+    ",
+    "DELETE" : "
+        UPDATE traptype
+        SET
+            traptype_isinactive = true
+        WHERE
+            traptype_id = #bigint:id#
+        RETURNING traptype_id;
+
+        DELETE FROM traptype
+        WHERE 
+            (traptype_id = #bigint:id#) AND
+            (#bigint:id# NOT IN (SELECT trapline_defaulttraptypeid FROM trapline)) AND
+            (#bigint:id# NOT IN (SELECT trap_traptypeid FROM trap)) AND
+            (#bigint:id# NOT IN (SELECT catch_traptypeid FROM catch));
+    "
 }

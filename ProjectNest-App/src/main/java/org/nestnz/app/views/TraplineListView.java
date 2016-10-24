@@ -33,6 +33,9 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.collections.transformation.SortedList;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
@@ -57,13 +60,32 @@ public class TraplineListView extends View {
 	
 	private final TrapDataService dataService;
 	
+	/**
+	 * The date & time of the last trapline list update from the server. 
+	 * If this is null, or more than {@link #REFRESH_FREQUENCY} hours from the current time, the trapline list will be automatically requested from the API again if/when the view is re-opened. 
+	 */
 	private LocalDateTime lastTraplineFetch = null;
 
     public TraplineListView(TrapDataService dataService) {
         super(NAME);
         this.dataService = dataService;
         
-        traplineList = new CharmListView<>(dataService.getTraplines());
+        ReadOnlyDoubleProperty deviceWidth = this.widthProperty();
+        
+        //Create an alphabetically sorted view of the trapline list, so traplines appear in alphabetical order
+        SortedList<Trapline> sortedList = new SortedList<>(dataService.getTraplines(), (t1, t2) -> {
+        	if (t1 == null && t2 == null) {
+                return 0;
+            } else if (t1 == null) {
+                return -1;
+            } else if (t2 == null) {
+                return 1;
+            } else {
+            	return t1.getName().compareToIgnoreCase(t2.getName());
+            }
+        });
+        
+        traplineList = new CharmListView<>(sortedList);
         traplineList.setHeadersFunction(Trapline::getRegion);
         traplineList.setConverter(new StringConverter <Region>() {
             @Override public String toString(Region r) {
@@ -80,6 +102,12 @@ public class TraplineListView extends View {
         	
         	{
         		this.setGraphic(button);
+        		
+        		//Prevent long trapline names from expanding the size of buttons to cause side scrolling
+        		//NOTE: This assumes a total left & right padding of less than 16 for the parent cell. Higher padding values will cause the scroll bar to re-appear
+        		double padding = 16;
+        		button.maxWidthProperty().bind(Bindings.subtract(deviceWidth, padding));
+        		
         		button.setOnAction(evt -> {
         			LOG.log(Level.INFO, "Pressed trapline: "+trapline);
         			TraplineInfoView infoView = ((NestApplication) TraplineListView.this.getApplication()).lookupView(TraplineInfoView.NAME);
@@ -113,7 +141,6 @@ public class TraplineListView extends View {
         
         setCenter(traplineList);
 		menu = buildMenu();
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
         
     }
 	

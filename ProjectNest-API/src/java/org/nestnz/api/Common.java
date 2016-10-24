@@ -7,6 +7,7 @@
  **********************************************************/
 package org.nestnz.api;
 
+import com.berry.BCrypt;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.io.BufferedReader;
@@ -21,6 +22,9 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -43,6 +47,9 @@ public class Common {
     public final static String URLENTITY_REGEX = "\\/([\\w-]*)";
     public final static String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
     public final static String DATASETPARAM_REGEX = "(#[\\w-]+:[\\w-]+#)";
+
+    public final static int BCRYPT_COST = 12;
+    public final static int SESSION_TIMEOUT = 30;
 
     // This is a better regex which captures only strictly typed dataset parameters
     // except we can't test for invalid uncaptured params easily and these will go straight to the db...
@@ -93,6 +100,9 @@ public class Common {
      * @param datasetParamOrder 
      */
     public static void parseDatasetParameters(String dirtySQL, Map<String, String> datasetParams, List<String> datasetParamOrder) {
+        if (dirtySQL == null) {
+            return;
+        }
         // Find all parameters including their datatypes
         Matcher m = Pattern.compile(Common.DATASETPARAM_REGEX).matcher(dirtySQL.toLowerCase());
         while (m.find()) {
@@ -102,6 +112,40 @@ public class Common {
             datasetParamOrder.add(param.substring(1, param.length()-1));
             datasetParams.put(param.substring(param.indexOf(":")+1, param.length()-1), null);
         }
+    }
+    
+    /**
+     * Return a resultset as a csv formatted string with control chars removed.
+     * @param rsh
+     * @return
+     * @throws SQLException
+     * @throws IOException 
+     */
+    public static String resultSetAsCSV(ResultSet rsh) throws SQLException, IOException {
+        StringBuilder sb = new StringBuilder();
+        ResultSetMetaData rsmd = rsh.getMetaData();
+        int numColumns = rsmd.getColumnCount();
+        String colName1 = rsmd.getColumnName(1).replace("\"", "").replace(",", "").trim();
+        colName1 = colName1.substring(0, 1).toUpperCase() + ((colName1.length()>0)? colName1.substring(1) : "");
+        String colNames = "\"" + colName1 + "\"";
+        for (int i = 2; i < numColumns + 1; i++) {
+            String colName = rsmd.getColumnName(i).replace("\"", "").replace(",", "").trim();
+            colName = colName.substring(0, 1).toUpperCase() + ((colName.length()>0)? colName.substring(1) : "");
+            colNames += ",\"" + colName + "\"";
+        }
+        sb.append(colNames).append("\n");
+        System.out.println(sb.toString());
+        while (rsh.next()) {
+            String row = "\"" + rsh.getString(1).replace("\"", "").replace(",", "") + "\""; 
+            for (int i = 2; i < numColumns + 1; i++) {
+                String val = rsh.getString(i);
+                row += ",\"" + ((val==null)?"":val).replace("\"", "").replace(",", "") + "\"";
+            }
+            sb.append(row).append("\n");
+            System.out.println(row);
+        }
+        System.out.println(sb.toString());
+        return sb.toString();
     }
     
     /**
@@ -156,8 +200,7 @@ public class Common {
         String nextParam = null;
         String nextParamValue = null;
 
-        SimpleDateFormat ISO8601DATEFORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-        SimpleDateFormat NZSIMPLEDATEFORMAT = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat NZSIMPLEDATEFORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
         try {
             for (int i=1; i<=datasetParamOrder.size(); i++) {
@@ -247,9 +290,15 @@ public class Common {
                                 st.setNull(i, java.sql.Types.TIMESTAMP);
                                 continue;
                             }
-                            java.util.Date dt2 = ISO8601DATEFORMAT.parse(nextParamValue.trim().replaceAll(" ", "T"));
-                            st.setTimestamp(i, new java.sql.Timestamp(dt2.getTime()));
+                            LocalDateTime ldt = LocalDateTime.parse(nextParamValue.trim().replaceAll(" ", "T"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                            st.setTimestamp(i, Timestamp.valueOf(ldt));
                             break;
+                        case "string-bcrypt":
+                            if (nextParamValue == null) {
+                                st.setNull(i, java.sql.Types.VARCHAR);
+                                continue;
+                            }
+                            nextParamValue = BCrypt.hashpw(nextParamValue, BCrypt.gensalt(Common.BCRYPT_COST));
                         case "string":
                         case "varchar":
                             if (nextParamValue == null) {
@@ -274,7 +323,12 @@ public class Common {
                 }
             }
         } catch (
-            ParseException | NumberFormatException ex
+            SQLException ex
+        ) {
+            LOG.log(Level.INFO, "An unexpected SQLException has occured. Unable to continue parsing: {0}", ex.getMessage());
+            throw ex;
+        } catch (
+            DateTimeParseException | ParseException | NumberFormatException ex
         ) {
             // Write log within inner catch block so we still have params
             LOG.log(Level.INFO, "Supplied request parameter '" + nextParamValue + 

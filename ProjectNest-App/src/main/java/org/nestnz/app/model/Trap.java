@@ -204,7 +204,6 @@ public final class Trap {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((catches == null) ? 0 : catches.hashCode());
 		result = prime * result + idProperty.get();
 		result = prime * result + ((lastResetProperty.get() == null) ? 0 : lastResetProperty.get().hashCode());
 		long temp;
@@ -226,11 +225,6 @@ public final class Trap {
 		if (getClass() != obj.getClass())
 			return false;
 		Trap other = (Trap) obj;
-		if (catches == null) {
-			if (other.catches != null)
-				return false;
-		} else if (!catches.equals(other.catches))
-			return false;
 		if (idProperty.get() != other.idProperty.get())
 			return false;
 		if (lastResetProperty.get() == null) {

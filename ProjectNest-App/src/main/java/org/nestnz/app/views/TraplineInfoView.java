@@ -110,8 +110,6 @@ public class TraplineInfoView extends View {
         });
         
         initControls();
-        
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
     
     private void initControls () {
@@ -354,13 +352,13 @@ public class TraplineInfoView extends View {
 			addTrapView.setTrapline(trapline);
 			getApplication().switchView(AddTrapView.NAME);
 		}));
-        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.loadTrapline(trapline)));
+        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> refreshTrapline()));
 
     }
     
     private void refreshTrapline () {
     	NestApplication app = (NestApplication) this.getApplication();
-    	dataService.loadTrapline(trapline).addListener((obs, oldStatus, newStatus) -> {
+    	dataService.refreshTrapline(trapline).addListener((obs, oldStatus, newStatus) -> {
     		String message = null;
     		switch (newStatus) {
 			case PENDING:
