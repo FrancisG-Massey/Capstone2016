@@ -93,7 +93,10 @@
             #bigint:default_traptype_id#
         WHERE
             (#bigint:id# IS NULL) AND
-            (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL)
+            (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL) AND
+
+            -- Only permit admins to create traplines.
+            (#boolean:logged-user-isadmin# = true)
         RETURNING
             trapline_id;
     ",

@@ -177,7 +177,51 @@ public class NestHttpPostTests extends NestHttpTests {
     }
     
     @Test
-    public void AH_PostCatchSucceeds() throws IOException {
+    public void AH_PostCatchFailsWhileNotEnrolled() throws IOException {
+        // The request to log a new catch should fail because the user is not
+        // enrolled on the trapline as a volunteer/user.
+        
+        // Later we will try again after enrolling in the created trapline.
+        
+        // Build the Json trap object
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("trap_id", entityMap.get("trap"));
+        jsonObject.addProperty("catchtype_id", entityMap.get("catchtype"));
+        jsonObject.addProperty("note", "a hundred legs");
+        jsonObject.addProperty("img_filename", "verygross.png");
+        // Rest of the properties can be defaults
+        
+        HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/catch", true, jsonObject.toString());
+        int code = connection.getResponseCode();
+        assertTrue("Error, non-failure response code: " + Integer.toString(code), code == 400);
+    }
+    
+    @Test
+    public void AI_PostTraplineUserSucceeds() throws IOException {
+        // Build the Json traplineuser object
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("trapline_id", entityMap.get("trapline"));
+        
+        // Important that we create the traplineuser record as the nestrootadmin
+        // instead of the newly created user, so that we can successfully log 
+        // a catch later without relogging as the new user
+        
+        jsonObject.addProperty("user_id", 1);
+        jsonObject.addProperty("admin", true);
+        
+        HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/trapline-user", true, jsonObject.toString());
+        int code = connection.getResponseCode();
+        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        
+        final String newRes = connection.getHeaderField("Location");
+        entityInsertOrder.add("traplineuser");
+        entityMap.put("traplineuser", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
+    }
+    
+    @Test
+    public void AJ_PostCatchSucceeds() throws IOException {
+        // The user is now registered to the trapline, so we can reattempt to log the catch
+        
         // Build the Json trap object
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("trap_id", entityMap.get("trap"));
@@ -194,22 +238,5 @@ public class NestHttpPostTests extends NestHttpTests {
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("catch");
         entityMap.put("catch", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-    }
-    
-    @Test
-    public void AI_PostTraplineUserSucceeds() throws IOException {
-        // Build the Json traplineuser object
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("trapline_id", entityMap.get("trapline"));
-        jsonObject.addProperty("user_id", entityMap.get("users"));
-        jsonObject.addProperty("admin", true);
-        
-        HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/trapline-user", true, jsonObject.toString());
-        int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
-        
-        final String newRes = connection.getHeaderField("Location");
-        entityInsertOrder.add("traplineuser");
-        entityMap.put("traplineuser", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
     }
 }

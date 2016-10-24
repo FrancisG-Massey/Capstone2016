@@ -53,9 +53,15 @@
             #bigint:user_id#,
             #bigint:trapline_id#,
             #boolean:admin#
+        FROM
+            traplineuser tlu
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#bigint:user_id# IS NOT NULL) AND (#bigint:trapline_id# IS NOT NULL)
+            (#bigint:user_id# IS NOT NULL) AND (#bigint:trapline_id# IS NOT NULL) AND
+
+            -- Only permit admins or trapline admins to create new traps
+            ((#boolean:logged-user-isadmin# = true) OR 
+            ((tlu.traplineuser_isadmin = true) AND (tlu.traplineuser_traplineid = #bigint:trapline_id#) AND (tlu.traplineuser_userid = #bigint:logged-user-id#)))
         RETURNING
             traplineuser_id;
     ",
