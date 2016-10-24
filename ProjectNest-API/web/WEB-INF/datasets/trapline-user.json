@@ -62,10 +62,8 @@
     "PUT" : "
         UPDATE traplineuser
         SET
-            traplineuser_userid = #bigint:user_id#,
-            traplineuser_traplineid = #bigint:trapline_id#,
             traplineuser_isadmin = #boolean:admin#
-        WHERE 
+        WHERE
             traplineuser_id = #bigint:id#
         RETURNING
             traplineuser_id;
