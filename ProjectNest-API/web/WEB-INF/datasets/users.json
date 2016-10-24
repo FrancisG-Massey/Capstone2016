@@ -21,7 +21,8 @@
             u.user_createdtimestamp as created_timestamp, 
             u.user_createduserid as created_user_id, 
             u.user_isadmin as admin, 
-            u.user_isinactive as inactive
+            u.user_isinactive as inactive,
+            (#boolean:logged-user-isadmin# OR (u.user_id = #bigint:logged-user-id#)) as can_edit
         FROM
             users u
             LEFT JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id

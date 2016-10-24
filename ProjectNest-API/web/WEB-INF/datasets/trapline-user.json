@@ -12,13 +12,25 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        WITH loggeduser_traplineroles AS (
+            SELECT 
+                tlu.traplineuser_traplineid as tl_id,
+                tlu.traplineuser_isadmin as tl_isadmin
+            FROM 
+                traplineuser tlu
+            WHERE 
+                traplineuser_userid = #bigint:logged-user-id#
+        )
         SELECT 
             tlu.traplineuser_id as id,
             tlu.traplineuser_userid as user_id,
             tlu.traplineuser_traplineid as trapline_id,
-            tlu.traplineuser_isadmin as admin
+            tlu.traplineuser_isadmin as admin,
+            (lu_tlr.tl_isadmin OR #boolean:logged-user-isadmin#) as can_edit
         FROM
             traplineuser tlu
+            LEFT JOIN loggeduser_traplineroles lu_tlr
+                ON lu_tlr.tl_id = tlu.traplineuser_traplineid
         WHERE
             ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (tlu.traplineuser_id = #bigint:id#)) AND
@@ -26,7 +38,8 @@
             ((#bigint:trapline-id# IS NULL) OR (tlu.traplineuser_traplineid = #bigint:trapline-id#)) AND
             ((#boolean:admin# IS NULL) OR (tlu.traplineuser_isadmin = #boolean:admin#))
         GROUP BY
-            tlu.traplineuser_id
+            tlu.traplineuser_id,
+            lu_tlr.tl_isadmin
         ORDER BY
             tlu.traplineuser_id;
     ",
