@@ -12,6 +12,27 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        WITH has_admin AS (
+            SELECT (count(*) > 0)::boolean as is_admin
+            FROM (
+                SELECT 1 WHERE #boolean:logged-user-isadmin# = true
+                UNION
+                SELECT 1 FROM traplineuser tlu
+                WHERE
+                (tlu.traplineuser_isadmin = true) AND
+                (tlu.traplineuser_userid = #bigint:logged-user-id#)
+            ) cte_ha
+        ),
+        loggeduser_traplines AS (
+            SELECT tlu.traplineuser_traplineid as tl_id
+            FROM traplineuser tlu
+            WHERE traplineuser_userid = #bigint:logged-user-id#
+        ),
+        loggeduser AS (
+            SELECT u.user_createduserid
+            FROM users u
+            WHERE u.user_id = #bigint:logged-user-id#
+        )
         SELECT
             u.user_id as id, 
             u.user_name as username,
@@ -21,12 +42,19 @@
             u.user_createdtimestamp as created_timestamp, 
             u.user_createduserid as created_user_id, 
             u.user_isadmin as admin, 
-            u.user_isinactive as inactive
+            u.user_isinactive as inactive,
+            (#boolean:logged-user-isadmin# OR (u.user_id = #bigint:logged-user-id#)) as can_edit
         FROM
             users u
-            LEFT JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id
+            LEFT JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id,
+            has_admin ha,
+            loggeduser lu
         WHERE
-            ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#) OR (u.user_id = #bigint:logged-user-id#)) AND
+            -- Only show user records they have permission to see
+            ((ha.is_admin = true) OR (u.user_id = #bigint:logged-user-id#) OR (u.user_id = lu.user_createduserid) OR 
+            ((tlu.traplineuser_id IS NOT NULL) AND (tlu.traplineuser_traplineid IN (SELECT tl_id from loggeduser_traplines)))) AND
+
+            -- Allow records to be filtered by fields
             ((#bigint:id# IS NULL) OR (u.user_id = #bigint:id#)) AND
             ((#bigint:created-user-id# IS NULL) OR (u.user_createduserid = #bigint:created-user-id#)) AND
             ((#string:name# IS NULL) OR (lower(u.user_name) LIKE lower('%' || #string:name# || '%'))) AND

@@ -15,7 +15,8 @@
         SELECT 
             r.region_id as id,
             r.region_name as name,
-            r.region_isinactive as inactive
+            r.region_isinactive as inactive,
+            #boolean:logged-user-isadmin# as can_edit
         FROM
             region r
             LEFT JOIN trapline tl

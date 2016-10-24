@@ -22,7 +22,8 @@
             c.catch_baitid as bait_id,
             c.catch_note as note,
             c.catch_loggedtimestamp as logged,
-            c.catch_imagefilename as img_filename
+            c.catch_imagefilename as img_filename,
+            false as can_edit
         FROM
             catch c
             LEFT JOIN trap t

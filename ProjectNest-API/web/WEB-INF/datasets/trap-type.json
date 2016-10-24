@@ -12,14 +12,27 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        WITH has_admin AS (
+            SELECT (count(*) > 0)::boolean as is_admin
+            FROM (
+                SELECT 1 WHERE #boolean:logged-user-isadmin# = true
+                UNION
+                SELECT 1 FROM traplineuser tlu
+                WHERE
+                (tlu.traplineuser_isadmin = true) AND
+                (tlu.traplineuser_userid = #bigint:logged-user-id#)
+            ) cte_ha
+        )
         SELECT 
             tt.traptype_id as id,
             tt.traptype_name as name,
             tt.traptype_model as model,
             tt.traptype_note as note,
-            tt.traptype_isinactive as inactive
+            tt.traptype_isinactive as inactive,
+            ha.is_admin as can_edit
         FROM 
-            traptype tt
+            traptype tt,
+            has_admin ha
         WHERE
             ((#bigint:id# IS NULL) OR (tt.traptype_id = #bigint:id#)) AND
             ((#string:name# IS NULL) OR (lower(tt.traptype_name) LIKE lower('%' || #string:name# || '%'))) AND
@@ -29,7 +42,8 @@
             ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (tt.traptype_isinactive = true)))
 
         GROUP BY
-            tt.traptype_id
+            tt.traptype_id,
+            ha.is_admin
         ORDER BY
             tt.traptype_id;
     ",

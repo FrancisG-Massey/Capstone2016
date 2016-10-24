@@ -911,3 +911,44 @@ $BODY$
     COST 100;
 ALTER FUNCTION public.extend_session(token text, length interval)
     OWNER TO nestnz;
+
+
+
+
+
+
+-- Issue #242 Editing users should not require their password.
+
+-- Function: public.user_nopasswordupdate()
+-- DROP FUNCTION public.user_nopasswordupdate();
+
+CREATE OR REPLACE FUNCTION public.user_nopasswordupdate()
+    RETURNS trigger AS
+$BODY$
+    BEGIN
+        -- Keep the existing password.
+        IF ((NEW.user_password IS NULL) OR (char_length(NEW.user_password) = 0)) THEN
+            NEW.user_password := (
+                SELECT user_password 
+                FROM users u 
+                WHERE u.user_id = NEW.user_id
+            );
+        END IF;
+        RETURN NEW;
+    END;
+$BODY$
+    LANGUAGE plpgsql VOLATILE
+    COST 100;
+ALTER FUNCTION public.user_nopasswordupdate()
+    OWNER TO nestnz;
+
+-- And link to the events for the column change
+
+-- Trigger: user_noupdatepassword_trigger on public.users
+-- DROP TRIGGER user_noupdatepassword_trigger ON public.users;
+
+CREATE TRIGGER user_noupdatepassword_trigger
+    BEFORE UPDATE
+    ON public.users
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.user_nopasswordupdate();
