@@ -12,6 +12,8 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        -- TODO: refactor this into a 'has_permission' cte, as its currently difficult to determine 
+        -- the read permissions on this from a glance.
         SELECT 
             c.catch_id as id,
             c.catch_trapid as trap_id,
