@@ -275,6 +275,7 @@ angular
 								for (var x = 0; x < $scope.users.length; x++) {
 									user = $scope.users[x];
 									if (user.id == trapLineUser.user_id) {
+										user.trapline_role = trapLineUser.admin;
 										usersForTrapLine.push(user);
 									}
 								}
@@ -630,19 +631,19 @@ angular
 								console.log($scope.view_traplines);
 							}
 							$scope.add_trapline = function(trapline,permission){
-								console.log(trapline);
-								console.log(permission);
-								console.log($scope.user_info);
 								var data = {
-										"admin" : permission,
+										"admin" : permission===true,
 										"trapline_id" : trapline.id,
 										"user_id" : $scope.user_info.id
 											};
-
-									$http.post(
+								console.log(data['admin']);
+								console.log(data['trapline_id']);
+								console.log(data['user_id']);
+								$http.post(
 											'https://www.nestnz.org/api/trapline-user',
 											data).then(
 											function(data, status, header, config) {
+												permission = undefined;
 												$route.reload();
 											});
 							}		

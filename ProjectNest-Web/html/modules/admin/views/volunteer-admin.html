@@ -18,7 +18,7 @@
             <th>Full Name</th>
             <th>Email</th>
             <th>Start Date</th>
-            <th>Permission</th>
+            <th>Role</th>
           </tr>
         </thead>
         <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
@@ -27,7 +27,7 @@
             <td>{{volunteer.fullname}}</td>
             <td>{{volunteer.email}}</td>
             <td>{{formatDate(volunteer.created_timestamp) |  date:"dd MMMM yyyy"}}</td>
-            <td>{{volunteer.admin?"Admin":"Volunteer"}}</td>
+            <td>{{volunteer.trapline_role?"Admin":"Volunteer"}}</td>
           </tr>    
         </tbody>
       </table>
