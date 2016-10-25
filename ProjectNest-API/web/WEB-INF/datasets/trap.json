@@ -24,7 +24,7 @@
             t.trap_lastresettimestamp as last_reset,
             t.trap_baitid as bait_id,
             t.trap_isinactive as inactive,
-            (tlu.traplineuser_isadmin OR #boolean:logged-user-isadmin#) as can_edit
+            (max(tlu.traplineuser_isadmin::integer)::boolean OR #boolean:logged-user-isadmin#) as can_edit
         FROM
             trap t
             LEFT JOIN trapline tl
@@ -45,8 +45,7 @@
             ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (t.trap_isinactive = true)))
 
         GROUP BY
-            t.trap_id,
-            tlu.traplineuser_isadmin
+            t.trap_id
         ORDER BY
             t.trap_traplineid,
             t.trap_number;
