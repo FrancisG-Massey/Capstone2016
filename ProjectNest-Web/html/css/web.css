@@ -169,8 +169,20 @@ a[disabled="disabled"] {
 border-radius: 15px;
 }
 
+
+/* info button */
 .btn-info {
+    background-color: #FFF;
+    color: #269abc;
+    border-color: #39b3d7;
     border-radius: 25px;
+}
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active    {
+    background-color: #39b3d7;
+    color: #FFF;
+    border-color: #269abc;
 }
 
 /* danger button - styling colour */
@@ -216,3 +228,18 @@ border-radius: 15px;
     color: #FFF;
     border-color: #398439;
 }
+
+    /* warning button */
+    .btn-warning {
+        background-color: #FFF;
+        color: #d58512;
+        border-color: #ed9c28;
+        border-radius: 25px;
+    }
+    .btn-warning:hover,
+    .btn-warning:focus,
+    .btn-warning:active    {
+        background-color: #ed9c28;
+        color: #FFF;
+        border-color: #d58512;
+    }
