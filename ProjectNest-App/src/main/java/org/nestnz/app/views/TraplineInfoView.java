@@ -179,12 +179,11 @@ public class TraplineInfoView extends View {
         Label lastUpdatedHeading = new Label("Last Updated");
         lastUpdatedHeading.getStyleClass().add("heading");
         
-        Label preloadHeading = new Label("Map Status");
-        preloadHeading.getStyleClass().add("heading");
-        preloadMap.getStyleClass().add("map-loaded");
+        Label actionsHeading = new Label("Actions");
+        actionsHeading.getStyleClass().add("heading");
         
         controls.getChildren().addAll(trapSizeHeading, traplineSize, lastUpdatedHeading, 
-        		lastUpdated, preloadHeading, preloadMap, sendCatchLogs, sendTraps);
+        		lastUpdated, actionsHeading, preloadMap, sendCatchLogs, sendTraps);
         setCenter(controls);
         
         preloadMap.textProperty().bind(createStringBinding(() -> {

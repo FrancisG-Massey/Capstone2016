@@ -92,7 +92,7 @@
 	-fx-wrap-text: true;
 }
 
-.trapline-info-vbox .map-loaded {
+.trapline-info-vbox .button {
 	-fx-font-size: 1.5em;
 	-fx-text-alignment: right;
 	-fx-max-width: 1000px;
