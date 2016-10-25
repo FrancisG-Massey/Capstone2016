@@ -137,6 +137,11 @@ angular
 
 								  return isoDate;
 							};
+							// normal date format
+							$scope.format_Date = function(date) {
+								 var dateOut = new Date(date);
+								 return dateOut;
+							};	
 							
 							  // load catch history in json format.
 							$scope.load_history = function(trap){
