@@ -38,14 +38,14 @@
 
 
 .trapline-info-vbox {
-	-fx-alignment: top;
+	-fx-alignment: top-left;
 	-fx-pref-width : 100%;
 	-fx-padding: 10;
     -fx-spacing: 8;
 }
 
 .trapline-info-vbox .label {
-	-fx-alignment: left;
+	-fx-alignment: center-left;
 	-fx-font-size: 1.5em;
 	-fx-wrap-text: true;
 	-fx-padding: 5px 0 0 0;
