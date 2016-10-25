@@ -162,6 +162,7 @@ public class TraplineListView extends View {
         //appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> this.menu.show()));
         appBar.setTitleText("Nest NZ");
         appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> refreshTraplines()));
+
     }
     
     private void refreshTraplines () {

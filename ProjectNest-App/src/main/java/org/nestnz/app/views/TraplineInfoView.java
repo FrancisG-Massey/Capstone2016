@@ -186,6 +186,7 @@ public class TraplineInfoView extends View {
         
         //TODO: Swap between label & preload button depending on whether it's fully loaded
         Node mapPreload = new Label("Map Loaded");
+        mapPreload.getStyleClass().add("maploaded");
         
         controls.getChildren().addAll(trapSizeHeading, traplineSize, lastUpdatedHeading, 
         		lastUpdated, mapPreload, sendCatchLogs, sendTraps);
