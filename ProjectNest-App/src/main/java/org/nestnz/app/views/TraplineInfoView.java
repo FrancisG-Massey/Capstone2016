@@ -45,7 +45,6 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -73,9 +72,7 @@ public class TraplineInfoView extends View {
 	
     private Label lastUpdated = new Label();
     
-    private Label mapLoaded = new Label();
-    
-    private Button preloadMap = new Button("Preload");
+    private Button preloadMap = new Button("Map Loaded");
     
     private Button sendCatchLogs = new Button("Send Catch Logs");
     
@@ -115,7 +112,6 @@ public class TraplineInfoView extends View {
     private void initControls () {
     	VBox controls = new VBox();
     	
-        preloadMap.setVisible(false);
         preloadMap.setOnAction(evt -> {
         	ReadOnlyIntegerProperty remaining = mapService.preloadMapTiles(minLat, maxLat, minLong, maxLong);
         	getApplication().showLayer("loading");
@@ -123,7 +119,6 @@ public class TraplineInfoView extends View {
         		mapTileLoadedCount.set(mapTileTotalCount.get()-newVal.intValue());
         		if (newVal.intValue() <= 0) {
         			getApplication().hideLayer("loading");
-        			preloadMap.setVisible(false);
         		}
         	});
         	if (remaining.get() <= 0) {
@@ -184,23 +179,30 @@ public class TraplineInfoView extends View {
         Label lastUpdatedHeading = new Label("Last Updated");
         lastUpdatedHeading.getStyleClass().add("heading");
         
-        //TODO: Swap between label & preload button depending on whether it's fully loaded
-        Node mapPreload = new Label("Map Loaded");
-        mapPreload.getStyleClass().add("maploaded");
+        Label preloadHeading = new Label("Map Status");
+        preloadHeading.getStyleClass().add("heading");
+        preloadMap.getStyleClass().add("map-loaded");
         
         controls.getChildren().addAll(trapSizeHeading, traplineSize, lastUpdatedHeading, 
-        		lastUpdated, mapPreload, sendCatchLogs, sendTraps);
+        		lastUpdated, preloadHeading, preloadMap, sendCatchLogs, sendTraps);
         setCenter(controls);
         
-        mapLoaded.textProperty().bind(createStringBinding(() -> {
+        preloadMap.textProperty().bind(createStringBinding(() -> {
         	int loaded = mapTileLoadedCount.get();
-        	int total = mapTileTotalCount.get(); 
+        	int total = mapTileTotalCount.get();
+        	double percent = (loaded+0.0)/total*100;
         	if (total == Integer.MAX_VALUE) {
-        		return "Map Loaded: Unknown";
+        		preloadMap.setDisable(true);
+        		return "Can't Preload Map";
         	} else if (total == 0) {
-        		return "Map Loaded: 0% (0/0)";
+        		preloadMap.setDisable(true);
+        		return "No traps exist!";
+        	} else if (percent >= 100) {
+        		preloadMap.setDisable(true);
+        		return "Map Loaded";
         	} else {
-        		return String.format("Map Loaded: %.0f%% (%d/%d)", (loaded+0.0)/total*100, loaded, total);
+        		preloadMap.setDisable(false);
+        		return String.format("Preload Map (%.0f%%)", percent);
         	}
         }, mapTileLoadedCount, mapTileTotalCount));
         
@@ -258,7 +260,6 @@ public class TraplineInfoView extends View {
 	}
 	
 	private void updateMapLoadProgress () {
-		preloadMap.setVisible(false);
         if (trapline.getTraps().isEmpty()) {
         	mapTileTotalCount.set(0);
         	mapTileLoadedCount.set(0);
@@ -278,12 +279,8 @@ public class TraplineInfoView extends View {
 	        int totalTiles = mapService.getTotalTileCount(minLat, maxLat, minLong, maxLong);
 	        if (totalTiles < MapLoadingService.MAX_TILES) {
 	        	int cachedTiles = mapService.getCachedTileCount(minLat, maxLat, minLong, maxLong);
-		        //int mapLoadedPercent = (int) ((cachedTiles+0.0) / totalTiles)*100;
 	        	mapTileTotalCount.set(totalTiles);
 	        	mapTileLoadedCount.set(cachedTiles);
-		        
-		        //mapLoaded.setText("Map Loaded: "+mapLoadedPercent+"% ("+cachedTiles+"/"+totalTiles+")");
-	        	preloadMap.setVisible(cachedTiles < totalTiles);
 	        } else {
 	        	LOG.log(Level.WARNING, "Trapline "+trapline.getId()+" covers "+totalTiles+" map tiles!");
 	        	mapTileTotalCount.set(Integer.MAX_VALUE);

@@ -92,8 +92,8 @@
 	-fx-wrap-text: true;
 }
 
-.trapline-info-vbox .maploaded {
-	-fx-font-size: 2em;
+.trapline-info-vbox .map-loaded {
+	-fx-font-size: 1.5em;
 	-fx-text-alignment: right;
-	-fx-padding: 2em 0.0 0.0 0.0;
+	-fx-max-width: 1000px;
 }
