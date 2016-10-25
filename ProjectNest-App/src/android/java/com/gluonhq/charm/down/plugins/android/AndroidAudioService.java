@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.services.android;
+package com.gluonhq.charm.down.plugins.android;
 
 import java.io.IOException;
 
-import org.nestnz.app.services.AudioService;
+import com.gluonhq.charm.down.plugins.AudioService;
 
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;

@@ -19,7 +19,6 @@ package org.nestnz.app;
 import java.io.File;
 import java.io.IOException;
 
-import org.nestnz.app.services.AudioServiceFactory;
 import org.nestnz.app.services.CachingService;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.MapLoadingService;
@@ -40,6 +39,7 @@ import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.Swatch;
 import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.AudioServiceFactory;
 import com.gluonhq.charm.down.plugins.StorageService;
 
 import javafx.scene.Scene;

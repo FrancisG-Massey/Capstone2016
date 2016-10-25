@@ -14,22 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.services.ios;
+package com.gluonhq.charm.down.plugins.desktop;
 
-import org.nestnz.app.services.AudioService;
+import com.gluonhq.charm.down.plugins.AudioService;
 
-public class IOSAudioService implements AudioService {
+import javafx.scene.media.AudioClip;
+
+public class DesktopAudioService implements AudioService {
 	
-	static {
-        System.loadLibrary("Audio");
-    }
+	private AudioClip clip;
 
 	/* (non-Javadoc)
-	 * @see org.nestnz.app.services.AudioService#play(java.lang.String, double)
+	 * @see org.nestnz.app.services.AudioService#play(java.lang.String)
 	 */
 	@Override
 	public void play(String audioName, double volume) {
-		audioPlay(audioName, volume);
+		if (clip != null) {
+			clip.stop();
+		}
+		clip = new AudioClip(audioName);
+		clip.play(volume);
 	}
 
 	/* (non-Javadoc)
@@ -37,7 +41,7 @@ public class IOSAudioService implements AudioService {
 	 */
 	@Override
 	public void stop() {
-		audioStop();
+		clip.stop();
 	}
 
 	/* (non-Javadoc)
@@ -45,7 +49,7 @@ public class IOSAudioService implements AudioService {
 	 */
 	@Override
 	public void pause() {
-		audioPause();
+		//Not supported on Desktop
 	}
 
 	/* (non-Javadoc)
@@ -53,14 +57,7 @@ public class IOSAudioService implements AudioService {
 	 */
 	@Override
 	public void resume() {
-		audioResume();
+		//Not supported on Desktop
 	}
 
-	private native void audioPlay(String audioName, double volume);
-	
-	private native void audioStop();
-	
-	private native void audioPause();
-	
-	private native void audioResume();
 }

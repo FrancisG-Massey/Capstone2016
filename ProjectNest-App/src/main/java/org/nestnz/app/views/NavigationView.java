@@ -37,7 +37,9 @@ import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
+import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.AudioService;
 import com.gluonhq.charm.down.plugins.Position;
 import com.gluonhq.charm.down.plugins.PositionService;
 import com.gluonhq.charm.down.plugins.VibrationService;
@@ -70,16 +72,22 @@ public class NavigationView extends View {
 		NORMAL(30, null),
 		CLOSE(20, "close"),
 		CLOSER(10, "closer"),
-		CLOSEST(0, "closest");
+		CLOSEST(0, "closest", "5beeps.wav");
 		
 		double lowerBound;
 		PseudoClass cssPseudoClass;
+		String audioTrack;
 		
 		Distance (double lowerBound, String cssClass) {
+			this(lowerBound, cssClass, null);
+		}
+		
+		Distance (double lowerBound, String cssClass, String audioTrack) {
 			this.lowerBound = lowerBound;
 			if (cssClass != null) {
 				cssPseudoClass = PseudoClass.getPseudoClass(cssClass);
 			}
+			this.audioTrack = audioTrack;
 		}
 		
 		static Distance getForDistance (double distance) {
@@ -279,6 +287,7 @@ public class NavigationView extends View {
     	});
     	
     	Optional<VibrationService> vibrationService = Services.get(VibrationService.class);
+    	Optional<AudioService> audioService = Services.get(AudioService.class);
     	
     	distanceToTrap.addListener((obs, oldDist, newDist) -> {
     		Distance oldDistance = Distance.getForDistance(oldDist.doubleValue());
@@ -287,7 +296,16 @@ public class NavigationView extends View {
     			distanceLabel.pseudoClassStateChanged(oldDistance.cssPseudoClass, false);
     			distanceLabel.pseudoClassStateChanged(newDistance.cssPseudoClass, true);
     			if (oldDist.doubleValue() > newDist.doubleValue()) {
-    				vibrationService.ifPresent(service -> service.vibrate());
+    				if (audioService.isPresent()) {
+    					String audioName = newDistance.audioTrack;
+    	    			if (Platform.isDesktop()) {
+    	    				audioName = getClass().getResource("/"+newDistance.audioTrack).toExternalForm();
+    	    			}
+    	    			LOG.log(Level.INFO, "Trying to play audio: "+audioName);
+    	    			audioService.get().play(audioName, 1.0);    					
+    				} else {
+    					vibrationService.ifPresent(service -> service.vibrate());
+    				}
     			}
     		}
     	});
