@@ -94,9 +94,7 @@
         WHERE
             (#bigint:id# IS NULL) AND
             (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL) AND
-
-            -- Only permit admins to create traplines.
-            (#boolean:logged-user-isadmin# = true)
+            #boolean:logged-user-isadmin#
         RETURNING
             trapline_id;
     ",
