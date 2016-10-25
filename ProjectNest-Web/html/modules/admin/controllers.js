@@ -244,7 +244,6 @@ angular
 									}
 
 								}
-
 								// mapDefault();
 								return true;
 							};
@@ -266,7 +265,6 @@ angular
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
 							$scope.trapline_users = trapline_users;
-							console.log($scope.trapline_id);
 							console.log($scope.trapline_users);
 							$scope.users = users.data;
 							console.log($scope.users);
@@ -585,9 +583,10 @@ angular
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.traplines = traplines;
+							console.log($scope.traplines);
 							$scope.trapline_users = trapline_users;
 							$scope.users = users;
-							
+							$scope.options = [["Admin",true],["Volunteer",false]];	
 							// get all traplines and trapline users.
 							// add the trapline users to their traplines 
 							var trapline, trapline_user;
@@ -623,8 +622,17 @@ angular
 								  return isoDate;
 							};
 							
-							console.log($scope.traplines);
-							console.log($scope.users);
+							$scope.passUser = function(user,traplines){
+								$scope.user_info = user;
+								$scope.view_traplines = traplines;
+								console.log($scope.user_info);
+								console.log($scope.view_traplines);
+							}
+							$scope.add_trapline = function(trapline,permission){
+								console.log(trapline);
+								console.log(permission);
+								console.log($scope.user_info);
+							}		
 							
 						} ])
 			.controller(
@@ -695,16 +703,6 @@ angular
 								$scope.trapline.default_bait_id=parseInt($scope.trapline.default_bait_id);
 								$scope.trapline.traptype_id=parseInt($scope.trapline.traptype_id);
 								console.log($scope.trapline);
-								/*var data = {
-										 "name": $scope.line_name,
-								         "region_id": parseInt($scope.region_id),
-								         "start_tag": $scope.startTag,
-								         "end_tag": $scope.endTag,
-								         "img_filename": null,
-								         "default_bait_id": $scope.baitId,
-								         "default_traptype_id": $scope.traptypeId
-
-								};	*/
 
 								$http.put(
 										'https://www.nestnz.org/api/trapline/'
