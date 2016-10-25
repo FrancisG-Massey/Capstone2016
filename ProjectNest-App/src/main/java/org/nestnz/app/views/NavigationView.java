@@ -70,8 +70,8 @@ public class NavigationView extends View {
 	private static enum Distance {
 		FAR(100, "far"),
 		NORMAL(30, null),
-		CLOSE(20, "close"),
-		CLOSER(10, "closer"),
+		CLOSE(20, "close", "3beeps.wav"),
+		CLOSER(10, "closer", "4beeps.wav"),
 		CLOSEST(0, "closest", "5beeps.wav");
 		
 		double lowerBound;
