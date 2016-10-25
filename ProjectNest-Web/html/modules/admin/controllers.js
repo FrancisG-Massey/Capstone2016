@@ -115,7 +115,7 @@ angular
 							$scope.trap_type = trap_type;
 							// get all catch types
 							$scope.catch_types = catch_types;
-							console.log($scope.traps);
+							console.log(traps);
 							// load catch history when the page loads and save them into a scope variable
 							//console.log($scope.trapline_id);
 						    var config = {
@@ -500,6 +500,7 @@ angular
 								trap_type, $route) {
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
+							console.log(region.data);
 							$scope.regions = region.data;
 							$scope.baits = baits;
 							$scope.trap_types = trap_type;
