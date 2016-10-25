@@ -28,12 +28,56 @@
             <td>{{user.email}}</td>
             <td>{{formatDate(user.created_timestamp) |  date:"dd MMMM yyyy"}}</td>
             <td>{{user.admin?"Admin":"Volunteer"}}</td>
-            <td ng-if="user.registered.length > 0"><a href='#/trap-admin/{{user.registered[0].id}}/{{user.registered[0].name}}' class='btn btn-sm btn-primary'>{{user.registered[0].name}}</a></td>
-          	<td ng-if="user.registered.length <=0"><a disabled="disabled" class='btn btn-sm btn-info'>Not registered</a></td>
-          	<td><a href="#/user-admin/{{user.id}}/edit-user" class="btn btn-primary btn-round-sm btn-sm">Edit</a></td>
+          	<td><a ng-click="passUser(user,traplines);" class='btn btn-sm btn-primary' data-toggle="modal" data-target="#view-traplines">View Traplines</a></td>
+          	<td><a href="#/user-admin/{{user.id}}/edit-user" class="btn btn-sm btn-primary">Edit</a></td>
           </tr>    
         </tbody>
       </table>
     </div>
+</div>
+<div class="modal fade" id="view-traplines" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg"" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">View / Add Traplines for {{user_info.email}}</h4>
+      </div>
+      <div class="modal-body">
+      <h3 class="text-center page-header">View / Add Traplines</h3>
+	    <p ng-hide="showtraplines" class="text-center" ng-if="!(user_info.registered.length > 0)">{{user_info.email}} is not currently volunteering in any traplines</p>
+ 
+          <table ng-show ="showtraplines" class="table table-striped" id="tblGrid">
+          	<caption class="text-left"><strong>Available Traplines</strong></caption>
+            <thead id="tblHead">
+              <tr>
+                <th>Trapline</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Permission</th>
+                <td>Action</td>
+              </tr>
+            </thead>
+            <tbody data-ng-repeat="trapline in view_traplines">
+              <tr>
+                <td>{{trapline.name}}</td>
+                <td>{{trapline.start_tag}}</td>
+                <td>{{trapline.end_tag}}</td>
+				<td>
+		        	<select ng-model="permission" ng-options="option[1] as option[0] for option in options">
+		        	</select>
+   				</td>
+                <td><a ng-click="add_trapline(trapline,permission)" class="btn btn-success btn-round-sm btn-sm">Add</a></td>
+            </tbody>
+          </table>         
+ 
+      <div class="modal-footer">
+      	<a href="" ng-click="showtraplines=true" ng-hide="showtraplines" class="btn btn-info">
+		<span class="glyphicon glyphicon-plus"></span>Add</a>
+       <button ng-click ="showtraplines=false" type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 </div>
