@@ -307,7 +307,6 @@ public class NavigationView extends View {
     		trapPositionLayer.currentPositionProperty().bind(service.positionProperty());
     		Label label = new Label("Waiting for GPS coordinates...\nMake sure you have location services turned on");
     		label.getStyleClass().add("gps-notice");
-			setCenter(service.getPosition() == null ? label : map);
         	
     		Bindings.isNotNull(service.positionProperty()).addListener((obs, wasPresent, isPresent) -> {
     			if (isPresent) {
@@ -316,6 +315,8 @@ public class NavigationView extends View {
     				setCenter(label);
     			}
     		});
+			setCenter(service.getPosition() == null ? label : map);
+			LOG.log(Level.INFO, "Postion: "+service.getPosition());
     		
         	distanceToTrap.bind(Bindings.createDoubleBinding(() -> service.getPosition() == null || targetCoordsProperty.get() == null ? Double.POSITIVE_INFINITY :
         				getDistance(service.getPosition(), targetCoordsProperty.get()), 
