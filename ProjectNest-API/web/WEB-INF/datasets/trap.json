@@ -52,6 +52,19 @@
             t.trap_number;
     ",
     "POST" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         INSERT INTO trap (
             trap_traplineid,
             trap_number,
@@ -74,14 +87,11 @@
             #timestamp:last_reset#,
             #bigint:bait_id#
         FROM
-            traplineuser tlu
+            has_permission hp
         WHERE
             (#bigint:id# IS NULL) AND
             (#bigint:trapline_id# IS NOT NULL) AND
-
-            -- Only permit admins or trapline admins to create new traps
-            ((#boolean:logged-user-isadmin# = true) OR 
-            ((tlu.traplineuser_isadmin = true) AND (tlu.traplineuser_traplineid = #bigint:trapline_id#) AND (tlu.traplineuser_userid = #bigint:logged-user-id#)))
+            hp.has_permission
         RETURNING
             trap_id;
     ",

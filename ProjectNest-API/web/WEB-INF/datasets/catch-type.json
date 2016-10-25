@@ -47,16 +47,17 @@
             ct.catchtype_id;
     ",
     "POST" : "
-         WITH has_admin AS (
-            SELECT (count(*) > 0)::boolean as is_admin
-            FROM (
-                SELECT 1 WHERE #boolean:logged-user-isadmin# = true
-                UNION
-                SELECT 1 FROM traplineuser tlu
-                WHERE
-                (tlu.traplineuser_isadmin = true) AND
-                (tlu.traplineuser_userid = #bigint:logged-user-id#)
-            ) cte_ha
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
         )
         INSERT INTO catchtype (
             catchtype_name,
@@ -65,13 +66,12 @@
         SELECT
             #string:name#,
             #string:img_filename#
-        FROM has_admin ha
+        FROM 
+            has_permission hp
         WHERE
             (#bigint:id# IS NULL) AND 
             (#string:name# IS NOT NULL) AND
-
-            -- Only permit admins or trapline-admins to create catch-types.
-            (ha.is_admin = true)
+            hp.has_permission
 
         RETURNING
             catchtype_id;
