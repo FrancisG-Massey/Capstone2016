@@ -26,7 +26,7 @@
             tlu.traplineuser_userid as user_id,
             tlu.traplineuser_traplineid as trapline_id,
             tlu.traplineuser_isadmin as admin,
-            (lu_tlr.tl_isadmin OR #boolean:logged-user-isadmin#) as can_edit
+            (max(lu_tlr.tl_isadmin::integer)::boolean OR #boolean:logged-user-isadmin#) as can_edit
         FROM
             traplineuser tlu
             LEFT JOIN loggeduser_traplineroles lu_tlr
@@ -38,8 +38,7 @@
             ((#bigint:trapline-id# IS NULL) OR (tlu.traplineuser_traplineid = #bigint:trapline-id#)) AND
             ((#boolean:admin# IS NULL) OR (tlu.traplineuser_isadmin = #boolean:admin#))
         GROUP BY
-            tlu.traplineuser_id,
-            lu_tlr.tl_isadmin
+            tlu.traplineuser_id
         ORDER BY
             tlu.traplineuser_id;
     ",
