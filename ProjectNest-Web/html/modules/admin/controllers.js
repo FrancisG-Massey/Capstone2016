@@ -579,8 +579,9 @@ angular
 						'$route',
 						'$http',
 						'users',
+						'$window',
 						function($scope, $rootScope, traplines, trapline_users, $route,
-								$http, users) {
+								$http, users,$window) {
 							// var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
@@ -631,6 +632,8 @@ angular
 								$scope.view_traplines = traplines;
 								console.log($scope.user_info);
 								console.log($scope.view_traplines);
+								console.log($scope.showtraplines);
+								$scope.showtraplines = false;
 							}
 							$scope.add_trapline = function(trapline,permission){
 								var data = {
@@ -645,11 +648,20 @@ angular
 											'https://www.nestnz.org/api/trapline-user',
 											data).then(
 											function(data, status, header, config) {
-												permission = undefined;
-												$route.reload();
+												$window.location.reload();
 											});
-							}		
-							
+							}
+							$scope.filtered = function(trapline){
+								if ($scope.user_info === undefined) {
+									return true;
+								}
+								for(var i=0; i <$scope.user_info.registered.length; i++){
+									if($scope.user_info.registered[i].id == trapline.id){
+										return false;
+									}
+								}
+								return true;
+							}
 						} ])
 			.controller(
 				'AdminEditUserController',
