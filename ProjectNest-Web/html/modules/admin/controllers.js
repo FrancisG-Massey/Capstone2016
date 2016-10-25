@@ -587,6 +587,7 @@ angular
 							$scope.trapline_users = trapline_users;
 							$scope.users = users;
 							$scope.options = [["Admin",true],["Volunteer",false]];	
+							console.log($scope.trapline_users);
 							// get all traplines and trapline users.
 							// add the trapline users to their traplines 
 							var trapline, trapline_user;
@@ -632,6 +633,18 @@ angular
 								console.log(trapline);
 								console.log(permission);
 								console.log($scope.user_info);
+								var data = {
+										"admin" : permission,
+										"trapline_id" : trapline.id,
+										"user_id" : $scope.user_info.id
+											};
+
+									$http.post(
+											'https://www.nestnz.org/api/trapline-user',
+											data).then(
+											function(data, status, header, config) {
+												$route.reload();
+											});
 							}		
 							
 						} ])
