@@ -47,7 +47,31 @@
       <div class="modal-body">
       <h3 class="text-center page-header">View / Add Traplines</h3>
 	    <p ng-hide="showtraplines" class="text-center" ng-if="!(user_info.registered.length > 0)">{{user_info.email}} is not currently volunteering in any traplines</p>
+		
+		<div ng-hide ="showtraplines" ng-if="user_info.registered.length > 0">
+		<!-- show registered traplines for a user -->
+           <table class="table table-striped" id="tblGrid"  data-ng-repeat = "registered in user_info.registered" ng-init="parentIndex = registered">
+          	<caption class="text-left"><strong>Registered Traplines</strong></caption>
+            <thead id="tblHead" >
+              <tr>
+                <th>Trapline</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody ng-if="trapline_user.user_id == user_info.id" data-ng-repeat="trapline_user in registered.trapline_users">
+              <tr>
+                <td>{{parentIndex.name}}</td>
+                <td>{{parentIndex.start_tag}}</td>
+                <td>{{parentIndex.end_tag}}</td>
+                <td>{{trapline_user.admin? "Admin":"Volunteer"}}</td>
+            </tbody>
+          </table>         
+ 	</div>
  
+ 
+ 		<!-- available traplines for a user can be added in-->
           <table ng-show ="showtraplines" class="table table-striped" id="tblGrid">
           	<caption class="text-left"><strong>Available Traplines</strong></caption>
             <thead id="tblHead">

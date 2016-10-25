@@ -591,6 +591,7 @@ angular
 							console.log($scope.trapline_users);
 							// get all traplines and trapline users.
 							// add the trapline users to their traplines 
+							
 							var trapline, trapline_user;
 							for (var i = 0; i < $scope.traplines.length; i++) {
 								trapline = $scope.traplines[i];
