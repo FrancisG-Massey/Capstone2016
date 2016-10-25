@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.services;
+package org.nestnz.app.services.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -38,15 +38,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.parser.Cacheable;
+import org.nestnz.app.parser.ParserCatch;
 import org.nestnz.app.parser.ParserRegion;
 import org.nestnz.app.parser.ParserTrap;
 import org.nestnz.app.parser.ParserTrapline;
+import org.nestnz.app.services.CachingService;
+import org.nestnz.app.services.NetworkService;
 import org.nestnz.app.services.impl.DefaultTrapDataService;
 
 import com.gluonhq.connect.GluonObservableObject;
@@ -107,7 +111,10 @@ public class TestTrapDataService {
 				Consumer<ParserTrapline> callback = invocation.getArgument(0);
 				List<ParserTrap> traps = new ArrayList<>();
 				
-				traps.add(new ParserTrap(7623, 1, -40.314206, 175.779946, "ACTIVE", "2016-04-16T10:26:07", "2016-08-16T10:28:07", new ArrayList<>()));
+				List<ParserCatch> catches = new ArrayList<>();
+				catches.add(new ParserCatch(36, 10_000, "2016-08-13T10:30:17", "Test Note"));
+				
+				traps.add(new ParserTrap(7623, 1, -40.314206, 175.779946, "ACTIVE", "2016-04-16T10:26:07", "2016-08-16T10:28:07", catches));
 				traps.add(new ParserTrap(7468, 2, -40.311086, 175.775306, "ACTIVE", "2016-04-16T10:30:07", "2016-08-16T10:30:07", new ArrayList<>()));
 				traps.add(new ParserTrap(9072, 3, -40.311821, 175.775993, "INACTIVE", "2016-04-16T10:36:07", "2016-08-16T10:36:07", null));
 				
@@ -119,6 +126,8 @@ public class TestTrapDataService {
 			}			
 		}).when(cachingService).fetchTraplines(any());
 		
+		dataService.getCatchTypes().put(10_000, CatchType.OTHER);
+				
 		//Since traplines are loaded asynchronosly, we need to add a listener & wait for them to load
 		CompletableFuture<Trapline> future = new CompletableFuture<Trapline>();
 		dataService.getTraplines().addListener((ListChangeListener<Trapline>)change -> {
@@ -130,7 +139,7 @@ public class TestTrapDataService {
 			}
 		});
 		
-		dataService.initialise();
+		dataService.initTraplines();
 		
 		Trapline trapline = future.get(2, TimeUnit.SECONDS);//Wait 2 seconds at most
 		
@@ -149,6 +158,11 @@ public class TestTrapDataService {
 		
 		//Check one of the traps to ensure it loaded correctly
 		assertEquals(oracleTrap, trapline.getTraps().get(1));    	
+		
+		Catch oracleCatch = new Catch(CatchType.OTHER, LocalDateTime.parse("2016-08-13T10:30:17"), "Test Note");
+		oracleCatch.setId(36);
+		
+		assertEquals(oracleCatch, trapline.getTraps().get(0).getCatches().get(0));
 	}
 
 }

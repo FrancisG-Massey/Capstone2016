@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.nestnz.app.parser;
 
+import javax.xml.bind.annotation.XmlElement;
+
 public final class ParserCatch {
 	
 	private int id;
@@ -30,6 +32,13 @@ public final class ParserCatch {
 		
 	}
 
+	public ParserCatch(int id, int typeId, String timestamp, String note) {
+		this.id = id;
+		this.typeId = typeId;
+		this.timestamp = timestamp;
+		this.note = note;
+	}
+
 	public int getId() {
 		return id;
 	}
@@ -38,6 +47,7 @@ public final class ParserCatch {
 		this.id = id;
 	}
 
+	@XmlElement(name="type_id")
 	public int getTypeId() {
 		return typeId;
 	}
@@ -64,7 +74,7 @@ public final class ParserCatch {
 
 	@Override
 	public String toString() {
-		return "ParserCatch [typeId=" + typeId + ", timestamp=" + timestamp + ", note=" + note + "]";
+		return "ParserCatch [id=" + id + ", typeId=" + typeId + ", timestamp=" + timestamp + ", note=" + note + "]";
 	}
 
 	@Override
@@ -74,6 +84,7 @@ public final class ParserCatch {
 		result = prime * result + ((note == null) ? 0 : note.hashCode());
 		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
 		result = prime * result + typeId;
+		result = prime * result + id;
 		return result;
 	}
 
@@ -97,6 +108,8 @@ public final class ParserCatch {
 		} else if (!timestamp.equals(other.timestamp))
 			return false;
 		if (typeId != other.typeId)
+			return false;
+		if (id != other.id)
 			return false;
 		return true;
 	}

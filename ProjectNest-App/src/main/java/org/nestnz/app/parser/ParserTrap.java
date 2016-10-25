@@ -74,6 +74,7 @@ public final class ParserTrap {
 			pCatch.setId(c.getId().orElse(-1));
 			pCatch.setTypeId(c.getCatchType().getId());
 			pCatch.setTimestamp(c.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+			pCatch.setNote(c.getNote());
 			this.catches.add(pCatch);
 		}
 	}
@@ -148,7 +149,7 @@ public final class ParserTrap {
 	@Override
 	public String toString() {
 		return "ParserTrap [id=" + id + ", number=" + number + ", coordLat=" + coordLat + ", coordLong=" + coordLong + ", created="
-				+ created + "]";
+				+ created + ", catches=" + catches + "]";
 	}
 
 	@Override

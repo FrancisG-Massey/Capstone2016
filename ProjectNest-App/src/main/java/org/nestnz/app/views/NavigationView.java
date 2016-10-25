@@ -176,7 +176,7 @@ public class NavigationView extends View {
      */
     final DoubleProperty distanceToTrap = new SimpleDoubleProperty();
     
-    final Dialog<CatchType> catchSelectDialog;
+    final Dialog<Catch> catchSelectDialog;
 	
     /**
      * The map used to show the user's current position relative to nearby traps
@@ -224,6 +224,7 @@ public class NavigationView extends View {
 	            		catchSelectDialog.getCatchTypes().add(ct);
 	            	}
 	            	catchSelectDialog.getCatchTypes().addAll(catchTypes);
+	            	//catchSelectDialog.getCatchTypes().add(CatchType.OTHER);
             	}
             });
             this.catchSelectDialog = catchSelectDialog;
@@ -348,35 +349,17 @@ public class NavigationView extends View {
     private void showLogCatchDialog () {
 		Trap forTrap = trapProperty.get();
     	catchSelectDialog.setTitleText(String.format("Log catch #%d", forTrap.getNumber()));
-    	catchSelectDialog.showAndWait().ifPresent(catchType -> {
-        	if (catchType != CatchType.EMPTY) {
-        		Catch loggedCatch = new Catch(catchType);
+    	catchSelectDialog.showAndWait().ifPresent(loggedCatch -> {
+        	if (loggedCatch.getCatchType() != CatchType.EMPTY) {
         		forTrap.getCatches().add(loggedCatch);
         	}
         	if (hasNextTrap()) {
         		nextTrap();
         	}
         	getApplication().showMessage(String.format("Logged %s in trap #%d", 
-        			catchType.getName(), forTrap.getNumber())/*, "Change", evt -> {
+        			loggedCatch.getCatchType().getName(), forTrap.getNumber())/*, "Change", evt -> {
         		modifyCatch(loggedCatch);
         	}*/);
-    	});
-    }
-    
-    /**
-     * Displays the catch type dialog also displayed in {@link #showLogCatchDialog()}, but allows the user to change the catch specified {@link integer} {@code loggedCatch} 
-     * @param loggedCatch The previously specified catch to ask the user to change
-     */
-    protected void modifyCatch (Catch loggedCatch) {
-		Trap forTrap = trapProperty.get();
-    	catchSelectDialog.setTitleText(String.format("Change catch #%d", forTrap.getNumber()));
-    	catchSelectDialog.showAndWait().ifPresent(catchType -> {
-    		LOG.log(Level.INFO, "Changed catch to "+catchType);
-        	getApplication().showMessage(String.format("Changed catch in trap #%d from %s to %s", 
-        			forTrap.getNumber(), loggedCatch.getCatchType().getName(), catchType.getName()), "Change", evt -> {
-        		modifyCatch(loggedCatch);
-        	});
-        	loggedCatch.setCatchType(catchType);
     	});
     }
     

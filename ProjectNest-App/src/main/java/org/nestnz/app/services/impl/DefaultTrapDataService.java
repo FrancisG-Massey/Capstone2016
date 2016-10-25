@@ -88,6 +88,8 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
     public DefaultTrapDataService (CachingService cachingService, NetworkService networkService) throws IOException {
     	this.cachingService = Objects.requireNonNull(cachingService);
     	this.networkService = Objects.requireNonNull(networkService);
+    	
+    	this.catchTypes.setData(new HashMap<>());
     }
     
     /* (non-Javadoc)
@@ -113,10 +115,14 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
     			this.catchTypes.setLastServerFetch(results.get().getLastServerFetch());
     		}
     	});
+    	initTraplines();
+    	watchForChanges();
+    }
+    
+    protected void initTraplines () {
     	cachingService.fetchTraplines((pTrapline) -> {
     		addTrapline(pTrapline);
     	});
-    	watchForChanges();
     }
     
     private void addTrapline (ParserTrapline pLine) {
@@ -140,7 +146,13 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
 				for (ParserCatch pCatch : pTrap.getCatches()) {
 					CatchType cType = catchTypes.getData().get(pCatch.getTypeId());			
 					LocalDateTime timestamp = LocalDateTime.parse(pCatch.getTimestamp());
-					trap.getCatches().add(new Catch(cType, timestamp));
+					if (cType == null) {
+						LOG.log(Level.WARNING, "Catch type "+pCatch.getTypeId()+" does not exist [trapline="+pLine.getId()+", trap="+pTrap.getId()+"]");
+					} else {
+						Catch c = new Catch(cType, timestamp, pCatch.getNote());
+						c.setId(pCatch.getId());
+						trap.getCatches().add(c);
+					}
 				}
 			} else {
 				LOG.log(Level.WARNING, "getCatches() is returning null for trapline "+pLine.getId()+", trap "+pTrap.getId());

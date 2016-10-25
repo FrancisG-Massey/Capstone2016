@@ -114,7 +114,7 @@ public class RestNetworkService implements NetworkService {
 		
 		String logged = loggedCatch.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
-		ApiCatch apiCatch = new ApiCatch(trapId, loggedCatch.getCatchType().getId(), null, logged);
+		ApiCatch apiCatch = new ApiCatch(trapId, loggedCatch.getCatchType().getId(), loggedCatch.getNote(), logged);
 		
     	return processCreateRequest(ApiCatch.class, apiCatch, apiClient, id -> {
     		LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);

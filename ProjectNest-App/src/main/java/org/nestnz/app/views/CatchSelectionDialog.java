@@ -18,13 +18,16 @@ package org.nestnz.app.views;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.nestnz.app.model.Catch;
 import org.nestnz.app.model.CatchType;
 
 import com.gluonhq.charm.glisten.control.Dialog;
 
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
@@ -40,6 +43,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionModel;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
@@ -54,7 +58,7 @@ import javafx.scene.layout.Priority;
 /**
  * 
  */
-public class CatchSelectionDialog extends Dialog<CatchType> {
+public class CatchSelectionDialog extends Dialog<Catch> {
 
     private static final Logger LOG = Logger.getLogger(CatchSelectionDialog.class.getName());
     
@@ -102,8 +106,20 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
 		SelectionModel<CatchType> selectionModel = fullSelectionList.getSelectionModel();
 		selectionModel.selectedItemProperty().addListener((obs, oldItem, newItem) -> {
 			if (newItem != null) {
-				LOG.log(Level.FINE, "Selected catch: "+newItem);
-	    		setResult(newItem);
+				LOG.log(Level.FINE, "Selected catch type: "+newItem);
+				Catch c = new Catch(newItem);
+				if (newItem == CatchType.OTHER) {
+					Optional<String> text = makeOtherDescriptionDialog().showAndWait();
+					if (text.isPresent()) {
+						c.setNote(text.get());
+					} else {
+						//Clear the current selection so the user can select 'other' again if they want
+						//Need to do this as a "runLater" task, otherwise it throws exceptions
+						Platform.runLater(() -> selectionModel.clearSelection());
+						return;
+					}
+				}
+	    		setResult(c);
 	    		hide();
 			}
 		});
@@ -186,12 +202,40 @@ public class CatchSelectionDialog extends Dialog<CatchType> {
     	GridPane.setVgrow(button, Priority.ALWAYS);
     	button.setOnAction(evt -> {
     		LOG.log(Level.FINE, "Selected catch: "+catchType.get());
-    		setResult(catchType.get());
+    		setResult(new Catch(catchType.get()));
     		hide();
     	});
     	return button;
     }
     
+    private Dialog<String> makeOtherDescriptionDialog () {
+    	//FIXME: Text in this dialog appears blury, while buttons don't appear at all
+    	Dialog<String> dialog = new Dialog<>();
+    	dialog.setTitleText("Catch Description");
+		TextArea input = new TextArea();
+		input.setPromptText("Please enter a description of the catch");
+		dialog.setContent(input);
+		Button ok = new Button();
+		Button cancel = new Button();
+		ok.setOnAction(evt -> {
+			dialog.setResult(input.getText());
+			dialog.hide();
+		});
+		
+		cancel.setOnAction(evt -> dialog.hide());
+		
+		dialog.getButtons().addAll(ok, cancel);
+		return dialog;
+    }
+    
+    /**
+     * Adds a listener which loads catch type images & displays them as a background image on the specified button
+     * When backgrounds are attached via this method, they don't inherit any background properties specified in CSS by default.
+     * Instead, a work-around is used to pull the background off two dummy buttons ({@link #dummyButton} and {@link #dummyHoverButton}) which inherit CSS backgrounds,
+     * though image-related properties are ignored.
+     * @param button The button to attach the background image to
+     * @param catchType The catch type from which to collect the background image URL
+     */
     private void addBackgroundLoader (Button button, ObjectBinding<CatchType> catchType) {    	
     	ObjectProperty<Background> bgProperty = new SimpleObjectProperty<>();
     	button.backgroundProperty().bind(bgProperty);
