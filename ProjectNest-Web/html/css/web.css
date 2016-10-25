@@ -243,3 +243,14 @@ border-radius: 15px;
         color: #FFF;
         border-color: #d58512;
     }
+    
+ .gap-right {
+  margin-right: 10px; 
+  margin-left:10px;
+  height:200px;
+  width:200px;
+}
+ .gap {
+  margin-right: 10px; 
+  margin-left:10px;
+}
