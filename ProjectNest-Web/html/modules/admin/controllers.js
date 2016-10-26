@@ -103,11 +103,14 @@ angular
 						'$route',
 						'$http',
 						'catch_types',
+						'trapline',
 						function($scope, $rootScope, traps, baits, trap_type,
-								$route, $http, catch_types) {
+								$route, $http, catch_types, trapline) {
 							// var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
+							console.log(trapline);
+							$scope.trapline = trapline;
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
 							$scope.traps = traps;

@@ -241,6 +241,18 @@ var myApp = angular
                 	}
                 })
                 },
+                trapline:function($http, $route,$cookieStore,$rootScope){
+                    return $http
+                    .get('https://www.nestnz.org/api/trapline/'+$route.current.params.traplineId)
+                    .then(function(response){
+                        return response.data[0];
+                }, function(errorResponse){
+                	if(errorResponse.status==403){
+                		$rootScope.globals = {};
+                		$cookieStore.remove('globals');
+                	}
+                })
+                },
                 trap_type:function($http, $route,$cookieStore,$rootScope){
                     return $http
                     .get('https://www.nestnz.org/api/trap-type')
