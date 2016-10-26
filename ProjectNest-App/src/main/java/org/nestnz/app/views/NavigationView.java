@@ -316,7 +316,7 @@ public class NavigationView extends View {
     /**
      * Start listening for new GPS positions
      */
-    private void initMonitors () {
+    protected void initMonitors () {
     	Optional<PositionService> gpsService = Services.get(PositionService.class);
     	if (!gpsService.isPresent()) {
     		Label label = new Label("GPS is not supported on this device!");

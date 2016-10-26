@@ -38,7 +38,7 @@ import org.nestnz.app.services.TrapDataService;
 
 import javafx.embed.swing.JFXPanel;
 
-public class TestNavigationView {
+public class TestNavigationSequence {
 	
 	@BeforeClass
     public static void initToolkit() throws InterruptedException {
