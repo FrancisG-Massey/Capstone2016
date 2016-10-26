@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -41,6 +40,14 @@ public class NestHttpPutTests extends NestHttpTests {
     @BeforeClass
     public static void setUpClass() throws IOException, SQLException {
         NestHttpTests.NestAdminLogin();
+        
+        // We could send all the POST requests here and only do PUT in the tests, 
+        // however PUT will send an UPDATE to the db even if the object already matches exactly in the db.
+        // Thus we can test if the PUT works, using the same object we POSTed.
+        // This also means we don't have the extra worry of a PUT conflicting with other 
+        // records as this would be caught at the POST stage.
+        // We also have less code duplication this way as we don't need to define JSON objects twice,
+        // both here in the beforeclass, as well as in the tests themselves.
     }
     
     @AfterClass
@@ -243,7 +250,7 @@ public class NestHttpPutTests extends NestHttpTests {
     public void AI_PutCatchFails() throws IOException {
         // The user is now registered to the trapline, so we can reattempt to log the catch
         
-        // Build the Json trap object
+        // Build the Json catch object
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("trap_id", entityMap.get("trap"));
         jsonObject.addProperty("catchtype_id", entityMap.get("catchtype"));
