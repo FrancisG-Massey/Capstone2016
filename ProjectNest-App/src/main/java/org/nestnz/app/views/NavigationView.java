@@ -51,6 +51,7 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -327,14 +328,16 @@ public class NavigationView extends View {
     		Label label = new Label("Waiting for GPS coordinates...\nMake sure you have location services turned on");
     		label.getStyleClass().add("gps-notice");
         	
-    		Bindings.isNotNull(service.positionProperty()).addListener((obs, wasPresent, isPresent) -> {
+    		BooleanBinding coodsAvailable = Bindings.isNotNull(service.positionProperty());
+    		
+    		coodsAvailable.addListener((obs, wasPresent, isPresent) -> {
     			if (isPresent) {
     				setCenter(map);
     			} else {    				
     				setCenter(label);
     			}
     		});
-			setCenter(service.getPosition() == null ? label : map);
+			setCenter(coodsAvailable.get() ? map : label);
 			LOG.log(Level.INFO, "Postion: "+service.getPosition());
     		
         	distanceToTrap.bind(Bindings.createDoubleBinding(() -> service.getPosition() == null || targetCoordsProperty.get() == null ? Double.POSITIVE_INFINITY :
