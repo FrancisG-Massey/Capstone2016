@@ -38,26 +38,6 @@ angular
 									}
 								}
 							};
-							// loading / download csv data and save it to scope variable.
-							$scope.loadcsv = function(trapline){
-								console.log(trapline);
-								console.log(trapline.id);
-								$scope.active_trapline = trapline;
-								var id = trapline.id;
-							    var config = {
-										method: 'GET',
-						       			 url: 'https://www.nestnz.org/api/catch-report-simple?trapline-id='+id+'&_='+new Date().getTime(),
-						       			 headers: {
-						       			   'Accept': 'text/csv'
-						       			 },
-							            }
-							   $http(config)
-							            .success(function(res){
-							                console.log(res);
-							                $scope.csv_data = res;
-							            })
-							            .error(function(res){});
-							  };
 							  // load catch history in json format.
 							  $scope.loadjson = function(trapline){
 									console.log(trapline.id);

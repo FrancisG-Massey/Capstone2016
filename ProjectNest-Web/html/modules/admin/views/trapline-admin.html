@@ -31,7 +31,7 @@
             <td>{{trapline.end_tag}}</td>
             <td><a href="#/trap-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-primary btn-round-sm btn-sm">View</a></td>
             <td><a href="#/volunteer-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-primary btn-round-sm btn-sm">View</a></td>
-            <td><a herf="#" ng-click="loadjson(trapline); loadcsv(trapline);" class="btn btn-primary btn-round-sm btn-sm" data-toggle="modal" data-target="#catch-history">View</a></td>
+            <td><a herf="#" ng-click="loadjson(trapline);" class="btn btn-primary btn-round-sm btn-sm" data-toggle="modal" data-target="#catch-history">View</a></td>
             <td><a ng-disabled="{{!trapline.can_edit}}" href="#/trapline-admin/{{trapline.id}}/{{trapline.name}}/edit-trapline" class="btn btn-primary btn-round-sm btn-sm">Edit</a></td>
           </tr>    
         </tbody>
@@ -67,7 +67,7 @@
           </table>
 	        <div class="modal-footer">
 	          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-	          <button type="submit" class="btn btn-success">Export</button>
+	          <a href="https://www.nestnz.org/api/catch-report-simple.csv?trapline-id={{active_trapline.id}}" class="btn btn-success">Export</a>
 	        </div>
 	      </div>
     </div>
