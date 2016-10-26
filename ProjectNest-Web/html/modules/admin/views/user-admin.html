@@ -29,7 +29,7 @@
             <td>{{formatDate(user.created_timestamp) |  date:"dd MMMM yyyy"}}</td>
             <td>{{user.admin?"Admin":"Volunteer"}}</td>
           	<td><a ng-click="passUser(user,traplines);" class='btn btn-sm btn-primary' ng-model="showtraplines"data-toggle="modal" data-target="#view-traplines">View Traplines</a></td>
-          	<td><a href="#/user-admin/{{user.id}}/edit-user" class="btn btn-sm btn-primary">Edit</a></td>
+          	<td><a ng-disabled="{{!user.can_edit}}" href="#/user-admin/{{user.id}}/edit-user" class="btn btn-sm btn-primary">Edit</a></td>
           </tr>    
         </tbody>
       </table>
