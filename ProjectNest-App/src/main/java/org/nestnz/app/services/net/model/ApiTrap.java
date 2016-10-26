@@ -14,21 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.parser;
+package org.nestnz.app.services.net.model;
 
-public final class ParserRegion {
+import javax.xml.bind.annotation.XmlElement;
 
+/**
+ * Represents a trap sent to/received from /trap on the API.
+ * This class can be used for GET and PUT requests, but {@link ApiPostTrap} should be used for POST requests as it excludes the ID
+ */
+public class ApiTrap extends ApiPostTrap {
+	
 	private int id;
 	
-	private String name;
+	private String lastReset;
 	
-	public ParserRegion () {
+	public ApiTrap () {
 		
 	}
-	
-	public ParserRegion (int id, String name) {
+
+	public ApiTrap(int id, int traplineId, int number, double latitude, double longitude, String created) {
+		super(traplineId, number, latitude, longitude, created);
 		this.id = id;
-		this.name = name;
 	}
 
 	public int getId() {
@@ -39,44 +45,18 @@ public final class ParserRegion {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	@XmlElement(name="last_reset")
+	public String getLastReset() {
+		return lastReset;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setLastReset(String lastReset) {
+		this.lastReset = lastReset;
 	}
 
 	@Override
 	public String toString() {
-		return "ParserRegion [id=" + id + ", name=" + name + "]";
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + id;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ParserRegion other = (ParserRegion) obj;
-		if (id != other.id)
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		return true;
+		return "ApiTrap [id=" + id + ", traplineId=" + traplineId + ", number=" + number + ", latitude=" + latitude + ", longitude="
+				+ longitude + ", created=" + created +", lastReset=" + lastReset + "]";
 	}
 }

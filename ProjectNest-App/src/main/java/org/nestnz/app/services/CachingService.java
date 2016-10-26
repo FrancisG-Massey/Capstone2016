@@ -21,9 +21,9 @@ import java.util.function.Consumer;
 
 import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.parser.Cacheable;
-import org.nestnz.app.parser.ParserCatchTypeList;
-import org.nestnz.app.parser.ParserTrapline;
+import org.nestnz.app.services.cache.model.Cacheable;
+import org.nestnz.app.services.cache.model.ParserCatchTypeList;
+import org.nestnz.app.services.cache.model.ParserTrapline;
 
 import com.gluonhq.connect.GluonObservableObject;
 

@@ -14,32 +14,53 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.parser;
+package org.nestnz.app.services.cache.model;
 
-import java.util.List;
+import javax.xml.bind.annotation.XmlElement;
 
-/**
- * This class is used by the Gluon Connect JSON Converter to store catch type data on the device's disk for future use when internet is unavailable
- */
-public final class ParserCatchTypeList {
-
-	private List<ParserCatchType> data;
-	private String lastServerFetch;
-
-	public List<ParserCatchType> getData() {
-		return data;
+public class ParserCatchType {
+	
+	private int id;
+	private String name;
+	private String imageUrl;
+	
+	public ParserCatchType() {
+		
 	}
 
-	public void setData(List<ParserCatchType> data) {
-		this.data = data;
+	public ParserCatchType(int id, String name, String imageUrl) {
+		this.id = id;
+		this.name = name;
+		this.imageUrl = imageUrl;
 	}
 
-	public String getLastServerFetch() {
-		return lastServerFetch;
-	}
-
-	public void setLastServerFetch(String lastServerFetch) {
-		this.lastServerFetch = lastServerFetch;
+	public int getId() {
+		return id;
 	}
 	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	@XmlElement(name="image_url")
+	public String getImageUrl() {
+		return imageUrl;
+	}
+	
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
+	}
+	
+	@Override
+	public String toString() {
+		return "ParserCatchType [id=" + id + ", name=" + name + ", imageUrl=" + imageUrl + "]";
+	}
 }

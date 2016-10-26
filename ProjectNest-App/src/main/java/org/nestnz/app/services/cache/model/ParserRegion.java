@@ -14,29 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.net.model;
+package org.nestnz.app.services.cache.model;
 
-import javax.xml.bind.annotation.XmlElement;
+public final class ParserRegion {
 
-/**
- * Represents a catch type received from the API
- */
-public final class ApiCatchType {
-	
 	private int id;
 	
 	private String name;
 	
-	private String imageUrl;
-
-	public ApiCatchType() {
+	public ParserRegion () {
 		
 	}
-
-	public ApiCatchType(int id, String name, String imageUrl) {
+	
+	public ParserRegion (int id, String name) {
 		this.id = id;
 		this.name = name;
-		this.imageUrl = imageUrl;
 	}
 
 	public int getId() {
@@ -55,17 +47,36 @@ public final class ApiCatchType {
 		this.name = name;
 	}
 
-	@XmlElement(name="img_filename")
-	public String getImageUrl() {
-		return imageUrl;
-	}
-
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
+	@Override
+	public String toString() {
+		return "ParserRegion [id=" + id + ", name=" + name + "]";
 	}
 
 	@Override
-	public String toString() {
-		return "ApiCatchType [id=" + id + ", name=" + name + ", imageUrl=" + imageUrl + "]";
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ParserRegion other = (ParserRegion) obj;
+		if (id != other.id)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
 	}
 }

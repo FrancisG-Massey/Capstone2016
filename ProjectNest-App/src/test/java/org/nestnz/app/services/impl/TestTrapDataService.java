@@ -44,13 +44,13 @@ import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.parser.Cacheable;
-import org.nestnz.app.parser.ParserCatch;
-import org.nestnz.app.parser.ParserRegion;
-import org.nestnz.app.parser.ParserTrap;
-import org.nestnz.app.parser.ParserTrapline;
 import org.nestnz.app.services.CachingService;
 import org.nestnz.app.services.NetworkService;
+import org.nestnz.app.services.cache.model.Cacheable;
+import org.nestnz.app.services.cache.model.ParserCatch;
+import org.nestnz.app.services.cache.model.ParserRegion;
+import org.nestnz.app.services.cache.model.ParserTrap;
+import org.nestnz.app.services.cache.model.ParserTrapline;
 import org.nestnz.app.services.impl.DefaultTrapDataService;
 
 import com.gluonhq.connect.GluonObservableObject;

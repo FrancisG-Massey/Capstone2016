@@ -14,37 +14,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package org.nestnz.app.parser;
+package org.nestnz.app.services.net.model;
 
-import java.time.LocalDateTime;
-
-public class Cacheable<T> {
-
-	private T data;
-	private LocalDateTime lastServerFetch;
+/**
+ * Represents a region received from the API
+ */
+public final class ApiRegion {
 	
-	public Cacheable() {
+	private int id;
+	
+	private String name;
+
+	public ApiRegion() {
 		
 	}
 
-	public T getData() {
-		return data;
+	public ApiRegion(int id, String name) {
+		this.id = id;
+		this.name = name;
 	}
 
-	public void setData(T data) {
-		this.data = data;
+	public int getId() {
+		return id;
 	}
 
-	public LocalDateTime getLastServerFetch() {
-		return lastServerFetch;
+	public void setId(int id) {
+		this.id = id;
 	}
 
-	public void setLastServerFetch(LocalDateTime lastServerFetch) {
-		this.lastServerFetch = lastServerFetch;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override
 	public String toString() {
-		return "Cacheable [data=" + data + ", lastServerFetch=" + lastServerFetch + "]";
+		return "ApiRegion [id=" + id + ", name=" + name + "]";
 	}
 }
