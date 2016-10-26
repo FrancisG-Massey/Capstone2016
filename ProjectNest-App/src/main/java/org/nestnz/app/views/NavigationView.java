@@ -529,14 +529,13 @@ public class NavigationView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-        //appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
+        appBar.setNavIcon(MaterialDesignIcon.ARROW_BACK.button(evt -> MobileApplication.getInstance().switchToPreviousView()));
         trapProperty.addListener((obs, oldV, newV) -> {
         	if (newV != null) {
                 appBar.setTitleText("Trap "+newV.getNumber());        		
         	}
         });
         appBar.setTitleText("Trap "+trapProperty.get().getNumber());
-        appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> MobileApplication.getInstance().switchToPreviousView()));
     }
     
 }
