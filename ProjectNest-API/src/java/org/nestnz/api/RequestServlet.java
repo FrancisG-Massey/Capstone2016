@@ -96,6 +96,7 @@ public class RequestServlet extends HttpServlet {
      * 
      * @param request
      * @param response
+     * @param httpMethod
      * @throws ServletException
      * @throws IOException 
      */
@@ -109,6 +110,11 @@ public class RequestServlet extends HttpServlet {
         Matcher m = Pattern.compile(Common.URLENTITY_REGEX).matcher(request.getPathInfo().toLowerCase());
         String requestEntity = m.find() ? m.group().substring(1) : "";
         String requestEntityID = m.find() ? m.group().substring(1) : "";
+        
+        // Strip the data type extension off the entity path if there is one
+        final String[] requestEntityFull = requestEntity.split("[.]");
+        requestEntity = (requestEntityFull.length > 1) ? requestEntityFull[0] : requestEntity;
+        final String requestExt = (requestEntityFull.length > 1) ? requestEntityFull[1] : "";
         
         LOG.log(Level.INFO, "Received incoming {0} request for {1} Entity\n",
                 new Object[]{httpMethod, requestEntity});
@@ -278,12 +284,9 @@ public class RequestServlet extends HttpServlet {
                         ResultSet rsh = st.getResultSet();
                         switch (httpMethod) {
                             case "GET":
-                                if (request.getHeader("Accept") != null) {
-                                    formatCSV = Pattern.compile("text/csv").matcher(request.getHeader("Accept")).find();
-                                }
                                 if (rsh.isBeforeFirst()) {
                                     response.setStatus(HttpServletResponse.SC_OK);
-                                    if (formatCSV) {
+                                    if (requestExt.toLowerCase().equals("csv")) {
                                         String timeid = String.valueOf(Calendar.getInstance().getTimeInMillis());
                                         final String filename = "\"" + requestEntity + "_" + timeid + ".csv\"";
                                         response.setHeader("Content-Description","File Transfer");

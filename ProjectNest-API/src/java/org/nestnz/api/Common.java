@@ -44,7 +44,7 @@ public class Common {
     private static final Logger LOG = Logger.getLogger(Common.class.getName());
 
     //public final static String URLENTITY_REGEX = "/^\\/(?>([a-z][a-z-_]*))(?>\\/(\\d+))?/i";
-    public final static String URLENTITY_REGEX = "\\/([\\w-]*)";
+    public final static String URLENTITY_REGEX = "\\/([\\w-[.]]*)";
     public final static String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
     public final static String DATASETPARAM_REGEX = "(#[\\w-]+:[\\w-]+#)";
 

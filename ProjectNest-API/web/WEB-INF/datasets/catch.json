@@ -48,7 +48,8 @@
     ",
     "POST" : "
         WITH has_permission AS (
-            SELECT 
+            SELECT
+                (#boolean:logged-user-isadmin# OR
                 (#bigint:logged-user-id# IN (
                     SELECT 
                         tlu.traplineuser_userid
@@ -58,7 +59,7 @@
                             ON t.trap_traplineid = traplineuser_traplineid
                     WHERE
                         (t.trap_id = #bigint:trap_id#)
-                )) AS has_permission
+                ))) AS has_permission
         )
         INSERT INTO catch (
             catch_trapid,

@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -41,6 +40,14 @@ public class NestHttpPutTests extends NestHttpTests {
     @BeforeClass
     public static void setUpClass() throws IOException, SQLException {
         NestHttpTests.NestAdminLogin();
+        
+        // We could send all the POST requests here and only do PUT in the tests, 
+        // however PUT will send an UPDATE to the db even if the object already matches exactly in the db.
+        // Thus we can test if the PUT works, using the same object we POSTed.
+        // This also means we don't have the extra worry of a PUT conflicting with other 
+        // records as this would be caught at the POST stage.
+        // We also have less code duplication this way as we don't need to define JSON objects twice,
+        // both here in the beforeclass, as well as in the tests themselves.
     }
     
     @AfterClass
@@ -65,12 +72,16 @@ public class NestHttpPutTests extends NestHttpTests {
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/user", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("users");
-        entityMap.put("users", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long userId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("users", userId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/user/"+userId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code:" + Integer.toString(code2), code2 == 204);
     }
     
     @Test
@@ -83,12 +94,16 @@ public class NestHttpPutTests extends NestHttpTests {
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/bait", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("bait");
-        entityMap.put("bait", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long baitId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("bait", baitId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/bait/"+baitId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code:" + Integer.toString(code2), code2 == 204);
     }
     
     @Test
@@ -100,12 +115,16 @@ public class NestHttpPutTests extends NestHttpTests {
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/catch-type", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("catchtype");
-        entityMap.put("catchtype", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long catchTypeId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("catchtype", catchTypeId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/catch-type/"+catchTypeId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code:" + Integer.toString(code2), code2 == 204);
     }
     
     @Test
@@ -118,28 +137,36 @@ public class NestHttpPutTests extends NestHttpTests {
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/trap-type", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("traptype");
-        entityMap.put("traptype", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long trapTypeId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("traptype", trapTypeId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/trap-type/"+trapTypeId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code:" + Integer.toString(code2), code2 == 204);
     }
     
     @Test
-    public void AE_PuttRegionSucceeds() throws IOException {
+    public void AE_PutRegionSucceeds() throws IOException {
         // Build the Json region object
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("name", "new test region");
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/region", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("region");
-        entityMap.put("region", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long regionId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("region", regionId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/region/"+regionId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code:" + Integer.toString(code2), code2 == 204);
     }
     
     @Test
@@ -156,12 +183,16 @@ public class NestHttpPutTests extends NestHttpTests {
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/trapline", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("trapline");
-        entityMap.put("trapline", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long traplineId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("trapline", traplineId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/trapline/"+traplineId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code:" + Integer.toString(code2), code2 == 204);
     }
     
     @Test
@@ -176,12 +207,16 @@ public class NestHttpPutTests extends NestHttpTests {
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/trap", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("trap");
-        entityMap.put("trap", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long trapId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("trap", trapId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/trap/"+trapId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code:" + Integer.toString(code2), code2 == 204);
     }
         
     @Test
@@ -199,19 +234,23 @@ public class NestHttpPutTests extends NestHttpTests {
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/trapline-user", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("traplineuser");
-        entityMap.put("traplineuser", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long traplineuserId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("traplineuser", traplineuserId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/trapline-user/"+traplineuserId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code:" + Integer.toString(code2), code2 == 204);
     }
     
     @Test
-    public void AI_PostCatchFails() throws IOException {
+    public void AI_PutCatchFails() throws IOException {
         // The user is now registered to the trapline, so we can reattempt to log the catch
         
-        // Build the Json trap object
+        // Build the Json catch object
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("trap_id", entityMap.get("trap"));
         jsonObject.addProperty("catchtype_id", entityMap.get("catchtype"));
@@ -221,12 +260,16 @@ public class NestHttpPutTests extends NestHttpTests {
         
         HttpURLConnection connection = NestHttpTests.nestHttpPostRequest("/catch", true, jsonObject.toString());
         int code = connection.getResponseCode();
-        assertTrue("Error, non-success response code: " + Integer.toString(code), code == 201);
+        assertTrue("Error, pre-PUT POST request fails with " + Integer.toString(code), code == 201);
         
         // We need to remove the catch manually otherwise everything will be set inactive instead of removed.
         final String newRes = connection.getHeaderField("Location");
         entityInsertOrder.add("catch");
-        entityMap.put("catch", Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1)));
-        fail("Test not implemented yet");
+        long catchId = Long.parseLong(newRes.substring(newRes.lastIndexOf('/') + 1));
+        entityMap.put("catch", catchId);
+        
+        HttpURLConnection connection2 = NestHttpTests.nestHttpPutRequest("/catch/"+catchId, true, jsonObject.toString());
+        int code2 = connection2.getResponseCode();
+        assertTrue("Error, non-success response code: " + Integer.toString(code2), !((code2 >= 200) && (code2 < 300)));
     }
 }

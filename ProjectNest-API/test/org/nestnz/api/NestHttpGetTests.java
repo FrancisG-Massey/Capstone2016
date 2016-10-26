@@ -83,7 +83,7 @@ public class NestHttpGetTests extends NestHttpTests {
     
     @Test
     public void AAC_GetUserAsCsvIsCsv() throws IOException {
-        HttpURLConnection connection = nestHttpGetRequest("/user", true, "text/csv");
+        HttpURLConnection connection = nestHttpGetRequest("/user.csv", true, null);
         
         // Make sure the request succeeds
         int code = connection.getResponseCode();
