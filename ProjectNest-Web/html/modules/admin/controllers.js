@@ -73,10 +73,22 @@ angular
 								            })
 								            .error(function(res){});
 								  };
+								  
+								  // date format for Iso8601
 									$scope.formatDate = function(date) {
-										var dateOut = new Date(date);
-										return dateOut;
+										 var parts = date.match(/\d+/g);
+										  var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+										  var isoDate = new Date(isoTime);
+
+										  return isoDate;
 									};
+									
+									// normal date format
+									$scope.format_Date = function(date) {
+										 var dateOut = new Date(date);
+										 return dateOut;
+									};									
+									
 							} 	
 					
 						])
@@ -103,7 +115,7 @@ angular
 							$scope.trap_type = trap_type;
 							// get all catch types
 							$scope.catch_types = catch_types;
-							
+							console.log(traps);
 							// load catch history when the page loads and save them into a scope variable
 							//console.log($scope.trapline_id);
 						    var config = {
@@ -119,9 +131,18 @@ angular
 						    
 							// formatting Date
 							$scope.formatDate = function(date) {
-								var dateOut = new Date(date);
-								return dateOut;
+								 var parts = date.match(/\d+/g);
+								  var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+								  var isoDate = new Date(isoTime);
+
+								  return isoDate;
 							};
+							// normal date format
+							$scope.format_Date = function(date) {
+								 var dateOut = new Date(date);
+								 return dateOut;
+							};	
+							
 							  // load catch history in json format.
 							$scope.load_history = function(trap){
 								console.log($scope.json_data);
@@ -228,7 +249,6 @@ angular
 									}
 
 								}
-
 								// mapDefault();
 								return true;
 							};
@@ -250,7 +270,6 @@ angular
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
 							$scope.trapline_users = trapline_users;
-							console.log($scope.trapline_id);
 							console.log($scope.trapline_users);
 							$scope.users = users.data;
 							console.log($scope.users);
@@ -261,14 +280,18 @@ angular
 								for (var x = 0; x < $scope.users.length; x++) {
 									user = $scope.users[x];
 									if (user.id == trapLineUser.user_id) {
+										user.trapline_role = trapLineUser.admin;
 										usersForTrapLine.push(user);
 									}
 								}
 							};
 
 							$scope.formatDate = function(date) {
-								var dateOut = new Date(date);
-								return dateOut;
+								 var parts = date.match(/\d+/g);
+								  var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+								  var isoDate = new Date(isoTime);
+
+								  return isoDate;
 							};
 							
 							var pageLength = 10, numVolunteers = usersForTrapLine.length, newArray = [], pages = Math
@@ -482,6 +505,7 @@ angular
 								trap_type, $route) {
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
+							console.log(region.data);
 							$scope.regions = region.data;
 							$scope.baits = baits;
 							$scope.trap_types = trap_type;
@@ -515,26 +539,43 @@ angular
 
 						} ])
 		.controller(
-				'AdminNewVolunteerController',
+				'AdminNewUserController',
 				[
 						'$scope',
 						'$rootScope',
 						'$route',
+						'$http',
 						function($scope, $rootScope,
-								$route) {
+								$route,$http) {
 							//var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
-							$scope.trapline_id = $route.current.params.traplineId;
-							$scope.trapline_name = $route.current.params.traplineName;
-							console.log($scope.trapline_id);
-							console.log($scope.trapline_name);
-							$scope.users = $route.current.params.users;
-							console.log($scope.users);
+
+							$scope.Save = function() {
+								console.log($scope.email);
+								console.log($scope.fullName);
+								console.log($scope.phone);
+								console.log($scope.permission);
+								
+								var data = {
+									"email" : $scope.email,
+									"fullname" : $scope.fullName,
+									"phone" : $scope.phone,
+									"admin" : $scope.permission=="true",
+									"password" : $scope.password
+										};
+
+								$http.post(
+										'https://www.nestnz.org/api/user',
+										data).then(
+										function(data, status, header, config) {
+											$route.reload();
+										});
+							};
 
 						} ])
 		.controller(
-				'AdminNewUserController',
+				'AdminUserController',
 				[
 						'$scope',
 						'$rootScope',
@@ -543,17 +584,21 @@ angular
 						'$route',
 						'$http',
 						'users',
+						'$window',
 						function($scope, $rootScope, traplines, trapline_users, $route,
-								$http, users) {
+								$http, users,$window) {
 							// var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.traplines = traplines;
+							console.log($scope.traplines);
 							$scope.trapline_users = trapline_users;
 							$scope.users = users;
-							
+							$scope.options = [["Admin",true],["Volunteer",false]];	
+							console.log($scope.trapline_users);
 							// get all traplines and trapline users.
 							// add the trapline users to their traplines 
+							
 							var trapline, trapline_user;
 							for (var i = 0; i < $scope.traplines.length; i++) {
 								trapline = $scope.traplines[i];
@@ -580,12 +625,89 @@ angular
 								}
 							};
 							$scope.formatDate = function(date) {
-								var dateOut = new Date(date);
-								return dateOut;
+								 var parts = date.match(/\d+/g);
+								  var isoTime = Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+								  var isoDate = new Date(isoTime);
+
+								  return isoDate;
 							};
-							console.log($scope.traplines);
-							console.log($scope.users);
 							
+							$scope.passUser = function(user,traplines){
+								$scope.user_info = user;
+								$scope.view_traplines = traplines;
+								console.log($scope.user_info);
+								console.log($scope.view_traplines);
+								console.log($scope.showtraplines);
+								$scope.showtraplines = false;
+							}
+							$scope.add_trapline = function(trapline,permission){
+								var data = {
+										"admin" : permission===true,
+										"trapline_id" : trapline.id,
+										"user_id" : $scope.user_info.id
+											};
+								console.log(data['admin']);
+								console.log(data['trapline_id']);
+								console.log(data['user_id']);
+								$http.post(
+											'https://www.nestnz.org/api/trapline-user',
+											data).then(
+											function(data, status, header, config) {
+												$window.location.reload();
+											});
+							}
+							$scope.filtered = function(trapline){
+								if ($scope.user_info === undefined) {
+									return true;
+								}
+								for(var i=0; i <$scope.user_info.registered.length; i++){
+									if($scope.user_info.registered[i].id == trapline.id){
+										return false;
+									}
+								}
+								return true;
+							}
+						} ])
+			.controller(
+				'AdminEditUserController',
+				[
+						'$scope',
+						'$rootScope',
+						'$route',
+						'$http',
+						'user',
+						'$location',
+						function($scope, $rootScope,
+								$route,$http,user,$location) {
+							//var traplineId = $routeParams.traplineId;
+							$rootScope.wrapClass = undefined;
+							$rootScope.hideHeader = true;
+							$scope.user = user[0];
+							console.log($scope.user);
+							
+							// set the admin options, currently 2 options.
+							$scope.options = [["Admin",true],["Volunteer",false]];					
+							$scope.Edit = function() {
+								console.log($scope.user.email);
+								console.log($scope.user.fullname);
+								console.log($scope.user.phone);
+								var data = {
+									"email" : $scope.user.email,
+									"fullname" : $scope.user.fullname,
+									"phone" : $scope.user.phone,
+									"admin" : $scope.user.admin,
+									"password" : $scope.user.password
+										};
+
+							$http.put(
+									'https://www.nestnz.org/api/user/'
+									+ $scope.user.id,
+									$scope.user).then(
+									function(data, status, header, config) {
+									$location.path('/user-admin');
+								});
+							};
+
 						} ])
 		.controller(
 				'AdminEditTraplineController',
@@ -614,16 +736,6 @@ angular
 								$scope.trapline.default_bait_id=parseInt($scope.trapline.default_bait_id);
 								$scope.trapline.traptype_id=parseInt($scope.trapline.traptype_id);
 								console.log($scope.trapline);
-								/*var data = {
-										 "name": $scope.line_name,
-								         "region_id": parseInt($scope.region_id),
-								         "start_tag": $scope.startTag,
-								         "end_tag": $scope.endTag,
-								         "img_filename": null,
-								         "default_bait_id": $scope.baitId,
-								         "default_traptype_id": $scope.traptypeId
-
-								};	*/
 
 								$http.put(
 										'https://www.nestnz.org/api/trapline/'

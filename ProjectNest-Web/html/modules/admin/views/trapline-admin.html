@@ -29,10 +29,10 @@
             <td scope="row">{{trapline.name}}</td>
             <td>{{trapline.start_tag}}</td>
             <td>{{trapline.end_tag}}</td>
-            <td><a href="#/trap-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-sm btn-primary">View Traps</a></td>
-            <td><a href="#/volunteer-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-sm btn-primary">View Volunteers</a></td>
-            <td><a herf="#" ng-click="loadjson(trapline); loadcsv(trapline);" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#catch-history">View Catch History</a></td>
-            <td><a href="#/trapline-admin/{{trapline.region_id}}/{{trapline.id}}/{{trapline.name}}/edit-trapline" class="btn btn-sm btn-primary">Edit</a></td>
+            <td><a href="#/trap-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-primary btn-round-sm btn-sm">View</a></td>
+            <td><a href="#/volunteer-admin/{{trapline.id}}/{{trapline.name}}" class="btn btn-primary btn-round-sm btn-sm">View</a></td>
+            <td><a herf="#" ng-click="loadjson(trapline); loadcsv(trapline);" class="btn btn-primary btn-round-sm btn-sm" data-toggle="modal" data-target="#catch-history">View</a></td>
+            <td><a href="#/trapline-admin/{{trapline.id}}/{{trapline.name}}/edit-trapline" class="btn btn-primary btn-round-sm btn-sm">Edit</a></td>
           </tr>    
         </tbody>
       </table>
@@ -61,13 +61,13 @@
               <tr>
               	<td>{{catch.trap}}</td>
                 <td>{{catch.catch}}</td>
-                <td>{{formatDate(catch.date) | date:"dd MMMM yyyy"}}</td>
+                <td>{{format_Date(catch.date) | date:"dd MMMM yyyy"}}</td>
               </tr>
             </tbody>
           </table>
 	        <div class="modal-footer">
-	          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-	          <button type="submit" class="btn btn-primary">Export</button>
+	          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+	          <button type="submit" class="btn btn-success">Export</button>
 	        </div>
 	      </div>
     </div>

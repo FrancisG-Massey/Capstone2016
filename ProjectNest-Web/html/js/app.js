@@ -66,17 +66,24 @@ var myApp = angular
                     }
                     );
                 },
-                region:function($http, $route,$cookieStore,$rootScope){
-                    return $http
-                    .get('https://www.nestnz.org/api/region')
+                region: function($http, $route,$cookieStore,$rootScope,$location){
+                    return $http({
+                        method: "GET",
+                        url: 'https://www.nestnz.org/api/region',
+                        params: {
+                            '_': new Date().getTime()
+                        }
+                    })
                     .then(function(response){
                         return response;
-                }, function(errorResponse){
-                	if(errorResponse.status==403){
-                		$rootScope.globals = {};
-                		$cookieStore.remove('globals');
-                	}
-                } )
+                    },function(errorResponse){
+                    	if(errorResponse.status == 403){
+                            $rootScope.globals = {};
+                            $cookieStore.remove('globals');
+                            $location.path('/login');
+                    	} 	
+                    }
+                    );
                 },
                 baits:function($http, $route,$cookieStore,$rootScope){
                         return $http
@@ -146,7 +153,7 @@ var myApp = angular
                     }
         }
         })
-         .when('/trapline-admin/:regionId/:traplineId/:traplineName/edit-trapline',{
+         .when('/trapline-admin/:traplineId/:traplineName/edit-trapline',{
             controller: 'AdminEditTraplineController',
             templateUrl: 'modules/admin/views/edit_trapline.html?'+new Date().getTime(),
             resolve: {
@@ -188,8 +195,7 @@ var myApp = angular
                 },
                 trapline:function($http, $route,$cookieStore,$rootScope){
                     return $http
-                    .get('https://www.nestnz.org/api/trapline/?'+$route.current.params.traplineId+'&'+$route.current.params.regionId
-                    		+"&_="+new Date().getTime())
+                    .get("https://www.nestnz.org/api/trapline/"+$route.current.params.traplineId+"/_="+new Date().getTime())
                     .then(function(response){
                         return response.data;
                 }, function(errorResponse){
@@ -404,12 +410,32 @@ var myApp = angular
                }
             }
         })
-        .when('/volunteer-admin/:traplineId/:traplineName/:users/add-volunteer', {
-            controller: 'AdminNewVolunteerController',
-            templateUrl: 'modules/admin/views/new_volunteer.html'
-        }) 
-        .when("/user-admin",{
+        .when('/user-admin/add-user', {
             controller: 'AdminNewUserController',
+            templateUrl: 'modules/admin/views/new_user.html?'+new Date().getTime()
+        }) 
+        
+        .when('/user-admin/:userId/edit-user', {
+            controller: 'AdminEditUserController',
+            templateUrl: 'modules/admin/views/edit_user.html?'+new Date().getTime(),
+            resolve: {
+            user:function($http, $route,$cookieStore,$rootScope){
+                return $http
+                .get("https://www.nestnz.org/api/user/"+$route.current.params.userId+"/_="+new Date().getTime())
+                .then(function(response){
+                    return response.data;
+            }, function(errorResponse){
+            	if(errorResponse.status==403){
+            		$rootScope.globals = {};
+            		$cookieStore.remove('globals');
+            	}
+            });
+            }
+            }
+            })
+        
+        .when("/user-admin",{
+            controller: 'AdminUserController',
             templateUrl: 'modules/admin/views/user-admin.html?'+new Date().getTime(),
             resolve: {
             	traplines: function($http, $route,$cookieStore,$rootScope,$location){

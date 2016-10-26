@@ -96,6 +96,7 @@ public class RequestServlet extends HttpServlet {
      * 
      * @param request
      * @param response
+     * @param httpMethod
      * @throws ServletException
      * @throws IOException 
      */
@@ -109,6 +110,11 @@ public class RequestServlet extends HttpServlet {
         Matcher m = Pattern.compile(Common.URLENTITY_REGEX).matcher(request.getPathInfo().toLowerCase());
         String requestEntity = m.find() ? m.group().substring(1) : "";
         String requestEntityID = m.find() ? m.group().substring(1) : "";
+        
+        // Strip the data type extension off the entity path if there is one
+        final String[] requestEntityFull = requestEntity.split("[.]");
+        requestEntity = (requestEntityFull.length > 1) ? requestEntityFull[0] : requestEntity;
+        final String requestExt = (requestEntityFull.length > 1) ? requestEntityFull[1] : "";
         
         LOG.log(Level.INFO, "Received incoming {0} request for {1} Entity\n",
                 new Object[]{httpMethod, requestEntity});
@@ -278,12 +284,9 @@ public class RequestServlet extends HttpServlet {
                         ResultSet rsh = st.getResultSet();
                         switch (httpMethod) {
                             case "GET":
-                                if (request.getHeader("Accept") != null) {
-                                    formatCSV = Pattern.compile("text/csv").matcher(request.getHeader("Accept")).find();
-                                }
                                 if (rsh.isBeforeFirst()) {
                                     response.setStatus(HttpServletResponse.SC_OK);
-                                    if (formatCSV) {
+                                    if (requestExt.toLowerCase().equals("csv")) {
                                         String timeid = String.valueOf(Calendar.getInstance().getTimeInMillis());
                                         final String filename = "\"" + requestEntity + "_" + timeid + ".csv\"";
                                         response.setHeader("Content-Description","File Transfer");
@@ -371,8 +374,13 @@ public class RequestServlet extends HttpServlet {
                     new Object[]{ex.getMessage(), response.toString()});
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
-        } catch (IOException | SQLException ex) {
-            LOG.log(Level.INFO, "IO/SQL error while executing queries:\n{0}\n{1}\nReturning 500...", 
+        } catch (SQLException ex) {
+            LOG.log(Level.INFO, "SQL error while executing queries:\n{0}\n{1}Returning 400...", 
+                    new Object[]{ex.getMessage(), response.toString()});
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "IO error while executing queries:\n{0}\n{1}\nReturning 500...", 
                     new Object[]{ex.getMessage(), response.toString()});
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;

@@ -12,14 +12,28 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         SELECT 
             b.bait_id as id,
             b.bait_name as name,
             b.bait_imagefilename as img_filename,
             b.bait_note as note,
-            b.bait_isinactive as inactive
+            b.bait_isinactive as inactive,
+            hp.has_permission as can_edit
         FROM
-            bait b
+            bait b,
+            has_permission hp
         WHERE
             ((#bigint:id# IS NULL) OR (b.bait_id = #bigint:id#)) AND
             ((#string:name# IS NULL) OR (lower(b.bait_name) LIKE lower('%' || #string:name# || '%'))) AND 
@@ -29,11 +43,24 @@
             ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (b.bait_isinactive = true)))
             
         GROUP BY
-            b.bait_id
+            b.bait_id,
+            hp.has_permission
         ORDER BY
             b.bait_id;
     ",
     "POST" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         INSERT INTO bait (
             bait_name,
             bait_imagefilename,
@@ -43,9 +70,12 @@
             #string:name#,
             #string:img_filename#,
             #string:note#
+        FROM 
+            has_permission hp
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#string:name# IS NOT NULL)
+            (#string:name# IS NOT NULL) AND
+            hp.has_permission
         RETURNING
             bait_id;
     ",

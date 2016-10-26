@@ -8,9 +8,8 @@
 <h2 class="text-center page-header">Volunteer Admin</h2>
 <p ng-if="!(volunteers.length > 0)">There are no volunteers for this trapline yet</p>
 
-  <div class="clearfix form-group">
-     <a href="#/volunteer-admin/{{trapline_id}}/{{trapline_name}}/{{users}}/add-volunteer" id="addButton"><span class="glyphicon glyphicon-plus" ></span> Add Volunteer</a>
-  </div>
+<br>
+<br>
   <div ng-if="volunteers.length> 0">
 	    <table class="table table-condensed admin">
         <thead>
@@ -19,7 +18,7 @@
             <th>Full Name</th>
             <th>Email</th>
             <th>Start Date</th>
-            <th>Permission</th>
+            <th>Role</th>
           </tr>
         </thead>
         <tbody data-ng-repeat="volunteer in volunteers[currentPage]">
@@ -28,7 +27,7 @@
             <td>{{volunteer.fullname}}</td>
             <td>{{volunteer.email}}</td>
             <td>{{formatDate(volunteer.created_timestamp) |  date:"dd MMMM yyyy"}}</td>
-            <td>{{volunteer.admin?"Admin":"Volunteer"}}</td>
+            <td>{{volunteer.trapline_role?"Admin":"Volunteer"}}</td>
           </tr>    
         </tbody>
       </table>
@@ -43,7 +42,7 @@
         ng-class="{active: n == currentPage}" ng-click="setPage()"><a
         href ng-bind="n + 1">1</a></li>
 
-      <li ng-class="{disabled: (currentPage) == traps.length - 1}"><a
+      <li ng-class="{disabled: (currentPage) == volunteers.length - 1}"><a
         href ng-click="nextPage()">Next »</a></li>
     </ul>
   </nav>  

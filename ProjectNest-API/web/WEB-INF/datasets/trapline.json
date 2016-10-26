@@ -50,7 +50,9 @@
             (SELECT cc.catch_catchtypeid FROM cc WHERE cc.trapline_id = tl.trapline_id LIMIT 1 OFFSET 2) AS common_ct_id_3,
             tl.trapline_defaultbaitid AS default_bait_id,
             tl.trapline_defaulttraptypeid AS default_traptype_id,
-            tl.trapline_isinactive as inactive
+            tl.trapline_isinactive AS inactive,
+            max(tlu.traplineuser_isadmin::integer)::boolean AS is_admin,
+            (max(tlu.traplineuser_isadmin::integer)::boolean OR #boolean:logged-user-isadmin#) AS can_edit
         FROM
             trapline tl
             LEFT JOIN traplineuser tlu
@@ -90,7 +92,8 @@
             #bigint:default_traptype_id#
         WHERE
             (#bigint:id# IS NULL) AND
-            (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL)
+            (#string:name# IS NOT NULL) AND (#bigint:region_id# IS NOT NULL) AND
+            #boolean:logged-user-isadmin#
         RETURNING
             trapline_id;
     ",

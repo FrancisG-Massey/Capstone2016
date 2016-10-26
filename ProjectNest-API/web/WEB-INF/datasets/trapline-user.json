@@ -12,13 +12,25 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        WITH loggeduser_traplineroles AS (
+            SELECT 
+                tlu.traplineuser_traplineid as tl_id,
+                tlu.traplineuser_isadmin as tl_isadmin
+            FROM 
+                traplineuser tlu
+            WHERE 
+                traplineuser_userid = #bigint:logged-user-id#
+        )
         SELECT 
             tlu.traplineuser_id as id,
             tlu.traplineuser_userid as user_id,
             tlu.traplineuser_traplineid as trapline_id,
-            tlu.traplineuser_isadmin as admin
+            tlu.traplineuser_isadmin as admin,
+            (max(lu_tlr.tl_isadmin::integer)::boolean OR #boolean:logged-user-isadmin#) as can_edit
         FROM
             traplineuser tlu
+            LEFT JOIN loggeduser_traplineroles lu_tlr
+                ON lu_tlr.tl_id = tlu.traplineuser_traplineid
         WHERE
             ((#boolean:logged-user-isadmin# = true) OR (tlu.traplineuser_userid = #bigint:logged-user-id#)) AND
             ((#bigint:id# IS NULL) OR (tlu.traplineuser_id = #bigint:id#)) AND
@@ -31,6 +43,19 @@
             tlu.traplineuser_id;
     ",
     "POST" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         INSERT INTO traplineuser (
             traplineuser_userid,
             traplineuser_traplineid,
@@ -40,19 +65,20 @@
             #bigint:user_id#,
             #bigint:trapline_id#,
             #boolean:admin#
+        FROM
+            has_permission hp
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#bigint:user_id# IS NOT NULL) AND (#bigint:trapline_id# IS NOT NULL)
+            (#bigint:user_id# IS NOT NULL) AND (#bigint:trapline_id# IS NOT NULL) AND
+            hp.has_permission
         RETURNING
             traplineuser_id;
     ",
     "PUT" : "
         UPDATE traplineuser
         SET
-            traplineuser_userid = #bigint:user_id#,
-            traplineuser_traplineid = #bigint:trapline_id#,
             traplineuser_isadmin = #boolean:admin#
-        WHERE 
+        WHERE
             traplineuser_id = #bigint:id#
         RETURNING
             traplineuser_id;

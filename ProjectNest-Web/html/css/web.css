@@ -155,11 +155,6 @@ th, td{
 	text-align:center;
 }
 
-#404page{
-	background-image: url("deadrodent.jpg");
-    	background-repeat: no-repeat;
-    	background-position: left top;
-}
 .fullWidth {
    width: 100%;
    margin-left: auto;
@@ -168,4 +163,118 @@ th, td{
 }
 a[disabled="disabled"] {
    pointer-events: none;
+}
+
+.btn-round-sm{
+border-radius: 15px;
+}
+
+
+/* info button */
+.btn-info {
+    background-color: #FFF;
+    color: #269abc;
+    border-color: #39b3d7;
+    border-radius: 25px;
+}
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active    {
+    background-color: #39b3d7;
+    color: #FFF;
+    border-color: #269abc;
+}
+
+/* danger button - styling colour */
+.btn-danger {
+	background-color: #FFF;
+    color: #ac2925;
+    border-color: #d2322d;
+    border-radius: 25px;
+}
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active {
+	background-color: #d2322d;
+    color: #FFF;
+    border-color: #ac2925;
+}
+
+ /* primary button - styling colour */
+.btn-primary {
+    background-color: #FFF;
+    color: #285e8e;
+    border-color: #3276b1;
+    border-radius: 25px;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active    {
+    background-color: #3276b1;
+    color: #FFF;
+    border-color: #285e8e;
+}
+/* success button */
+.btn-success {
+    background-color: #FFF;
+    color: #398439;
+    border-color: #47a447;
+    border-radius: 25px;
+}
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active    {
+    background-color: #47a447;
+    color: #FFF;
+    border-color: #398439;
+}
+
+    /* warning button */
+    .btn-warning {
+        background-color: #FFF;
+        color: #d58512;
+        border-color: #ed9c28;
+        border-radius: 25px;
+    }
+    .btn-warning:hover,
+    .btn-warning:focus,
+    .btn-warning:active    {
+        background-color: #ed9c28;
+        color: #FFF;
+        border-color: #d58512;
+    }
+    
+ .gap-right {
+  margin-right: 10px; 
+  margin-left:10px;
+  height:200px;
+  width:200px;
+}
+ .gap {
+  margin-right: 10px; 
+  margin-left:10px;
+}
+.linkColor{
+	color:#008080;
+}
+.btn3d {
+    transition:all .08s linear;
+    position:relative;
+    outline:medium none;
+    -moz-outline-style:none;
+    border:0px;
+    margin-right:10px;
+    margin-top:15px;
+}
+.btn3d:focus {
+    outline:medium none;
+    -moz-outline-style:none;
+}
+.btn3d:active {
+    top:9px;
+}
+.btn-default-modified {
+	color:#000000;
+    box-shadow:0 0 0 1px #ebebeb inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 0 0 #adadad, 0 8px 0 1px rgba(0,0,0,0.4), 0 8px 8px 1px rgba(0,0,0,0.5);
+    background-color:#fff;
 }

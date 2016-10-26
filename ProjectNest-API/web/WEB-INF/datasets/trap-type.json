@@ -12,14 +12,28 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         SELECT 
             tt.traptype_id as id,
             tt.traptype_name as name,
             tt.traptype_model as model,
             tt.traptype_note as note,
-            tt.traptype_isinactive as inactive
+            tt.traptype_isinactive as inactive,
+            hp.has_permission as can_edit
         FROM 
-            traptype tt
+            traptype tt,
+            has_permission hp
         WHERE
             ((#bigint:id# IS NULL) OR (tt.traptype_id = #bigint:id#)) AND
             ((#string:name# IS NULL) OR (lower(tt.traptype_name) LIKE lower('%' || #string:name# || '%'))) AND
@@ -29,11 +43,24 @@
             ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (tt.traptype_isinactive = true)))
 
         GROUP BY
-            tt.traptype_id
+            tt.traptype_id,
+            hp.has_permission
         ORDER BY
             tt.traptype_id;
     ",
     "POST" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         INSERT INTO traptype (
             traptype_name,
             traptype_model,
@@ -43,8 +70,11 @@
             #string:name#,
             #string:model#,
             #string:note#
+        FROM 
+            has_permission hp
         WHERE
-            (#bigint:id# IS NULL)
+            (#bigint:id# IS NULL) AND
+            hp.has_permission
         RETURNING
             traptype_id;
     ",

@@ -144,7 +144,7 @@ abstract public class NestHttpTests {
      * @return
      * @throws IOException 
      */
-    private static HttpURLConnection nestHttpPutRequest(String entitySubroute, Boolean addSessionToken, String requestBody) throws IOException {
+    protected static HttpURLConnection nestHttpPutRequest(String entitySubroute, Boolean addSessionToken, String requestBody) throws IOException {
         URL url = new URL(BASE_URL + entitySubroute);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("PUT");

@@ -23,7 +23,8 @@
             t.trap_createdtimestamp as created,
             t.trap_lastresettimestamp as last_reset,
             t.trap_baitid as bait_id,
-            t.trap_isinactive as inactive
+            t.trap_isinactive as inactive,
+            (max(tlu.traplineuser_isadmin::integer)::boolean OR #boolean:logged-user-isadmin#) as can_edit
         FROM
             trap t
             LEFT JOIN trapline tl
@@ -50,6 +51,19 @@
             t.trap_number;
     ",
     "POST" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         INSERT INTO trap (
             trap_traplineid,
             trap_number,
@@ -71,9 +85,12 @@
             #timestamp:created#,
             #timestamp:last_reset#,
             #bigint:bait_id#
+        FROM
+            has_permission hp
         WHERE
             (#bigint:id# IS NULL) AND
-            (#bigint:trapline_id# IS NOT NULL)
+            (#bigint:trapline_id# IS NOT NULL) AND
+            hp.has_permission
         RETURNING
             trap_id;
     ",

@@ -12,27 +12,54 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         SELECT 
             ct.catchtype_id as id,
             ct.catchtype_name as name,
             ct.catchtype_imagefilename as img_filename,
-            ct.catchtype_isinactive as inactive
+            ct.catchtype_isinactive as inactive,
+            hp.has_permission as can_edit
         FROM
-            catchtype ct
+            catchtype ct,
+            has_permission hp
         WHERE
             ((#bigint:id# IS NULL) OR (ct.catchtype_id = #bigint:id#)) AND
             ((#string:name# IS NULL) OR (lower(ct.catchtype_name) LIKE lower('%' || #string:name# || '%'))) AND
             
-            -- Only allow admins to filter by inactive flag, return only active by default
+            -- Only permit admins to filter by inactive flag, return only active by default
             ((((#boolean:inactive# IS NULL) OR (#boolean:inactive# = false)) AND (ct.catchtype_isinactive = false)) OR 
             ((#boolean:inactive# IS NOT NULL) AND (#boolean:inactive# = true) AND (#boolean:logged-user-isadmin# = true) AND (ct.catchtype_isinactive = true)))
 
         GROUP BY
-            ct.catchtype_id
+            ct.catchtype_id,
+            hp.has_permission
         ORDER BY
             ct.catchtype_id;
     ",
     "POST" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         INSERT INTO catchtype (
             catchtype_name,
             catchtype_imagefilename
@@ -40,9 +67,13 @@
         SELECT
             #string:name#,
             #string:img_filename#
+        FROM 
+            has_permission hp
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#string:name# IS NOT NULL)
+            (#string:name# IS NOT NULL) AND
+            hp.has_permission
+
         RETURNING
             catchtype_id;
     ",

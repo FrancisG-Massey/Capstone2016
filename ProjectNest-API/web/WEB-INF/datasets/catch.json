@@ -12,6 +12,8 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
+        -- TODO: refactor this into a 'has_permission' cte, as its currently difficult to determine 
+        -- the read permissions on this from a glance.
         SELECT 
             c.catch_id as id,
             c.catch_trapid as trap_id,
@@ -22,7 +24,8 @@
             c.catch_baitid as bait_id,
             c.catch_note as note,
             c.catch_loggedtimestamp as logged,
-            c.catch_imagefilename as img_filename
+            c.catch_imagefilename as img_filename,
+            false as can_edit
         FROM
             catch c
             LEFT JOIN trap t
@@ -44,6 +47,20 @@
             c.catch_loggedtimestamp DESC;
     ",
     "POST" : "
+        WITH has_permission AS (
+            SELECT
+                (#boolean:logged-user-isadmin# OR
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM
+                        traplineuser tlu
+                        JOIN trap t 
+                            ON t.trap_traplineid = traplineuser_traplineid
+                    WHERE
+                        (t.trap_id = #bigint:trap_id#)
+                ))) AS has_permission
+        )
         INSERT INTO catch (
             catch_trapid,
             catch_traptypeid,
@@ -57,15 +74,18 @@
         SELECT
             #bigint:trap_id#,
             #bigint:traptype_id#,
-            1,
+            #bigint:logged-user-id#,
             #bigint:catchtype_id#,
             #bigint:bait_id#,
             #string:note#,
             #timestamp:logged#,
             #string:img_filename#
+        FROM
+            has_permission hp
         WHERE
             (#bigint:id# IS NULL) AND 
-            (#bigint:trap_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL)
+            (#bigint:trap_id# IS NOT NULL) AND (#bigint:catchtype_id# IS NOT NULL) AND
+            hp.has_permission
         RETURNING
             catch_id;
     "
