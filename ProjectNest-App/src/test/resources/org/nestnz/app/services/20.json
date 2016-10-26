@@ -35,4 +35,4 @@
 "name":"Test trapline","start":"Test Start","end":null,"id":20,
 "region":{"id":20,"name":"Test Region"},
 "catch_type_ids":[],
-"last_updated":"2016-09-10T15:34:07"}
+"last_updated":"2016-09-10T15:34:07","can_edit":true}

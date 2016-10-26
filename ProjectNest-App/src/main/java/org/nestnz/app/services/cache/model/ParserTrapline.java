@@ -39,6 +39,8 @@ public final class ParserTrapline {
 	
 	private String lastUpdated;
 	
+	private boolean canEdit;
+	
 	public ParserTrapline (Trapline trapline) {
 		this.name = trapline.getName();
 		this.id = trapline.getId();
@@ -59,10 +61,11 @@ public final class ParserTrapline {
 		}
 		trapline.getLastUpdated().ifPresent(timestamp -> 
 			this.lastUpdated = timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+		this.canEdit = trapline.canEdit();
 	}
 	
 	public ParserTrapline(int id, String name, List<ParserTrap> traps, String start, String end, ParserRegion region,
-			List<Long> catchTypes, String lastUpdated) {
+			List<Long> catchTypes, String lastUpdated, boolean canEdit) {
 		this.id = id;
 		this.name = name;
 		this.traps = traps;
@@ -71,6 +74,7 @@ public final class ParserTrapline {
 		this.region = region;
 		this.catchTypes = catchTypes;
 		this.lastUpdated = lastUpdated;
+		this.canEdit = canEdit;
 	}
 
 	public ParserTrapline () {
@@ -142,6 +146,15 @@ public final class ParserTrapline {
 
 	public void setLastUpdated(String lastUpdated) {
 		this.lastUpdated = lastUpdated;
+	}
+
+	@XmlElement(name="can_edit")
+	public boolean isCanEdit() {
+		return canEdit;
+	}
+
+	public void setCanEdit(boolean canEdit) {
+		this.canEdit = canEdit;
 	}
 
 	@Override

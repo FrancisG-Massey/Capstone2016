@@ -16,8 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.services.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
@@ -121,7 +120,7 @@ public class TestTrapDataService {
 				List<Long> catchTypes = new ArrayList<>();
 				
 				callback.accept(new ParserTrapline(20, "Test trapline", traps, "Test Start", null, 
-						new ParserRegion(20, "Test Region"), catchTypes, "2016-09-10T15:34:07"));
+						new ParserRegion(20, "Test Region"), catchTypes, "2016-09-10T15:34:07", true));
 				return null;
 			}			
 		}).when(cachingService).fetchTraplines(any());
@@ -147,6 +146,9 @@ public class TestTrapDataService {
 				
 		//Check if the trapline itself is equal to the expected trapline
 		assertEquals(oracle, trapline);
+		
+		//Make sure the 'canEdit' property was set to true
+		assertTrue(trapline.canEdit());
 		
 		//Check the last server update timestamp was set correctly
 		assertEquals(LocalDateTime.parse("2016-09-10T15:34:07"), trapline.getLastUpdated().get());

@@ -213,7 +213,7 @@ public class RestNetworkService implements NetworkService {
     		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType1()));
     		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType2()));
     		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType3()));
-    		
+    		trapline.setCanEdit(apiTrapline.isCanEdit());
     		loadCallback.accept(trapline);
     	});
 	}	

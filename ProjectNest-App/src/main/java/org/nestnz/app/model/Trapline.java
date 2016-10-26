@@ -20,9 +20,11 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import javafx.beans.Observable;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -71,6 +73,11 @@ public final class Trapline {
 	 * This will be Optional.empty() if the trap data has not yet been fetched from the server
 	 */
 	private final ObjectProperty<Optional<LocalDateTime>> lastUpdatedProperty = new SimpleObjectProperty<>(Optional.empty());
+	
+	/**
+	 * Indicates whether the user is able to 'edit' the trapline (i.e. add or modify traps)
+	 */
+	private final BooleanProperty canEditProperty = new SimpleBooleanProperty();
 	
 	public Trapline(int id) {
 		this.idProperty.set(id);
@@ -175,6 +182,18 @@ public final class Trapline {
 	
 	public ObservableList<CatchType> getCatchTypes () {
 		return catchTypes;
+	}
+	
+	public boolean canEdit () {
+		return canEditProperty.get();
+	}
+	
+	public void setCanEdit (boolean canEdit) {
+		canEditProperty.set(canEdit);
+	}
+	
+	public BooleanProperty canEditProperty () {
+		return canEditProperty;
 	}
 
 	@Override

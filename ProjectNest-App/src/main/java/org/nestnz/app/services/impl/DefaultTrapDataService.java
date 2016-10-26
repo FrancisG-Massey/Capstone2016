@@ -168,6 +168,7 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
 		if (pLine.getLastUpdated() != null) {
 			t.setLastUpdated(LocalDateTime.parse(pLine.getLastUpdated()));
 		}
+		t.setCanEdit(pLine.isCanEdit());
 		addTrapline(t);
     }
     

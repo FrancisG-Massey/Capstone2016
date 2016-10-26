@@ -37,6 +37,8 @@ public class ApiTrapline {
 	private int commonCatchType2;
 	private int commonCatchType3;
 	
+	private boolean canEdit;
+	
 	public ApiTrapline () {
 		
 	}
@@ -111,10 +113,19 @@ public class ApiTrapline {
 		this.commonCatchType3 = commonCatchType3;
 	}
 
+	@XmlElement(name="can_edit")
+	public boolean isCanEdit() {
+		return canEdit;
+	}
+
+	public void setCanEdit(boolean canEdit) {
+		this.canEdit = canEdit;
+	}
+
 	@Override
 	public String toString() {
 		return "ApiTrapline [id=" + id + ", name=" + name + ", start=" + start + ", end=" + end + ", regionId="
 				+ regionId + ", commonCatchType1=" + commonCatchType1 + ", commonCatchType2=" + commonCatchType2
-				+ ", commonCatchType3=" + commonCatchType3 + "]";
+				+ ", commonCatchType3=" + commonCatchType3 + ", canEdit=" + canEdit + "]";
 	}
 }
