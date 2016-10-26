@@ -14,7 +14,8 @@
 <meta charset="utf-8" />
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
+<!--  To display the webpage in edge mode -->	
+<meta http-equiv="X-UA-Compatible" content="IE=edge"> 
 <title>NESTNZ</title>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
@@ -27,8 +28,12 @@ crossorigin="anonymous">
 <link rel="stylesheet"
 	href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
 <!-- favicon -->
 <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+<!-- This link would go in your header tag -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -60,16 +65,14 @@ crossorigin="anonymous">
 						<li><a href="#/statistics">Statistics</a></li>
 						<li><a href="#/volunteer">Volunteer</a></li>
 						<li><a href="#/contact">Contact</a></li>
-
-						<li ng-if="globals.currentUser">
-							<a href="#/trapline-admin">
-								Admin
-							</a>
-							<!--<ul class="dropdown-menu" aria-labelledby="admin-dropdown">
-								<li><a href="#/trap-admin">Trap</a></li>
-								<li><a href="#/volunteer-admin">Volunteer</a></li>
-							</ul>-->
-						</li>
+						<li ng-if="globals.currentUser" class="dropdown">
+				          <a href="void()" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin <span class="caret"></span></a>
+				          <ul class="dropdown-menu">
+				            <li><a href="#/trapline-admin">Traplines</a></li>
+				            <!-- <li role="separator" class="divider"></li> -->
+				            <li><a href="#/user-admin">Users</a></li>
+				          </ul>
+				        </li>						
 						<li data-ng-controller="LoginController" ng-if="globals.currentUser">
 							<a href="#" ng-click="logout()">Logout
 								({{globals.currentUser.username}})
@@ -78,19 +81,20 @@ crossorigin="anonymous">
 						<li ng-if="!globals.currentUser"><a href="#/login">Log In</a></li>
 					</ul>
 				</div>
+				<script>
+				// for mobile menu view
+				// collapse the menu in when an option is clicked 
+				$(function() {
+				    $('.nav a').on('click', function(){ 
+				        if($('.navbar-toggle').css('display') !='none'){
+				            $(".navbar-toggle").trigger( "click" );
+				        }
+				    });
+				});
+				</script>
 			</div>
 		</nav>
-
-		<!-- Image Background Page Header -->
-		<!-- Note: The background image is set within the business-casual.css file. -->
-		<header data-ng-if="!wrapClass" class="business-header">
-			<div class="container">
-				<!-- <h1 class="tagline">Project Nest</h1>-->
-			</div>
-		</header>
-		<div class="container">
 		<div data-ng-view class="container main-content"></div>
-		</div>
 	</div>
 	<footer>
 		<div class="container">

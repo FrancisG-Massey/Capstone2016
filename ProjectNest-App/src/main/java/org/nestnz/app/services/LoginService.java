@@ -20,13 +20,14 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.nestnz.app.util.BackgroundTasks;
 
-import com.gluonhq.charm.down.common.PlatformFactory;
-import com.gluonhq.charm.down.common.SettingService;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.SettingsService;
 import com.gluonhq.connect.provider.RestClient;
 import com.gluonhq.connect.source.RestDataSource;
 
@@ -36,7 +37,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 
-public final class LoginService {
+public class LoginService {
 	
 	public static enum LoginStatus {
 		PENDING_LOGIN,
@@ -44,7 +45,8 @@ public final class LoginService {
 		LOGGED_IN,
 		LOGGED_OUT,
 		INVALID_CREDENTIALS,
-		SERVER_UNAVAILABLE;
+		SERVER_UNAVAILABLE,
+		UNKNOWN_ERROR;
 	}
 
     private static final Logger LOG = Logger.getLogger(LoginService.class.getName());
@@ -62,10 +64,14 @@ public final class LoginService {
     
     private final ReadOnlyStringWrapper sessionTokenProperty = new ReadOnlyStringWrapper();
     
-    private final SettingService settingService;
+    private final Optional<SettingsService> settingService;
+    
+    private String username;
+    
+    private String password;
     
     private LoginService () {
-    	settingService = PlatformFactory.getPlatform().getSettingService();
+    	settingService = Services.get(SettingsService.class);
     }
     
     /**
@@ -73,18 +79,34 @@ public final class LoginService {
      * @return true if credentials were found & used, false if no credentials were found
      */
     public boolean checkSavedCredentials () {
-    	String email = settingService.retrieve("api.email");
-    	String password = settingService.retrieve("api.password");
-    	if (email == null || password == null) {
+    	if (settingService.isPresent()) {
+	    	String email = settingService.get().retrieve("api.email");
+	    	String password = settingService.get().retrieve("api.password");
+	    	if (email == null || password == null) {
+	    		return false;
+	    	}
+	    	login(email, password);
+	    	return true;
+    	} else {
     		return false;
     	}
-    	login(email, password);
-    	return true;
     }
     
-    public void login (String username, String password) {
+    /**
+     * Tries to renew the {@link #sessionTokenProperty} using the username & password used in the last call to {@link #login(String, String)}.
+     * @return The {@link #loginStatusProperty()}, which can be listened to & indicates when the request has completed
+     * @throws IllegalStateException if no username & password have been saved for future use (i.e. if no successful call to {@link #login(String, String)} has completed before calling this method)
+     */
+    public ReadOnlyObjectProperty<LoginStatus> renewSession () {
+    	if (username == null || password == null) {
+    		throw new IllegalStateException("Username & password not set!");
+    	}
+    	return login(username, password);
+    }
+    
+    public ReadOnlyObjectProperty<LoginStatus> login (String username, String password) {
     	if (getLoginStatus() == LoginStatus.PENDING_LOGIN) {
-    		return;//Already logging in
+    		return loginStatusProperty.getReadOnlyProperty();//Already logging in
     	}
     	if (username == null || username.trim().length() < 1) {
     		throw new IllegalArgumentException("Invalid username: "+username);
@@ -111,27 +133,40 @@ public final class LoginService {
 							loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);
 						} else {
 							sessionTokenProperty.set(sessionHeaders.get(0));
+							LOG.log(Level.INFO, "Logged in successfully. Session token: "+sessionTokenProperty.get());
 							
 							//Save the email & password for future use
-							settingService.store("api.email", username);
-							settingService.store("api.password", password);
+							settingService.ifPresent(service -> {
+								service.store("api.email", username);
+								service.store("api.password", password);
+							});
+							this.username = username;
+							this.password = password;
+							
 							loginStatusProperty.set(LoginStatus.LOGGED_IN);
 						}					
 						break;
 					case 403://Invalid username/password
 						loginStatusProperty.set(LoginStatus.INVALID_CREDENTIALS);
 						break;
+					case -1:
+						LOG.log(Level.SEVERE, "Problem sending login request.");
+						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);	
+						break;
 					default://Some other error occured
 						LOG.log(Level.SEVERE, "Problem sending login request. Response="+dataSource.getResponseMessage());
-						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
+						loginStatusProperty.set(LoginStatus.UNKNOWN_ERROR);					
 					}
 			    });
 			} catch (IOException ex) {
 				LOG.log(Level.SEVERE, "Problem sending login request", ex);
-				Platform.runLater(() -> {
-					loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);});
+				Platform.runLater(() -> loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE));
+			} catch (RuntimeException ex) {
+				LOG.log(Level.SEVERE, "Problem sending login request", ex);
+				Platform.runLater(() -> loginStatusProperty.set(LoginStatus.UNKNOWN_ERROR));
 			}
     	}); 
+    	return loginStatusProperty.getReadOnlyProperty();
     }
     
     /**
@@ -149,8 +184,10 @@ public final class LoginService {
     	loginStatusProperty.set(LoginStatus.PENDING_LOGOUT);
     	
     	//Clear the saved email & password
-    	settingService.remove("api.email");
-    	settingService.remove("api.password");
+    	if (settingService.isPresent()) {
+    		settingService.get().remove("api.email");
+    		settingService.get().remove("api.password");
+    	}
     	
     	RestClient loginClient = RestClient.create().method("DELETE").host("https://api.nestnz.org")
     			.path("/session/").queryParam("Session-Token", getSessionToken());
@@ -165,6 +202,10 @@ public final class LoginService {
 						sessionTokenProperty.set(null);
 						loginStatusProperty.set(LoginStatus.LOGGED_OUT);					
 						break;
+					case -1:
+						LOG.log(Level.SEVERE, "Problem sending logout request.");
+						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);	
+						break;
 					default://Some other error occured
 						LOG.log(Level.SEVERE, "Problem sending logout request. Response="+dataSource.getResponseMessage());
 						loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE);					
@@ -173,6 +214,9 @@ public final class LoginService {
 			} catch (IOException ex) {
 				LOG.log(Level.SEVERE, "Problem sending logout request", ex);
 		    	Platform.runLater(() -> loginStatusProperty.set(LoginStatus.SERVER_UNAVAILABLE));
+			} catch (RuntimeException ex) {
+				LOG.log(Level.SEVERE, "Problem sending logout request", ex);
+		    	Platform.runLater(() -> loginStatusProperty.set(LoginStatus.UNKNOWN_ERROR));
 			}
     	}); 
     }

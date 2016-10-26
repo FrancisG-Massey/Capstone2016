@@ -18,8 +18,9 @@ html, body {
   background: url("main.jpg") center center no-repeat scroll;
   -webkit-background-size: cover;
   -moz-background-size: cover;
-   background-size: cover;
-   -o-background-size: cover;
+  background-size: cover;
+  -o-background-size: cover;
+
 }
 
 footer {
@@ -28,7 +29,7 @@ footer {
 }
 
 .wrap>.container {
-  padding-top: 60px;
+  padding-top: 90px;
 }
 
 footer>.container {
@@ -56,13 +57,22 @@ footer>.container {
 
 /* Header Image Background - Change the URL below to your image path (example: ../images/background.jpg) */
 
+.business-header-wrap {
+  margin-top: 270px;
+}
+
 .business-header {
-    height: 300px;
-    background: url("main.jpg") center center no-repeat scroll;
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    background-size: cover;
-    -o-background-size: cover;
+  height: 300px;
+  background: url("main.jpg") center center no-repeat scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+  -o-background-size: cover;
+  position: absolute;
+  width: 100%;
+  top: 60px;
+  left: 0;
+  right: 0;
 }
 
 /* Customize the text color and shadow color and to optimize text legibility. */
@@ -108,7 +118,14 @@ footer>.container {
   margin-bottom: 30px;
 }
 
-#mapid { height: 250px; }
+.map {
+  height: 250px;
+}
+
+.map.big-map {
+  height: 500px;
+}
+
 
 .admin td,
 .admin th {
@@ -122,12 +139,107 @@ footer>.container {
 	
 }
 
+.the-legend {
+    border-style: none;
+    border-width: 0;
+    font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 0;
+}
+.the-fieldset {
+    border: 2px groove threedface #444;
+    -webkit-box-shadow:  0px 0px 0px 0px #000;
+            box-shadow:  0px 0px 0px 0px #000;
+}
 th, td{
 	text-align:center;
 }
 
-#404page{
-	background-image: url("deadrodent.jpg");
-    	background-repeat: no-repeat;
-    	background-position: left top;
+.fullWidth {
+   width: 100%;
+   margin-left: auto;
+   margin-right: auto;
+   max-width: initial;
 }
+a[disabled="disabled"] {
+   pointer-events: none;
+}
+
+.btn-round-sm{
+border-radius: 15px;
+}
+
+
+/* info button */
+.btn-info {
+    background-color: #FFF;
+    color: #269abc;
+    border-color: #39b3d7;
+    border-radius: 25px;
+}
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active    {
+    background-color: #39b3d7;
+    color: #FFF;
+    border-color: #269abc;
+}
+
+/* danger button - styling colour */
+.btn-danger {
+	background-color: #FFF;
+    color: #ac2925;
+    border-color: #d2322d;
+    border-radius: 25px;
+}
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active {
+	background-color: #d2322d;
+    color: #FFF;
+    border-color: #ac2925;
+}
+
+ /* primary button - styling colour */
+.btn-primary {
+    background-color: #FFF;
+    color: #285e8e;
+    border-color: #3276b1;
+    border-radius: 25px;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active    {
+    background-color: #3276b1;
+    color: #FFF;
+    border-color: #285e8e;
+}
+/* success button */
+.btn-success {
+    background-color: #FFF;
+    color: #398439;
+    border-color: #47a447;
+    border-radius: 25px;
+}
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active    {
+    background-color: #47a447;
+    color: #FFF;
+    border-color: #398439;
+}
+
+    /* warning button */
+    .btn-warning {
+        background-color: #FFF;
+        color: #d58512;
+        border-color: #ed9c28;
+        border-radius: 25px;
+    }
+    .btn-warning:hover,
+    .btn-warning:focus,
+    .btn-warning:active    {
+        background-color: #ed9c28;
+        color: #FFF;
+        border-color: #d58512;
+    }

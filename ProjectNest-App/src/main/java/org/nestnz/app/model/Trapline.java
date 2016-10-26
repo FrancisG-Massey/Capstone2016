@@ -16,14 +16,13 @@
  *******************************************************************************/
 package org.nestnz.app.model;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import javafx.beans.Observable;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -47,7 +46,7 @@ public final class Trapline {
 	 */
 	private final ObservableList<Trap> traps = FXCollections.observableArrayList(trap -> {
 		return new Observable[] { trap.numberProperty(), trap.latitudeProperty(), trap.longitudeProperty(),
-				trap.lastResetProperty(), trap.getCatches(), trap.statusProperty() };
+				trap.lastResetProperty(), trap.getCatches(), trap.statusProperty(), trap.idProperty() };
 	});
 	
 	/**
@@ -65,10 +64,13 @@ public final class Trapline {
 	 */
 	private final StringProperty endProperty = new SimpleStringProperty();
 	
+	private final ObservableList<CatchType> catchTypes = FXCollections.observableArrayList();
+	
 	/**
-	 * Signals some of the data has changed since it was last synchronized with the server
+	 * Indicates the date & time this trapline was last updated from the server
+	 * This will be Optional.empty() if the trap data has not yet been fetched from the server
 	 */
-	private final BooleanProperty dirtyProperty = new SimpleBooleanProperty(false);
+	private final ObjectProperty<Optional<LocalDateTime>> lastUpdatedProperty = new SimpleObjectProperty<>(Optional.empty());
 	
 	public Trapline(int id) {
 		this.idProperty.set(id);
@@ -155,16 +157,24 @@ public final class Trapline {
 		return endProperty;
 	}
 	
-	public boolean isDirty () {
-		return dirtyProperty.get();
+	public Optional<LocalDateTime> getLastUpdated () {
+		return lastUpdatedProperty.get();
 	}
 	
-	public void setDirty (boolean dirty) {
-		dirtyProperty.set(dirty);
+	public void setLastUpdated (Optional<LocalDateTime> lastUpdated) {
+		this.lastUpdatedProperty.set(lastUpdated);
 	}
 	
-	public BooleanProperty dirtyProperty () {
-		return dirtyProperty;
+	public void setLastUpdated (LocalDateTime lastUpdated) {
+		this.lastUpdatedProperty.set(Optional.ofNullable(lastUpdated));
+	}
+	
+	public ObjectProperty<Optional<LocalDateTime>> lastUpdatedProperty () {
+		return lastUpdatedProperty;
+	}
+	
+	public ObservableList<CatchType> getCatchTypes () {
+		return catchTypes;
 	}
 
 	@Override
@@ -216,6 +226,6 @@ public final class Trapline {
 	@Override
 	public String toString() {
 		return "Trapline [id=" + getId() + ", name=" + getName() + ", region=" + getRegion()
-				+ ", start=" + getStart() + ", end=" + getEnd() + ", dirty=" + isDirty() + "]";
+				+ ", start=" + getStart() + ", end=" + getEnd() + ", lastUpdated=" + getLastUpdated() + "]";
 	}
 }

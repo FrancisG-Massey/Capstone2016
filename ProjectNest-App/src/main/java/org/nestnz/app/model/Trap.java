@@ -18,9 +18,13 @@ package org.nestnz.app.model;
 
 import java.time.LocalDateTime;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -68,19 +72,20 @@ public final class Trap {
 	 */
 	private final ObjectProperty<LocalDateTime> lastResetProperty = new SimpleObjectProperty<>();
 	
-	private final ObservableList<Catch> catches = FXCollections.observableArrayList();
+	private final ObservableList<Catch> catches = FXCollections.observableArrayList(c -> 
+		new Observable[]{ c.catchTypeProperty(), c.idProperty() });
+	
+	/**
+	 * Indicates one of the trap properties (excluding catches) has changed since the last server synchronisation
+	 */
+	private final ReadOnlyBooleanWrapper dirtyProperty = new ReadOnlyBooleanWrapper();
 
 	public Trap(int number, double latitude, double longitude) {
 		this(number, latitude, longitude, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
 	}
 
 	public Trap(int number, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
-		this.numberProperty.set(number);
-		this.latitudeProperty.set(latitude);
-		this.longitudeProperty.set(longitude);
-		this.statusProperty.set(status);
-		this.created = created;
-		this.lastResetProperty.set(lastReset);
+		this(0, number, latitude, longitude, status, created, lastReset);
 	}
 
 	public Trap(int id, int number, double latitude, double longitude, TrapStatus status, LocalDateTime created, LocalDateTime lastReset) {
@@ -91,10 +96,28 @@ public final class Trap {
 		this.statusProperty.set(status);
 		this.created = created;
 		this.lastResetProperty.set(lastReset);
+		
+		InvalidationListener dirtyListener = obs -> dirtyProperty.set(true);
+		this.latitudeProperty.addListener(dirtyListener);
+		this.longitudeProperty.addListener(dirtyListener);
+		this.lastResetProperty.addListener(dirtyListener);
 	}
 
 	public int getId() {
 		return idProperty.get();
+	}
+	
+	/**
+	 * Sets the ID for this trap. 
+	 * The ID can only be set if the trap has not yet been created on the server (and thus has id=0).
+	 * @param id The internal system ID for the trap
+	 * @throws IllegalStateException if the trap ID has already been set
+	 */
+	public void setId (int id) {
+		if (idProperty.get() != 0) {
+			throw new IllegalStateException("ID already set for trap "+idProperty.get()+"! Tried to set to "+id);
+		}
+		idProperty.set(id);
 	}
 	
 	public ReadOnlyIntegerProperty idProperty() {
@@ -168,12 +191,19 @@ public final class Trap {
 	public ObservableList<Catch> getCatches() {
 		return catches;
 	}
+	
+	public boolean isDirty () {
+		return dirtyProperty.get();
+	}
+	
+	public ReadOnlyBooleanProperty dirtyProperty () {
+		return dirtyProperty.getReadOnlyProperty();
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((catches == null) ? 0 : catches.hashCode());
 		result = prime * result + idProperty.get();
 		result = prime * result + ((lastResetProperty.get() == null) ? 0 : lastResetProperty.get().hashCode());
 		long temp;
@@ -195,11 +225,6 @@ public final class Trap {
 		if (getClass() != obj.getClass())
 			return false;
 		Trap other = (Trap) obj;
-		if (catches == null) {
-			if (other.catches != null)
-				return false;
-		} else if (!catches.equals(other.catches))
-			return false;
 		if (idProperty.get() != other.idProperty.get())
 			return false;
 		if (lastResetProperty.get() == null) {
@@ -221,6 +246,6 @@ public final class Trap {
 	@Override
 	public String toString() {
 		return "Trap [id=" + getId() +", number=" + getNumber() + ", longitude=" + getLongitude() + ", latitude=" + getLatitude() 
-				+ ", status=" + getStatus() + ", lastReset=" + getLastReset() + "]";
+				+ ", status=" + getStatus() + ", lastReset=" + getLastReset() + ", dirty=" + isDirty() + "]";
 	}
 }

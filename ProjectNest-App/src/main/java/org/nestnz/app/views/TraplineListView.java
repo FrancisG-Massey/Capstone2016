@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.views;
 
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,15 +33,19 @@ import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.util.StringConverter;
 
-public class TraplineListView extends View implements ChangeListener<Boolean> {
+public class TraplineListView extends View {
+	
+	/**
+	 * Represents the number of hours between automatically fetching the trapline list from the server.
+	 * This only occurs if the view is closed & re-opened after at least the frequency has passed since the last refresh.
+	 */
+	public static final int REFRESH_FREQUENCY = 1;
 	
 	public static final String NAME = "trapline_list";
 
@@ -51,6 +56,8 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
 	private final SidePopupView menu;
 	
 	private final TrapDataService dataService;
+	
+	private LocalDateTime lastTraplineFetch = null;
 
     public TraplineListView(TrapDataService dataService) {
         super(NAME);
@@ -93,16 +100,21 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
         });
 				
         this.setOnShown(evt -> {
-    		dataService.loadingProperty().addListener(this);        	
+    		if (dataService.isNetworkAvailable() &&
+    				(lastTraplineFetch == null || lastTraplineFetch.plusHours(REFRESH_FREQUENCY).isBefore(LocalDateTime.now()))) {
+    			LOG.log(Level.INFO, "Refreshing trapline list. Last refresh: "+lastTraplineFetch);
+    			refreshTraplines();//Load the traplines if (a) they haven't been loaded yet or (b) at least an hour has passed since their last load  			
+    		}
         });
         
         this.setOnHidden(evt -> {
-        	dataService.loadingProperty().removeListener(this);
+
         });
         
         setCenter(traplineList);
 		menu = buildMenu();
         getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
+        
     }
 	
 	private SidePopupView buildMenu () {
@@ -120,21 +132,36 @@ public class TraplineListView extends View implements ChangeListener<Boolean> {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-        appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> this.menu.show()));
+        //appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> this.menu.show()));
         appBar.setTitleText("Nest NZ");
-        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> dataService.refreshTraplines()));
+        appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> refreshTraplines()));
     }
-
-	/* (non-Javadoc)
-	 * @see javafx.beans.value.ChangeListener#changed(javafx.beans.value.ObservableValue, java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-		if (newValue) {
-			this.getApplication().showLayer("loading");
-		} else {
-			this.getApplication().hideLayer("loading");			
-		}
-	}
+    
+    private void refreshTraplines () {
+    	NestApplication app = (NestApplication) this.getApplication();
+    	
+    	dataService.refreshTraplines().addListener((obs, oldStatus, newStatus) -> {
+    		String message = null;
+    		switch (newStatus) {
+			case PENDING:
+				return;
+			case FAILED_NETWORK:
+				message = "Unable to reach the NestNZ server. Please make sure you have internet access before trying again.";
+				break;
+			case FAILED_OTHER:
+			case FAILED_UNAUTHORISED://The user should never receive an "unauthorised" response
+				message = "There was a problem loading the traplines from the server. Please try again later.";
+				break;
+			case SUCCESS:
+				lastTraplineFetch = LocalDateTime.now();
+				break;    		
+    		}
+    		app.hideLayer("loading");
+    		if (message != null) {
+    			app.showNotification(message);
+    		}
+    	});
+    	app.showLayer("loading");
+    }
     
 }

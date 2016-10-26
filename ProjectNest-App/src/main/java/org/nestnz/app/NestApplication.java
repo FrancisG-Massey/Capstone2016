@@ -19,23 +19,31 @@ package org.nestnz.app;
 import java.io.File;
 import java.io.IOException;
 
+import org.nestnz.app.services.AudioServiceFactory;
+import org.nestnz.app.services.CachingService;
 import org.nestnz.app.services.LoginService;
+import org.nestnz.app.services.MapLoadingService;
+import org.nestnz.app.services.NetworkService;
 import org.nestnz.app.services.TrapDataService;
+import org.nestnz.app.services.impl.DefaultCachingService;
+import org.nestnz.app.services.impl.GluonMapLoadingService;
+import org.nestnz.app.services.impl.RestNetworkService;
 import org.nestnz.app.views.AddTrapView;
 import org.nestnz.app.views.LoginView;
 import org.nestnz.app.views.NavigationView;
 import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
 
-import com.gluonhq.charm.down.common.PlatformFactory;
-import com.gluonhq.charm.glisten.application.GlassPane;
 import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.charm.glisten.control.ProgressIndicator;
-import com.gluonhq.charm.glisten.layout.Layer;
+import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.Swatch;
+import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.StorageService;
 
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 
 @License(key="482637c8-d766-40fa-942e-f96a11d31da8")
 public class NestApplication extends MobileApplication {
@@ -44,58 +52,36 @@ public class NestApplication extends MobileApplication {
     public static final String MENU_LAYER = "Side Menu";
     
     private TrapDataService trapDataService;
+    private MapLoadingService mapLoadingService;
     private File appStoragePath;
 
     @Override
     public void init() throws IOException {
-        appStoragePath = PlatformFactory.getPlatform().getPrivateStorage();
-        trapDataService = new TrapDataService(new File(appStoragePath, "cache"), LoginService.getInstance());
+    	appStoragePath = Services.get(StorageService.class).orElseThrow(() -> new RuntimeException("Local storage not supported on this device!"))
+    		.getPrivateStorage().orElseThrow(() -> new RuntimeException("No local storage found on this device!"));
+    	
+    	setupServices();
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));
         addViewFactory(NavigationView.NAME, () -> new NavigationView());
-        addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService));
+        addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService, mapLoadingService));
         addViewFactory(AddTrapView.NAME, () -> new AddTrapView());
         
-    	addLayerFactory("loading", () -> new Layer() {
-    		private final ProgressIndicator spinner = new ProgressIndicator();
-    		private final int radius = 30;
-    		
-		    { 
-		    	spinner.setRadius(radius);
-		    	getChildren().add(spinner);
-		    	getGlassPane().getLayers().add(this);
-		    }
-
-            @Override
-            public void show() {
-                getGlassPane().setBackgroundFade(GlassPane.DEFAULT_BACKGROUND_FADE_LEVEL);
-                super.show();
-            }
-
-            @Override
-            public void hide() {
-                getGlassPane().setBackgroundFade(0.0);
-                super.hide();
-            }
-		    
-		    @Override 
-		    public void layoutChildren() {
-		    	spinner.setVisible(isShowing());
-                if (!isShowing()) {
-                    return;
-                }
-		        spinner.resizeRelocate(
-		        		(getGlassPane().getWidth() - radius*2)/2, 
-		        		(getGlassPane().getHeight()- radius*2)/2, 
-		        		radius*2, radius*2);
-		    }
-		});
+    	addLayerFactory("loading", () -> new LoadingLayer());
     }
-	
-	public TrapDataService getTrapDataService() {
-		return trapDataService;
-	}
+    
+    private void setupServices () throws IOException {
+    	Services.registerServiceFactory(new AudioServiceFactory());
+    	LoginService loginService = LoginService.getInstance();
+        CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
+        NetworkService networkService = new RestNetworkService(loginService);
+        trapDataService = new TrapDataService(cachingService, networkService);
+        
+        mapLoadingService = new GluonMapLoadingService(appStoragePath);
+        
+        trapDataService.initialise();
+    }
     
     /**
      * Retrieves a view registered on this application by name
@@ -108,6 +94,17 @@ public class NestApplication extends MobileApplication {
     	return retrieveView(name)
 				.map(view -> (T) view)
 				.orElseThrow(() -> new IllegalArgumentException("View "+name+" not created!"));
+    }
+    
+    public void showNotification (String message) {
+    	Dialog<Button> dialog = new Dialog<>();
+		dialog.setContent(new Label(message));
+		Button okButton = new Button("OK");
+		okButton.setOnAction(e -> {
+			dialog.hide();
+		});
+		dialog.getButtons().add(okButton);
+		dialog.showAndWait();
     }
 
     @Override

@@ -1,0 +1,72 @@
+<ul class="breadcrumb">
+  <li><a href="/#" >Home</a></li>
+  <li><a href="/#/trapline-admin" >Admin</a></li>
+  <li><a href="#/trap-admin/{{trapline_id}}/{{trapline_name}}">{{trapline_name}}</a></li>
+  <li class="active"> Add new trap</li>  
+</ul>
+
+<div class="jumbotron">
+  <h2 class="text-center page-header">New Trap</h2>
+  <div class="row">
+  <form  ng-submit="Save()">
+		<div class="col-lg-10 col-lg-offset-1">
+		<div class="well">
+		<!--<div class="well the-fieldset">
+		<legend class="the-legend text-center">Add New Trap</legend> -->
+    <div class="clearfix">
+      <div class="pull-right" >
+      	<label class="radio-inline">
+		  <input type="radio" ng-model="status" value="1" checked> Active
+		</label>
+		<label class="radio-inline">
+		  <input type="radio" ng-model="status" value="0"> Inactive
+		</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-group">
+        <label>Latitude</label>
+        <div class="input-group">
+          <input type="number" class="form-control" step="any" min="-90" max="90" ng-model="latitude"  required>
+          <span class="input-group-addon">N</span>
+        </div>
+      </div>
+      <div class="col-md-6 form-group">
+        <label>Longitude</label>
+        <div class="input-group">
+          <input type="number" class="form-control" step="any" min="-180" max="180" ng-model="longtitude"  required> 
+          <span class="input-group-addon">E</span>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-group">
+        <label>Bait type</label>
+        <select class="form-control" ng-model="baitId"  required>
+          <option 
+             data-ng-repeat="bait in baits" ng-value="{{bait.id}}">{{bait.name}}</option>
+        </select>
+      </div>
+      <div class="col-md-6 form-group">
+        <label>Trap type</label>
+        <select class="form-control" ng-model="typeId"  required>
+          <option  
+             data-ng-repeat="type in trap_type" ng-value="{{type.id}}">{{type.name}}</option> 
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-group">
+        <label>Trap Number</label>
+        <input type="number" min="1" name="trapNumber" id="trapNumber" class="form-control" ng-model="trapNumber" required />
+        <span ng-show="form.trapNumber.$dirty && form.trapNumber.$error.required" class="help-block">Trap number is required</span>
+      </div>
+    </div>
+        <div class="clearfix form-group">
+          <button class="btn btn-success pull-right" type="submit">Save</button>
+        </div>
+    </div>
+</div>
+  </form>
+  </div>
+</div>  

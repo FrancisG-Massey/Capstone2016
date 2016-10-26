@@ -62,15 +62,17 @@ public class TestNavigationView {
 	
 	Trap trap1;	
 	Trap trap2;
-	Trap trap3;	
+	Trap trap3;
+	Trap trap4;
 
 	@Before
 	public void setUp() throws Exception {
 		navView = new NavigationView(true);
 		trapline = new Trapline(10, "Test trapline", new Region(20, "Test Region"), "Test Start");
-		trap1 = new Trap(1, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
-		trap2 = new Trap(2, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
-		trap3 = new Trap(3, 3, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+		trap1 = new Trap(100, 1, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+		trap2 = new Trap(102, 2, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+		trap3 = new Trap(101, 3, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
+		trap4 = new Trap(99, 4, 0, 0, TrapStatus.ACTIVE, LocalDateTime.now(), LocalDateTime.now());
 	}
 
 	@After
@@ -102,7 +104,7 @@ public class TestNavigationView {
 		trapline.getTraps().add(trap3);
 		navView.setTrapline(trapline);
 		
-		assumeTrue(navView.hasNextTrap());
+		assumeTrue(navView.hasNextTrap(false));
 		assertTrue(navView.next.isVisible());
 	}
 	
@@ -114,7 +116,7 @@ public class TestNavigationView {
 		
 		navView.nextTrap();
 		
-		assumeTrue(navView.hasPreviousTrap());
+		assumeTrue(navView.hasPreviousTrap(false));
 		assertTrue(navView.prev.isVisible());
 	}
 	
@@ -123,7 +125,7 @@ public class TestNavigationView {
 		trapline.getTraps().add(trap1);
 		navView.setTrapline(trapline);
 		
-		assumeFalse(navView.hasNextTrap());
+		assumeFalse(navView.hasNextTrap(false));
 		assertFalse(navView.next.isVisible());
 	}
 	
@@ -132,7 +134,7 @@ public class TestNavigationView {
 		trapline.getTraps().add(trap1);
 		navView.setTrapline(trapline);
 		
-		assumeFalse(navView.hasPreviousTrap());
+		assumeFalse(navView.hasPreviousTrap(false));
 		assertFalse(navView.prev.isVisible());
 	}
 
@@ -148,6 +150,109 @@ public class TestNavigationView {
 		assertEquals(trap2, navView.trapProperty.getValue());
 		navView.nextTrap();
 		assertEquals(trap3, navView.trapProperty.getValue());
+	}
+	
+	@Test
+	public void testEarlyFinishSequence() {
+		trapline.getTraps().add(trap1);
+		trapline.getTraps().add(trap3);
+		trapline.getTraps().add(trap2);
+		trapline.getTraps().add(trap4);
+		navView.setTrapline(trapline);
+		
+		navView.setNavigationSequence(1, 3, 1);
+		
+		assertFalse(navView.hasPreviousTrap());
+		
+		assertEquals(trap1, navView.trapProperty.getValue());
+		navView.nextTrap();
+		assertEquals(trap2, navView.trapProperty.getValue());
+		navView.nextTrap();
+		assertEquals(trap3, navView.trapProperty.getValue());
+		
+		assertFalse(navView.hasNextTrap());//This should be the last trap in the sequence, as we finish on #3
+	}
+	
+	@Test
+	public void testLateStartSequence() {
+		trapline.getTraps().add(trap1);
+		trapline.getTraps().add(trap3);
+		trapline.getTraps().add(trap2);
+		trapline.getTraps().add(trap4);
+		navView.setTrapline(trapline);
+		
+		navView.setNavigationSequence(2, 4, 1);
+		
+		assertTrue(navView.hasPreviousTrap(false));//This should be true, as there's still one trap before the selected start point
+		
+		assertFalse(navView.hasPreviousTrap(true));//This should be false, as this is the first trap in the sequence
+		
+		assertEquals(trap2, navView.trapProperty.getValue());
+		navView.nextTrap();
+		assertEquals(trap3, navView.trapProperty.getValue());
+		navView.nextTrap();
+		assertEquals(trap4, navView.trapProperty.getValue());
+		
+		assertFalse(navView.hasNextTrap());
+	}
+	
+	@Test
+	public void testReverseSequence() {
+		trapline.getTraps().add(trap1);
+		trapline.getTraps().add(trap3);
+		trapline.getTraps().add(trap2);
+		trapline.getTraps().add(trap4);
+		navView.setTrapline(trapline);
+		
+		navView.setNavigationSequence(4, 2, -1);
+		
+		assertFalse("Previous trap should not exist!", navView.hasPreviousTrap());//This should be the first trap in the sequence
+		
+		assertEquals(trap4, navView.trapProperty.getValue());
+		navView.nextTrap();
+		assertEquals(trap3, navView.trapProperty.getValue());
+		navView.nextTrap();
+		assertEquals(trap2, navView.trapProperty.getValue());
+		
+		assertFalse(navView.hasNextTrap());
+	}
+	
+	@Test
+	public void testJumpSequence() {
+		trapline.getTraps().add(trap1);
+		trapline.getTraps().add(trap3);
+		trapline.getTraps().add(trap2);
+		trapline.getTraps().add(trap4);
+		navView.setTrapline(trapline);
+		
+		navView.setNavigationSequence(1, 4, 2);
+		
+		assertFalse(navView.hasPreviousTrap());//This should be the first trap in the sequence
+		
+		assertEquals(trap1, navView.trapProperty.getValue());
+		navView.nextTrap();
+		assertEquals(trap3, navView.trapProperty.getValue());
+		
+		assertFalse(navView.hasNextTrap());//This should be the last trap in the sequence, as trap 4 is less than 2 away from trap 3
+
+	}
+	
+	@Test
+	public void testTwoTrapSequence() {
+		trapline.getTraps().add(trap1);
+		trapline.getTraps().add(trap2);
+		navView.setTrapline(trapline);
+		
+		navView.setNavigationSequence(1, 2, 1);
+		
+		assertFalse(navView.hasPreviousTrap());//This should be the first trap in the sequence
+		
+		assertEquals(trap1, navView.trapProperty.getValue());
+		navView.nextTrap();
+		assertEquals(trap2, navView.trapProperty.getValue());
+		
+		assertFalse(navView.hasNextTrap());
+
 	}
 
 }

@@ -19,13 +19,16 @@ package org.nestnz.app.model;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 public final class Catch {
 
 	/**
 	 * The internal server ID of the catch, if the catch has been posted to the server.
 	 * If the catch has not yet been posted to the server, this will be Optional.empty()
 	 */
-	private Optional<Integer> id;
+	private ObjectProperty<Optional<Integer>> idProperty = new SimpleObjectProperty<>(Optional.empty());
 	
 	/**
 	 * The date & time this catch was recorded
@@ -35,20 +38,33 @@ public final class Catch {
 	/**
 	 * The type of pest caught in the trap
 	 */
-	private CatchType catchType;	
+	private final ObjectProperty<CatchType> catchTypeProperty = new SimpleObjectProperty<>();	
 	
 
 	public Catch(CatchType catchType) {
-		this.catchType = catchType;
-		this.timestamp = LocalDateTime.now();
+		this(catchType, LocalDateTime.now());
+	}
+	
+
+	public Catch(CatchType catchType, LocalDateTime timestamp) {
+		this.catchTypeProperty.set(catchType);
+		this.timestamp = timestamp;
 	}
 
 	public Optional<Integer> getId() {
-		return id;
+		return idProperty.get();
 	}
 
 	public void setId(Optional<Integer> id) {
-		this.id = id;
+		idProperty.set(id);
+	}
+
+	public void setId(int id) {
+		idProperty.set(Optional.of(id));
+	}
+	
+	public ObjectProperty<Optional<Integer>> idProperty () {
+		return idProperty;
 	}
 
 	public LocalDateTime getTimestamp() {
@@ -60,11 +76,53 @@ public final class Catch {
 	}
 
 	public CatchType getCatchType() {
-		return catchType;
+		return catchTypeProperty.get();
 	}
 
 	public void setCatchType(CatchType catchType) {
-		this.catchType = catchType;
+		this.catchTypeProperty.set(catchType);
+	}
+	
+	public ObjectProperty<CatchType> catchTypeProperty () {
+		return catchTypeProperty;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((catchTypeProperty.get() == null) ? 0 : catchTypeProperty.get().hashCode());
+		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Catch other = (Catch) obj;
+		if (catchTypeProperty.get() == null) {
+			if (other.catchTypeProperty.get() != null)
+				return false;
+		} else if (!catchTypeProperty.get().equals(other.catchTypeProperty.get()))
+			return false;
+		if (timestamp == null) {
+			if (other.timestamp != null)
+				return false;
+		} else if (!timestamp.equals(other.timestamp))
+			return false;
+		return true;
+	}
+
+
+	@Override
+	public String toString() {
+		return "Catch [id=" + idProperty.get() + ", timestamp=" + timestamp + ", catchType="
+				+ catchTypeProperty.get() + "]";
 	}
 	
 	

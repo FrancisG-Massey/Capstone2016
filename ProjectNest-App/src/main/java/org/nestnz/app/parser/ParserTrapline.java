@@ -16,22 +16,28 @@
  *******************************************************************************/
 package org.nestnz.app.parser;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 
 public final class ParserTrapline {
 
-	private String name;
 	private int id;
-	private List<ParserTrap> traps;
+	private String name;
+	private List<ParserTrap> traps = new ArrayList<>();
 	private String start;
 	private String end;	
 	private ParserRegion region;
+	
+	private List<Long> catchTypes = new ArrayList<>();
+	
+	private String lastUpdated;
 	
 	public ParserTrapline (Trapline trapline) {
 		this.name = trapline.getName();
@@ -47,8 +53,26 @@ public final class ParserTrapline {
 			this.region.setId(trapline.getRegion().getId());
 			this.region.setName(trapline.getRegion().getName());
 		}
+		this.catchTypes = new ArrayList<>();
+		for (CatchType t : trapline.getCatchTypes()) {
+			this.catchTypes.add(Long.valueOf(t.getId()));
+		}
+		trapline.getLastUpdated().ifPresent(timestamp -> 
+			this.lastUpdated = timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 	}
 	
+	public ParserTrapline(int id, String name, List<ParserTrap> traps, String start, String end, ParserRegion region,
+			List<Long> catchTypes, String lastUpdated) {
+		this.id = id;
+		this.name = name;
+		this.traps = traps;
+		this.start = start;
+		this.end = end;
+		this.region = region;
+		this.catchTypes = catchTypes;
+		this.lastUpdated = lastUpdated;
+	}
+
 	public ParserTrapline () {
 		
 	}
@@ -102,9 +126,91 @@ public final class ParserTrapline {
 		this.region = region;
 	}
 	
+	@XmlElement(name="catch_type_ids")
+	public List<Long> getCatchTypes() {
+		return catchTypes;
+	}
+
+	public void setCatchTypes(List<Long> catchTypes) {
+		this.catchTypes = catchTypes;
+	}
+
+	@XmlElement(name="last_updated")
+	public String getLastUpdated() {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated(String lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
+
 	@Override
 	public String toString() {
 		return "ParserTrapline [name=" + name + ", id=" + id + ", traps=" + traps + ", start=" + start + ", end=" + end
-				+ ", region=" + region + "]";
+				+ ", region=" + region + ", lastUpdated=" + lastUpdated + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((catchTypes == null) ? 0 : catchTypes.hashCode());
+		result = prime * result + ((end == null) ? 0 : end.hashCode());
+		result = prime * result + id;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((region == null) ? 0 : region.hashCode());
+		result = prime * result + ((start == null) ? 0 : start.hashCode());
+		result = prime * result + ((traps == null) ? 0 : traps.hashCode());
+		result = prime * result + ((lastUpdated == null) ? 0 : lastUpdated.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ParserTrapline other = (ParserTrapline) obj;
+		if (catchTypes == null) {
+			if (other.catchTypes != null)
+				return false;
+		} else if (!catchTypes.equals(other.catchTypes))
+			return false;
+		if (end == null) {
+			if (other.end != null)
+				return false;
+		} else if (!end.equals(other.end))
+			return false;
+		if (id != other.id)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (region == null) {
+			if (other.region != null)
+				return false;
+		} else if (!region.equals(other.region))
+			return false;
+		if (start == null) {
+			if (other.start != null)
+				return false;
+		} else if (!start.equals(other.start))
+			return false;
+		if (traps == null) {
+			if (other.traps != null)
+				return false;
+		} else if (!traps.equals(other.traps))
+			return false;
+		if (lastUpdated == null) {
+			if (other.lastUpdated != null)
+				return false;
+		} else if (!lastUpdated.equals(other.lastUpdated))
+			return false;
+		return true;
 	}
 }

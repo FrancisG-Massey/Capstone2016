@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.nestnz.app.views.map;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.nestnz.app.model.Trap;
@@ -31,26 +31,36 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Shape;
 
 public class TrapPositionLayer extends PositionLayer implements ListChangeListener<Trap> {
 	
 	private final ObservableList<Trap> traps = FXCollections.observableArrayList(trap -> 
 		new Observable[]{ trap.latitudeProperty(), trap.longitudeProperty() });
 	
-	protected final Map<Trap, Node> trapIcons = new HashMap<>();
+	/**
+	 * A lookup map for the standard marker icons used for each trap on the map.
+	 * An IdentityHashMap is used here, as it removes the possibility of changing trap coordinates or IDs (such as when the trap is created on the server) causing future lookups to fail.
+	 */
+	protected final Map<Trap, Node> trapIcons = new IdentityHashMap<>();
 	
 	private final ObjectProperty<Trap> activeTrapProperty = new SimpleObjectProperty<>();
 	
-    protected final Node activeTrapIcon = new Circle(10, Color.RED);
+    protected final Shape activeTrapIcon = new Polygon(12, 12, -12, 12, 0, -12);
 	
 	public TrapPositionLayer () {
+		activeTrapIcon.setFill(Color.RED);
+		
 		this.traps.addListener(this);
 		activeTrapProperty.addListener((obs, oldValue, newValue) -> {
 			removePoint(activeTrapIcon);
 			if (oldValue != null) {
 				MapPoint pos = new MapPoint(oldValue.getLatitude(), oldValue.getLongitude());
-				addPoint(pos, trapIcons.get(oldValue));
+				Node icon = trapIcons.get(oldValue);
+				if (icon != null) {
+					addPoint(pos, icon);
+				}
 			}
 			if (newValue != null) {
 				removePoint(trapIcons.get(newValue));
@@ -116,7 +126,9 @@ public class TrapPositionLayer extends PositionLayer implements ListChangeListen
 		}
 	}
 	
-	private Node makeTrapIcon () {
-		return new Circle(7, Color.BLUE);
+	private Shape makeTrapIcon () {
+		Shape icon = new Polygon(8, 8, -8, 8, 0, -8);
+		icon.setFill(Color.BLUE);
+		return icon;
 	}
 }
