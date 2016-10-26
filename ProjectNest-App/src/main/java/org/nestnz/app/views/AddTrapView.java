@@ -73,7 +73,6 @@ public class AddTrapView extends View {
 				confirmAddTrap(lastTrapPosition);
 			}
 		});
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
 	
 	private void confirmAddTrap (Position position) {
@@ -131,13 +130,12 @@ public class AddTrapView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-		//appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> LOG.log(Level.INFO, "Open menu pressed...")));
+		appBar.setNavIcon(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
 		appBar.setTitleText("Add Trap "+nextTrapNumber.intValue());
 		nextTrapNumber.addListener((obs, oldV, newV) -> {
         	if (newV != null) {
                 appBar.setTitleText("Add Trap "+newV);        		
         	}
         });
-        appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
     }
 }

@@ -30,11 +30,11 @@ import java.util.logging.Logger;
 
 import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.parser.Cacheable;
-import org.nestnz.app.parser.ParserCatchType;
-import org.nestnz.app.parser.ParserCatchTypeList;
-import org.nestnz.app.parser.ParserTrapline;
 import org.nestnz.app.services.CachingService;
+import org.nestnz.app.services.cache.model.Cacheable;
+import org.nestnz.app.services.cache.model.ParserCatchType;
+import org.nestnz.app.services.cache.model.ParserCatchTypeList;
+import org.nestnz.app.services.cache.model.ParserTrapline;
 import org.nestnz.app.util.BackgroundTasks;
 
 import com.gluonhq.connect.ConnectState;
@@ -170,7 +170,7 @@ public class DefaultCachingService implements CachingService {
 							CatchType c = new CatchType(pct.getId());
 							c.setName(pct.getName());
 							if (pct.getImageUrl() != null) {
-								c.setImage(new URL(pct.getImageUrl()));
+								c.setImageUrl(new URL(pct.getImageUrl()));
 							}
 							catchTypes.getData().put(c.getId(), c);
 						}
@@ -206,8 +206,8 @@ public class DefaultCachingService implements CachingService {
 			ParserCatchType pct = new ParserCatchType();
 			pct.setId(c.getId());
 			pct.setName(c.getName());
-			if (c.getImage() != null) {
-				pct.setImageUrl(c.getImage().toExternalForm());
+			if (c.getImageUrl() != null) {
+				pct.setImageUrl(c.getImageUrl().toExternalForm());
 			}
 			storeObject.getData().add(pct);
 		}		

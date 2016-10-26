@@ -31,14 +31,14 @@ import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.net.model.ApiCatch;
-import org.nestnz.app.net.model.ApiCatchType;
-import org.nestnz.app.net.model.ApiRegion;
-import org.nestnz.app.net.model.ApiTrap;
-import org.nestnz.app.net.model.ApiTrapline;
-import org.nestnz.app.net.model.ApiPostTrap;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.LoginService.LoginStatus;
+import org.nestnz.app.services.net.model.ApiCatch;
+import org.nestnz.app.services.net.model.ApiCatchType;
+import org.nestnz.app.services.net.model.ApiPostTrap;
+import org.nestnz.app.services.net.model.ApiRegion;
+import org.nestnz.app.services.net.model.ApiTrap;
+import org.nestnz.app.services.net.model.ApiTrapline;
 import org.nestnz.app.services.NetworkService;
 
 import com.gluonhq.connect.ConnectState;
@@ -69,6 +69,11 @@ public class RestNetworkService implements NetworkService {
     private static final Logger LOG = Logger.getLogger(RestNetworkService.class.getName());
 	
 	private final LoginService loginService;
+	
+	/**
+	 * The connection timeout for all network requests, in milliseconds
+	 */
+	private static final int TIMEOUT = 60_000;
 	
 	private final ReadOnlyBooleanWrapper networkAvailableProperty = new ReadOnlyBooleanWrapper(true);
 	
@@ -105,11 +110,11 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> sendLoggedCatch(int trapId, Catch loggedCatch) {
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/catch").contentType("application/json");
+    			.path("/catch").connectTimeout(TIMEOUT).contentType("application/json");
 		
 		String logged = loggedCatch.getTimestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
-		ApiCatch apiCatch = new ApiCatch(trapId, loggedCatch.getCatchType().getId(), null, logged);
+		ApiCatch apiCatch = new ApiCatch(trapId, loggedCatch.getCatchType().getId(), loggedCatch.getNote(), logged);
 		
     	return processCreateRequest(ApiCatch.class, apiCatch, apiClient, id -> {
     		LOG.log(Level.INFO, "Successfully logged catch: "+apiCatch);
@@ -123,7 +128,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> sendCreatedTrap(int traplineId, Trap trap) {
 		RestClient apiClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/trap").contentType("application/json");
+    			.path("/trap").connectTimeout(TIMEOUT).contentType("application/json");
 		
 		String created = trap.getCreated().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 		
@@ -141,7 +146,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> loadRegions(Consumer<Region> loadCallback) {
 		RestClient regionClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/region");
+    			.path("/region").connectTimeout(TIMEOUT);
 		
 		return processReadRequest(ApiRegion.class, regionClient, apiRegion -> {
 			Region region = new Region(apiRegion.getId(), apiRegion.getName());
@@ -155,7 +160,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> loadCatchTypes(Consumer<CatchType> loadCallback) {
 		RestClient catchTypeClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/catch-type");
+    			.path("/catch-type").connectTimeout(TIMEOUT);
 		return processReadRequest(ApiCatchType.class, catchTypeClient, apiCatchType -> {
 			URL imageUrl = null;
 			if (apiCatchType.getImageUrl() != null) {
@@ -176,7 +181,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> loadTrapline(Trapline trapline, Consumer<Trap> loadCallback) {
 		RestClient trapsClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/trap").queryParam("trapline-id", Integer.toString(trapline.getId()));
+    			.path("/trap").connectTimeout(TIMEOUT).queryParam("trapline-id", Integer.toString(trapline.getId()));
 		
 		return processReadRequest(ApiTrap.class, trapsClient, apiTrap -> {
 			if (apiTrap.getTraplineId() != trapline.getId()) {
@@ -200,7 +205,7 @@ public class RestNetworkService implements NetworkService {
 	@Override
 	public ReadOnlyObjectProperty<RequestStatus> loadTraplines(Consumer<Trapline> loadCallback) {
 		RestClient traplineClient = RestClient.create().method("GET").host("https://api.nestnz.org")
-    			.path("/trapline");
+    			.path("/trapline").connectTimeout(TIMEOUT);
     	
     	return processReadRequest(ApiTrapline.class, traplineClient, apiTrapline -> {
     		Region r = new Region(apiTrapline.getRegionId());
@@ -208,7 +213,7 @@ public class RestNetworkService implements NetworkService {
     		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType1()));
     		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType2()));
     		trapline.getCatchTypes().add(new CatchType(apiTrapline.getCommonCatchType3()));
-    		
+    		trapline.setCanEdit(apiTrapline.isCanEdit());
     		loadCallback.accept(trapline);
     	});
 	}	

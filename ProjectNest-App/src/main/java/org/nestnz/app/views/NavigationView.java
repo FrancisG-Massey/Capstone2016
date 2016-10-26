@@ -21,9 +21,11 @@ import static org.nestnz.app.util.NavigationTools.getDistance;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,9 +34,12 @@ import org.nestnz.app.model.CatchType;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.Trapline;
 import org.nestnz.app.services.MapLoadingService;
+import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.views.map.TrapPositionLayer;
 
+import com.gluonhq.charm.down.Platform;
 import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.AudioService;
 import com.gluonhq.charm.down.plugins.Position;
 import com.gluonhq.charm.down.plugins.PositionService;
 import com.gluonhq.charm.down.plugins.VibrationService;
@@ -46,7 +51,7 @@ import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 import com.gluonhq.maps.MapView;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.ObjectBinding;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -58,8 +63,6 @@ import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
@@ -68,18 +71,24 @@ public class NavigationView extends View {
 	private static enum Distance {
 		FAR(100, "far"),
 		NORMAL(30, null),
-		CLOSE(20, "close"),
-		CLOSER(10, "closer"),
-		CLOSEST(0, "closest");
+		CLOSE(20, "close", "3beeps.wav"),
+		CLOSER(10, "closer", "4beeps.wav"),
+		CLOSEST(0, "closest", "5beeps.wav");
 		
 		double lowerBound;
 		PseudoClass cssPseudoClass;
+		String audioTrack;
 		
 		Distance (double lowerBound, String cssClass) {
+			this(lowerBound, cssClass, null);
+		}
+		
+		Distance (double lowerBound, String cssClass, String audioTrack) {
 			this.lowerBound = lowerBound;
 			if (cssClass != null) {
 				cssPseudoClass = PseudoClass.getPseudoClass(cssClass);
 			}
+			this.audioTrack = audioTrack;
 		}
 		
 		static Distance getForDistance (double distance) {
@@ -95,9 +104,15 @@ public class NavigationView extends View {
 	public static final String NAME = "navigation";
 
     private static final Logger LOG = Logger.getLogger(NavigationView.class.getName());
-    
+        
+    /**
+     * The button used to access the previous trap in the trapline
+     */
     final Button prev = MaterialDesignIcon.ARROW_BACK.button(evt -> previousTrap());;
     
+    /**
+     * The button used to access the next trap in the trapline
+     */
     final Button next = MaterialDesignIcon.ARROW_FORWARD.button(evt -> nextTrap());
     
     /**
@@ -132,30 +147,62 @@ public class NavigationView extends View {
      */
     int step;
     
-    final ObservableList<Trap> orderedTraps;
-    
-    final IntegerProperty currentTrapIndex = new SimpleIntegerProperty(0);
-    
+    /**
+     * The trapline currently selected for navigation
+     */
     final ObjectProperty<Trapline> traplineProperty = new SimpleObjectProperty<>();
     
+    /**
+     * Contains all traps in the trapline ordered by number
+     */
+    final ObservableList<Trap> orderedTraps;
+    
+    /**
+     * The index of {@link #orderedTraps} used to find the currently selected trap
+     */
+    final IntegerProperty currentTrapIndex = new SimpleIntegerProperty(0);
+    
+    /**
+     * The currently selected trap in the trapline
+     */
     final ObjectProperty<Trap> trapProperty = new SimpleObjectProperty<>();
     
+    /**
+     * The coordinates of the selected trap
+     */
     final ObjectProperty<Position> targetCoordsProperty = new SimpleObjectProperty<>();
     
+    /**
+     * The distance, in meters, to the selected trap defined in {@link #trapProperty}
+     */
     final DoubleProperty distanceToTrap = new SimpleDoubleProperty();
     
-    final Dialog<CatchType> catchSelectDialog;
+    final Dialog<Catch> catchSelectDialog;
 	
+    /**
+     * The map used to show the user's current position relative to nearby traps
+     */
 	final MapView map = new MapView();
 	
+	/**
+	 * The layer used for laying out the user's current position & the position of nearby traps
+	 */
 	final TrapPositionLayer trapPositionLayer = new TrapPositionLayer();
+	
+	/**
+	 * The provider of all trapline data. Used in NavigationView specifically for displaying the list of catch types
+	 */
+	final TrapDataService trapDataService; 
 
-    public NavigationView() {
-        this(false);
+    public NavigationView(TrapDataService dataService) {
+        this(dataService, false);
     }
     
-    protected NavigationView(boolean test) {
-    	super(NAME);        
+    protected NavigationView(TrapDataService dataService, boolean test) {
+    	super(NAME);
+    	
+    	this.trapDataService = Objects.requireNonNull(dataService);
+    	
     	orderedTraps = trapPositionLayer.getTraps();
         //setShowTransitionFactory(BounceInRightTransition::new);
         
@@ -165,22 +212,40 @@ public class NavigationView extends View {
         initControls();
         if (!test) {
         	initMonitors();
-            catchSelectDialog = makeCatchDialog();
+        	CatchSelectionDialog catchSelectDialog = new CatchSelectionDialog();
+        	
+            traplineProperty.addListener((obs, oldLine, newLine) -> {
+            	//Watch for trapline changes. 
+            	//When found, change the order of catch types so the most common ones for the trapline appear at the top
+            	if (newLine != null) {
+            		catchSelectDialog.getCatchTypes().clear();
+	            	Set<CatchType> catchTypes = new HashSet<>(dataService.getCatchTypes().values());
+	            	for (CatchType ct : newLine.getCatchTypes()) {
+	            		catchTypes.remove(ct);
+	            		catchSelectDialog.getCatchTypes().add(ct);
+	            	}
+	            	catchSelectDialog.getCatchTypes().addAll(catchTypes);
+	            	//catchSelectDialog.getCatchTypes().add(CatchType.OTHER);
+            	}
+            });
+            this.catchSelectDialog = catchSelectDialog;
         } else {
         	catchSelectDialog = null;
         }
-                
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
     }
     
+    /**
+     * Constructs & adds the controls used by the view
+     */
     private void initControls () {
     	HBox topBox = new HBox();
     	topBox.setId("top-box");
     	
     	topBox.setAlignment(Pos.CENTER);
     	
-        Label distanceLabel = new Label("0.0");
+    	Label distanceLabel = new Label("0.0");
         distanceLabel.setId("distance-label");
+        distanceLabel.visibleProperty().bind(Bindings.isNotNull(trapPositionLayer.currentPositionProperty()));
         
         distanceLabel.textProperty().bind(Bindings.format("%1.0f m", distanceToTrap));
         HBox.setHgrow(distanceLabel, Priority.ALWAYS);
@@ -210,7 +275,6 @@ public class NavigationView extends View {
 
 		map.setZoom(MapLoadingService.ZOOM);
 		map.addLayer(trapPositionLayer);
-		setCenter(map);
     	
     	
     	trapProperty.addListener((obs, oldV, newV) -> {
@@ -225,6 +289,7 @@ public class NavigationView extends View {
     	});
     	
     	Optional<VibrationService> vibrationService = Services.get(VibrationService.class);
+    	Optional<AudioService> audioService = Services.get(AudioService.class);
     	
     	distanceToTrap.addListener((obs, oldDist, newDist) -> {
     		Distance oldDistance = Distance.getForDistance(oldDist.doubleValue());
@@ -233,19 +298,51 @@ public class NavigationView extends View {
     			distanceLabel.pseudoClassStateChanged(oldDistance.cssPseudoClass, false);
     			distanceLabel.pseudoClassStateChanged(newDistance.cssPseudoClass, true);
     			if (oldDist.doubleValue() > newDist.doubleValue()) {
-    				vibrationService.ifPresent(service -> service.vibrate());
+    				if (audioService.isPresent()) {
+    					String audioName = newDistance.audioTrack;
+    	    			if (Platform.isDesktop()) {
+    	    				audioName = getClass().getResource("/"+newDistance.audioTrack).toExternalForm();
+    	    			}
+    	    			LOG.log(Level.INFO, "Trying to play audio: "+audioName);
+    	    			audioService.get().play(audioName, 1.0);    					
+    				} else {
+    					vibrationService.ifPresent(service -> service.vibrate());
+    				}
     			}
     		}
     	});
     }
     
-    private void initMonitors () {
-    	Services.get(PositionService.class).ifPresent(gpsService -> {
-    		trapPositionLayer.currentPositionProperty().bind(gpsService.positionProperty());
+    /**
+     * Start listening for new GPS positions
+     */
+    protected void initMonitors () {
+    	Optional<PositionService> gpsService = Services.get(PositionService.class);
+    	if (!gpsService.isPresent()) {
+    		Label label = new Label("GPS is not supported on this device!");
+    		label.getStyleClass().add("gps-notice");
+    		setCenter(label);
+    	}
+    	gpsService.ifPresent(service -> {
+    		trapPositionLayer.currentPositionProperty().bind(service.positionProperty());
+    		Label label = new Label("Waiting for GPS coordinates...\nMake sure you have location services turned on");
+    		label.getStyleClass().add("gps-notice");
         	
-        	distanceToTrap.bind(Bindings.createDoubleBinding(() -> gpsService.getPosition() == null || targetCoordsProperty.get() == null ? 0 :
-        				getDistance(gpsService.getPosition(), targetCoordsProperty.get()), 
-        					gpsService.positionProperty(), targetCoordsProperty));
+    		BooleanBinding coodsAvailable = Bindings.isNotNull(trapPositionLayer.currentPositionProperty());
+    		
+    		coodsAvailable.addListener((obs, wasPresent, isPresent) -> {
+    			if (isPresent) {
+    				setCenter(map);
+    			} else {    				
+    				setCenter(label);
+    			}
+    		});
+			setCenter(coodsAvailable.get() ? map : label);
+			LOG.log(Level.INFO, "Postion: "+service.getPosition());
+    		
+        	distanceToTrap.bind(Bindings.createDoubleBinding(() -> service.getPosition() == null || targetCoordsProperty.get() == null ? Double.POSITIVE_INFINITY :
+        				getDistance(service.getPosition(), targetCoordsProperty.get()), 
+        					service.positionProperty(), targetCoordsProperty));
     	});
     }
     
@@ -255,100 +352,18 @@ public class NavigationView extends View {
     private void showLogCatchDialog () {
 		Trap forTrap = trapProperty.get();
     	catchSelectDialog.setTitleText(String.format("Log catch #%d", forTrap.getNumber()));
-    	catchSelectDialog.showAndWait().ifPresent(catchType -> {
-        	getApplication().showMessage(String.format("Logged %s in trap #%d", 
-        			catchType.getName(), forTrap.getNumber())/*, "Change", evt -> {
-        		modifyCatch(loggedCatch);
-        	}*/);
-        	if (catchType != CatchType.EMPTY) {
-        		Catch loggedCatch = new Catch(catchType);
+    	catchSelectDialog.showAndWait().ifPresent(loggedCatch -> {
+        	if (loggedCatch.getCatchType() != CatchType.EMPTY) {
         		forTrap.getCatches().add(loggedCatch);
         	}
         	if (hasNextTrap()) {
         		nextTrap();
         	}
-    	});
-    }
-    
-    /**
-     * Displays the catch type dialog also displayed in {@link #showLogCatchDialog()}, but allows the user to change the catch specified {@link integer} {@code loggedCatch} 
-     * @param loggedCatch The previously specified catch to ask the user to change
-     */
-    protected void modifyCatch (Catch loggedCatch) {
-		Trap forTrap = trapProperty.get();
-    	catchSelectDialog.setTitleText(String.format("Change catch #%d", forTrap.getNumber()));
-    	catchSelectDialog.showAndWait().ifPresent(catchType -> {
-    		LOG.log(Level.INFO, "Changed catch to "+catchType);
-        	getApplication().showMessage(String.format("Changed catch in trap #%d from %s to %s", 
-        			forTrap.getNumber(), loggedCatch.getCatchType().getName(), catchType.getName()), "Change", evt -> {
+        	getApplication().showMessage(String.format("Logged %s in trap #%d", 
+        			loggedCatch.getCatchType().getName(), forTrap.getNumber())/*, "Change", evt -> {
         		modifyCatch(loggedCatch);
-        	});
-        	loggedCatch.setCatchType(catchType);
+        	}*/);
     	});
-    }
-    
-    /**
-     * Builds the catch selection dialog, used by {@link #showLogCatchDialog()}. This only ever needs to be called once when the view is created
-     * @return The dialog used to select the creature caught in the active trap
-     */
-    private final Dialog<CatchType> makeCatchDialog () {
-    	Dialog<CatchType> dialog = new Dialog<>(true);
-    	GridPane controls = new GridPane();
-    	dialog.setContent(controls);
-    	dialog.setTitleText("Select Catch");
-    	
-    	ColumnConstraints column1 = new ColumnConstraints();
-        column1.setPercentWidth(50);
-        ColumnConstraints column2 = new ColumnConstraints();
-        column2.setPercentWidth(50);
-        controls.getColumnConstraints().addAll(column1, column2);
-    	
-    	Button empty = makeOptionButton(0);    	
-    	Button option2 = makeOptionButton(1);
-    	
-    	Button other = new Button("Other");
-    	other.setMaxSize(1000, 1000);
-    	other.getStyleClass().add("large-button");
-    	GridPane.setConstraints(other, 0, 1, 2, 1);//Set as center cell (spans both rows)
-
-    	Button option3 = makeOptionButton(2);
-    	Button option4 = makeOptionButton(3);
-    	
-    	controls.getChildren().addAll(empty, option2, option3, option4, other);
-    	return dialog;
-    }
-    
-    private Button makeOptionButton (int place) {
-    	ObjectBinding<CatchType> catchType;
-    	if (place == 0) {
-    		catchType = Bindings.createObjectBinding(() -> CatchType.EMPTY);
-    	} else {
-    		catchType = Bindings.createObjectBinding(() -> {
-    			CatchType t;
-    			if (traplineProperty.get() == null) {
-    				t =  CatchType.EMPTY;
-    			} else if (traplineProperty.get().getCatchTypes().size() < place) {
-    	    		LOG.log(Level.WARNING, "Trapline lacks a catch type entry at place "+place+" (only "+traplineProperty.get().getCatchTypes().size()+" available)");
-    				t = CatchType.EMPTY;//TODO: Currently puts another 'empty' entry down if nothing is specified. Should something else be put instead?
-    			} else {
-    				t = traplineProperty.get().getCatchTypes().get(place-1);
-    			}    			
-    			return Objects.requireNonNull(t, "Invalid catch type at "+place);//Make sure we don't have a 'null' catch type anywhere 
-    		}, traplineProperty);
-    	}
-    	Button button = new Button();
-    	button.textProperty().bind(Bindings.createStringBinding(() -> catchType.get().getName(), catchType));
-    	button.setMaxSize(1000, 1000);
-    	//button.getStyleClass().add("large-button");
-    	GridPane.setConstraints(button, place % 2, place > 1 ? 2 : 0);
-    	GridPane.setHgrow(button, Priority.ALWAYS);
-    	GridPane.setVgrow(button, Priority.ALWAYS);
-    	button.setOnAction(evt -> {
-    		LOG.log(Level.FINE, "Selected catch: "+catchType.get());
-    		catchSelectDialog.setResult(catchType.get());
-    		catchSelectDialog.hide();
-    	});
-    	return button;
     }
     
     /**
@@ -398,11 +413,11 @@ public class NavigationView extends View {
     public boolean hasPreviousTrap (boolean useSequence) {
     	int limit = useSequence ? startTrap : firstTrap;
     	int prevNumber = trapProperty.get().getNumber()-step;
-		while (canTraverseNext(step < 0, prevNumber, limit) && trapNumberLookup[prevNumber] == -1) {
+		while (canReach(step > 0, prevNumber, limit) && trapNumberLookup[prevNumber] == -1) {
 			//Skip traps which don't exist (or are currently inactive)
 			prevNumber -= step;
 		}
-    	return canTraverseNext(step < 0, prevNumber, limit);
+    	return canReach(step > 0, prevNumber, limit);
     }
     
     /**
@@ -424,15 +439,24 @@ public class NavigationView extends View {
     public boolean hasNextTrap (boolean useSequence) {
     	int limit = useSequence ? endTrap : lastTrap;
     	int nextNumber = trapProperty.get().getNumber()+step;
-		while (canTraverseNext(step > 0, nextNumber, limit) && trapNumberLookup[nextNumber] == -1) {
+		while (canReach(step < 0, nextNumber, limit) && trapNumberLookup[nextNumber] == -1) {
 			//Skip traps which don't exist (or are currently inactive)
 			nextNumber += step;
 		}
-    	return canTraverseNext(step > 0, nextNumber, limit);
+    	return canReach(step < 0, nextNumber, limit);
     }
     
-    private boolean canTraverseNext (boolean reversed, int number, int limit) {
-    	return reversed ? number <= limit : number >= limit;
+    /**
+     * Checks whether the specified trap number can be reached, given the specified limit.
+     * Helper method for {@link #hasNextTrap(boolean)} and {@link #hasPreviousTrap(boolean)}
+     * 
+     * @param reversed True if the check should be run backwards (i.e. make sure limit is less than the desired number)
+     * @param number The number of the desired trap
+     * @param limit The maximum number available in the sequence
+     * @return True if {@code number} can be reached, false otherwise
+     */
+    private boolean canReach (boolean reversed, int number, int limit) {
+    	return reversed ? number >= limit : number <= limit ;
     }
     
     /**
@@ -505,14 +529,13 @@ public class NavigationView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-        //appBar.setNavIcon(MaterialDesignIcon.MENU.button(e -> MobileApplication.getInstance().showLayer(NestApplication.MENU_LAYER)));
+        appBar.setNavIcon(MaterialDesignIcon.ARROW_BACK.button(evt -> MobileApplication.getInstance().switchToPreviousView()));
         trapProperty.addListener((obs, oldV, newV) -> {
         	if (newV != null) {
                 appBar.setTitleText("Trap "+newV.getNumber());        		
         	}
         });
         appBar.setTitleText("Trap "+trapProperty.get().getNumber());
-        appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> MobileApplication.getInstance().switchToPreviousView()));
     }
     
 }

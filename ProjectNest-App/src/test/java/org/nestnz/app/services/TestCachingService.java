@@ -47,10 +47,11 @@ import org.nestnz.app.model.Region;
 import org.nestnz.app.model.Trap;
 import org.nestnz.app.model.TrapStatus;
 import org.nestnz.app.model.Trapline;
-import org.nestnz.app.parser.Cacheable;
-import org.nestnz.app.parser.ParserRegion;
-import org.nestnz.app.parser.ParserTrap;
-import org.nestnz.app.parser.ParserTrapline;
+import org.nestnz.app.services.cache.model.Cacheable;
+import org.nestnz.app.services.cache.model.ParserCatch;
+import org.nestnz.app.services.cache.model.ParserRegion;
+import org.nestnz.app.services.cache.model.ParserTrap;
+import org.nestnz.app.services.cache.model.ParserTrapline;
 import org.nestnz.app.services.impl.DefaultCachingService;
 
 import com.gluonhq.connect.GluonObservableObject;
@@ -124,15 +125,16 @@ public class TestCachingService {
 		ParserTrapline trapline = future.get(2, TimeUnit.SECONDS);//Wait 2 seconds at most
 		
 		List<ParserTrap> traps = new ArrayList<>();
-		
-		traps.add(new ParserTrap(7623, 1, -40.314206, 175.779946, "ACTIVE", "2016-04-16T10:26:07", "2016-08-16T10:28:07", new ArrayList<>()));
+		List<ParserCatch> catches = new ArrayList<>();
+		catches.add(new ParserCatch(36, 10_000, "2016-08-13T10:30:17", "Test Note"));
+		traps.add(new ParserTrap(7623, 1, -40.314206, 175.779946, "ACTIVE", "2016-04-16T10:26:07", "2016-08-16T10:28:07", catches));
 		traps.add(new ParserTrap(7468, 2, -40.311086, 175.775306, "ACTIVE", "2016-04-16T10:30:07", "2016-08-16T10:30:07", new ArrayList<>()));
 		traps.add(new ParserTrap(9072, 3, -40.311821, 175.775993, "INACTIVE", "2016-04-16T10:36:07", "2016-08-16T10:36:07", new ArrayList<>()));
 		
 		List<Long> catchTypes = new ArrayList<>();
 		
 		ParserTrapline oracle = new ParserTrapline(20, "Test trapline", traps, "Test Start", null, 
-				new ParserRegion(20, "Test Region"), catchTypes, "2016-09-10T15:34:07");
+				new ParserRegion(20, "Test Region"), catchTypes, "2016-09-10T15:34:07", true);
 				
 		//Check if the trapline itself is equal to the expected trapline
 		assertEquals(oracle, trapline); 	

@@ -50,6 +50,11 @@ public class LoginService {
 	}
 
     private static final Logger LOG = Logger.getLogger(LoginService.class.getName());
+	
+	/**
+	 * The connection timeout for all network requests, in milliseconds
+	 */
+	private static final int TIMEOUT = 60_000;
     
     private static LoginService instance;
     
@@ -117,7 +122,7 @@ public class LoginService {
     	String encodedAuth = "Basic "+new String(Base64.getEncoder().encode(credentials.getBytes()), Charset.forName("UTF-8"));
     	
     	RestClient loginClient = RestClient.create().method("POST").host("https://api.nestnz.org")
-    			.path("/session/").header("Authorization", encodedAuth);
+    			.path("/session/").connectTimeout(TIMEOUT).header("Authorization", encodedAuth);
     	
     	final RestDataSource dataSource = loginClient.createRestDataSource();
     	
@@ -190,7 +195,7 @@ public class LoginService {
     	}
     	
     	RestClient loginClient = RestClient.create().method("DELETE").host("https://api.nestnz.org")
-    			.path("/session/").queryParam("Session-Token", getSessionToken());
+    			.path("/session/").connectTimeout(TIMEOUT).queryParam("Session-Token", getSessionToken());
     	final RestDataSource dataSource = loginClient.createRestDataSource();
     	BackgroundTasks.runInBackground(() -> {
     		try {

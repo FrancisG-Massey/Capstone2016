@@ -19,7 +19,6 @@ package org.nestnz.app;
 import java.io.File;
 import java.io.IOException;
 
-import org.nestnz.app.services.AudioServiceFactory;
 import org.nestnz.app.services.CachingService;
 import org.nestnz.app.services.LoginService;
 import org.nestnz.app.services.MapLoadingService;
@@ -28,6 +27,7 @@ import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.services.impl.DefaultCachingService;
 import org.nestnz.app.services.impl.GluonMapLoadingService;
 import org.nestnz.app.services.impl.RestNetworkService;
+import org.nestnz.app.services.impl.DefaultTrapDataService;
 import org.nestnz.app.views.AddTrapView;
 import org.nestnz.app.views.LoginView;
 import org.nestnz.app.views.NavigationView;
@@ -39,6 +39,7 @@ import com.gluonhq.charm.glisten.control.Dialog;
 import com.gluonhq.charm.glisten.license.License;
 import com.gluonhq.charm.glisten.visual.Swatch;
 import com.gluonhq.charm.down.Services;
+import com.gluonhq.charm.down.plugins.AudioServiceFactory;
 import com.gluonhq.charm.down.plugins.StorageService;
 
 import javafx.scene.Scene;
@@ -64,7 +65,7 @@ public class NestApplication extends MobileApplication {
         
         addViewFactory(LoginView.NAME, () -> new LoginView(LoginService.getInstance()));
         addViewFactory(TraplineListView.NAME, () -> new TraplineListView(trapDataService));
-        addViewFactory(NavigationView.NAME, () -> new NavigationView());
+        addViewFactory(NavigationView.NAME, () -> new NavigationView(trapDataService));
         addViewFactory(TraplineInfoView.NAME, () -> new TraplineInfoView(trapDataService, mapLoadingService));
         addViewFactory(AddTrapView.NAME, () -> new AddTrapView());
         
@@ -76,11 +77,12 @@ public class NestApplication extends MobileApplication {
     	LoginService loginService = LoginService.getInstance();
         CachingService cachingService = new DefaultCachingService(new File(appStoragePath, "cache"));
         NetworkService networkService = new RestNetworkService(loginService);
-        trapDataService = new TrapDataService(cachingService, networkService);
+        DefaultTrapDataService trapDataService = new DefaultTrapDataService(cachingService, networkService);
         
         mapLoadingService = new GluonMapLoadingService(appStoragePath);
         
         trapDataService.initialise();
+        this.trapDataService = trapDataService;
     }
     
     /**
@@ -111,6 +113,6 @@ public class NestApplication extends MobileApplication {
     public void postInit(Scene scene) {
         Swatch.GREEN.assignTo(scene);
 
-        scene.getStylesheets().add(NestApplication.class.getResource("style.css").toExternalForm());
+        scene.getStylesheets().add(NestApplication.class.getResource("styles.css").toExternalForm());
     }
 }

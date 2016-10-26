@@ -1,0 +1,99 @@
+.view, .list-view, .list-cell {
+	
+}
+
+.app-bar {
+	-fx-background-color: #009900;
+}
+
+.app-bar .label {
+	-fx-text-fill: white !important;
+}
+
+
+#trapline-list .list-cell {
+	-fx-min-height: 20;
+}
+
+#trapline-list .list-cell .button, .large-button {
+	-fx-max-width: 1000px;
+	-fx-max-height: 1000px;
+	-fx-padding: 1.5em;
+	-fx-font-size: 1.5em;
+	-fx-background-color: #009900;
+	-fx-text-fill: white !important;
+		
+}
+
+#catch-select-list .list-cell {
+	-fx-padding: 1.5em;
+	-fx-font-size: 1.5em;
+	-fx-alignment: center;
+}
+
+.catch-select-option {
+	-fx-font-size: 1.5em;
+	-fx-alignment: bottom-center;
+}
+
+
+.trapline-info-vbox {
+	-fx-alignment: top-left;
+	-fx-pref-width : 100%;
+	-fx-padding: 10;
+    -fx-spacing: 8;
+}
+
+.trapline-info-vbox .label {
+	-fx-alignment: center-left;
+	-fx-font-size: 1.5em;
+	-fx-wrap-text: true;
+	-fx-padding: 5px 0 0 0;
+}
+
+.trapline-info-vbox .heading {
+	/*for "Traps" "Last fetched" etc */
+	-fx-font-weight: bold;
+	-fx-padding: 15px 0 0 0;
+	-fx-text-fill: #009900;
+}
+
+.trapline-info-vbox .button {
+	-fx-background-color: #009900;
+}
+
+.prev {
+	-fx-alignment: center-left;
+}
+
+.next {
+	-fx-alignment: center-right;
+}
+
+#distance-label {
+	-fx-font-size: 1.3em;
+	-fx-alignment: center;
+	-fx-max-width: 1000px;
+}
+
+#top-box {
+	-fx-max-width: 1000px;
+}
+
+.text-field:error {
+  -fx-text-box-border: red;
+  -fx-focus-color: red;
+}
+
+.gps-notice {
+	-fx-text-fill: red;
+	-fx-font-size: 1.5em;
+	-fx-text-alignment: center;
+	-fx-wrap-text: true;
+}
+
+.trapline-info-vbox .button {
+	-fx-font-size: 1.5em;
+	-fx-text-alignment: right;
+	-fx-max-width: 1000px;
+}

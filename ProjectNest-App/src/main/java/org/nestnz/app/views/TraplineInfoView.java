@@ -38,8 +38,6 @@ import org.nestnz.app.util.Sequence;
 
 import com.gluonhq.charm.glisten.control.AppBar;
 import com.gluonhq.charm.glisten.control.Dialog;
-import com.gluonhq.charm.glisten.layout.layer.MenuSidePopupView;
-import com.gluonhq.charm.glisten.layout.layer.SidePopupView;
 import com.gluonhq.charm.glisten.mvc.View;
 import com.gluonhq.charm.glisten.visual.MaterialDesignIcon;
 
@@ -47,15 +45,13 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.geometry.Side;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Spinner;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class TraplineInfoView extends View {
@@ -78,15 +74,12 @@ public class TraplineInfoView extends View {
 	
     private Label lastUpdated = new Label();
     
-    private Label mapLoaded = new Label();
-    
-    private Button preloadMap = new Button("Preload");
+    private Button preloadMap = new Button("Map Loaded");
     
     private Button sendCatchLogs = new Button("Send Catch Logs");
     
     private Button sendTraps = new Button("Send Created Traps");
 	
-	private final SidePopupView menu;
 	
 	private final TrapDataService dataService;
 	
@@ -115,21 +108,12 @@ public class TraplineInfoView extends View {
     		}
         });
         
-        this.setOnHidden(evt -> {
-        	
-        });
-        
         initControls();
-        
-		menu = buildMenu();
-		getApplication().addLayerFactory("trapline-info-menu", () -> menu);
-        getStylesheets().add(TraplineListView.class.getResource("styles.css").toExternalForm());
 	}
     
     private void initControls () {
     	VBox controls = new VBox();
-        HBox mapLoadControls = new HBox();
-        preloadMap.setVisible(false);
+    	
         preloadMap.setOnAction(evt -> {
         	ReadOnlyIntegerProperty remaining = mapService.preloadMapTiles(minLat, maxLat, minLong, maxLong);
         	getApplication().showLayer("loading");
@@ -137,7 +121,6 @@ public class TraplineInfoView extends View {
         		mapTileLoadedCount.set(mapTileTotalCount.get()-newVal.intValue());
         		if (newVal.intValue() <= 0) {
         			getApplication().hideLayer("loading");
-        			preloadMap.setVisible(false);
         		}
         	});
         	if (remaining.get() <= 0) {
@@ -145,10 +128,10 @@ public class TraplineInfoView extends View {
         	}
         });
         sendCatchLogs.setOnAction(evt -> 
-        	//Send any unsent catch logs to the server
-        	dataService.getTraplineUpdateService(trapline).sendCatchesToServer().addListener((obs, oldStatus, newStatus) -> {
-        		NestApplication app = (NestApplication) this.getApplication();
-            	switch (newStatus) {
+	    	//Send any unsent catch logs to the server
+	    	dataService.getTraplineUpdateService(trapline).sendCatchesToServer().addListener((obs, oldStatus, newStatus) -> {
+	    		NestApplication app = (NestApplication) this.getApplication();
+	        	switch (newStatus) {
 				case PENDING:
 					app.showLayer("loading");
 					break;
@@ -164,10 +147,10 @@ public class TraplineInfoView extends View {
 					app.hideLayer("loading");
 					app.showNotification("There was a problem sending catch logs for this trapline. Please try again later.");
 					break;
-        		}
-        	})
-        );
-        sendTraps.setOnAction(evt -> 
+	    		}
+	    	})
+	    );
+	    sendTraps.setOnAction(evt -> 
 	    	//Send any unsent created traps to the server
 	    	dataService.getTraplineUpdateService(trapline).sendTrapsToServer().addListener((obs, oldStatus, newStatus) -> {
 	    		NestApplication app = (NestApplication) this.getApplication();
@@ -190,20 +173,42 @@ public class TraplineInfoView extends View {
 	    		}
 	    	})
 	    );
+        controls.getStyleClass().add("trapline-info-vbox");
         
-        mapLoadControls.getChildren().addAll(mapLoaded, preloadMap);
-        controls.getChildren().addAll(traplineSize, lastUpdated, mapLoadControls, sendCatchLogs, sendTraps);
-        setCenter(controls);
         
-        mapLoaded.textProperty().bind(createStringBinding(() -> {
+        Label trapSizeHeading = new Label("Traps");
+        trapSizeHeading.getStyleClass().add("heading");
+        Label lastUpdatedHeading = new Label("Last Updated");
+        lastUpdatedHeading.getStyleClass().add("heading");
+        
+        Label actionsHeading = new Label("Actions");
+        actionsHeading.getStyleClass().add("heading");
+        
+        controls.getChildren().addAll(trapSizeHeading, traplineSize, lastUpdatedHeading, 
+        		lastUpdated, actionsHeading, preloadMap, sendCatchLogs, sendTraps);
+        
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+        scrollPane.setContent(controls);
+        setCenter(scrollPane);
+        
+        preloadMap.textProperty().bind(createStringBinding(() -> {
         	int loaded = mapTileLoadedCount.get();
-        	int total = mapTileTotalCount.get(); 
+        	int total = mapTileTotalCount.get();
+        	double percent = (loaded+0.0)/total*100;
         	if (total == Integer.MAX_VALUE) {
-        		return "Map Loaded: Unknown";
+        		preloadMap.setDisable(true);
+        		return "Can't Preload Map";
         	} else if (total == 0) {
-        		return "Map Loaded: 0% (0/0)";
+        		preloadMap.setDisable(true);
+        		return "No traps exist!";
+        	} else if (percent >= 100) {
+        		preloadMap.setDisable(true);
+        		return "Map Loaded";
         	} else {
-        		return String.format("Map Loaded: %.0f%% (%d/%d)", (loaded+0.0)/total*100, loaded, total);
+        		preloadMap.setDisable(false);
+        		return String.format("Preload Map (%.0f%%)", percent);
         	}
         }, mapTileLoadedCount, mapTileTotalCount));
         
@@ -237,7 +242,7 @@ public class TraplineInfoView extends View {
 	public void setTrapline (Trapline trapline) {
 		this.trapline = trapline;
 		start.visibleProperty().bind(isNotEmpty(trapline.getTraps()));
-        traplineSize.textProperty().bind(format("Traps: %d", size(trapline.getTraps())));
+        traplineSize.textProperty().bind(format("%d", size(trapline.getTraps())));
         
         lastUpdated.textProperty().bind(createStringBinding(() -> {
         	String time;
@@ -247,21 +252,20 @@ public class TraplineInfoView extends View {
         	} else {
         		time = "Never";
         	}
-        	return String.format("Last fetched: %s", time);
+        	return String.format("%s", time);
         }, trapline.lastUpdatedProperty()));
         
         TraplineMonitorService monitorService = dataService.getTraplineUpdateService(trapline);
         sendCatchLogs.visibleProperty().bind(Bindings.isNotEmpty(monitorService.getUnsentCatchLogs()));
-        sendCatchLogs.textProperty().bind(Bindings.format("Send Catch Logs (%d)", Bindings.size(monitorService.getUnsentCatchLogs())));
+        sendCatchLogs.textProperty().bind(Bindings.format("Send %d Catch Logs", Bindings.size(monitorService.getUnsentCatchLogs())));
         
         sendTraps.visibleProperty().bind(Bindings.isNotEmpty(monitorService.getUnsentTraps()));
-        sendTraps.textProperty().bind(Bindings.format("Send Created Traps (%d)", Bindings.size(monitorService.getUnsentTraps())));
+        sendTraps.textProperty().bind(Bindings.format("Send %d Created Traps", Bindings.size(monitorService.getUnsentTraps())));
         
         updateMapLoadProgress();
 	}
 	
 	private void updateMapLoadProgress () {
-		preloadMap.setVisible(false);
         if (trapline.getTraps().isEmpty()) {
         	mapTileTotalCount.set(0);
         	mapTileLoadedCount.set(0);
@@ -281,12 +285,8 @@ public class TraplineInfoView extends View {
 	        int totalTiles = mapService.getTotalTileCount(minLat, maxLat, minLong, maxLong);
 	        if (totalTiles < MapLoadingService.MAX_TILES) {
 	        	int cachedTiles = mapService.getCachedTileCount(minLat, maxLat, minLong, maxLong);
-		        //int mapLoadedPercent = (int) ((cachedTiles+0.0) / totalTiles)*100;
 	        	mapTileTotalCount.set(totalTiles);
 	        	mapTileLoadedCount.set(cachedTiles);
-		        
-		        //mapLoaded.setText("Map Loaded: "+mapLoadedPercent+"% ("+cachedTiles+"/"+totalTiles+")");
-	        	preloadMap.setVisible(cachedTiles < totalTiles);
 	        } else {
 	        	LOG.log(Level.WARNING, "Trapline "+trapline.getId()+" covers "+totalTiles+" map tiles!");
 	        	mapTileTotalCount.set(Integer.MAX_VALUE);
@@ -295,20 +295,6 @@ public class TraplineInfoView extends View {
         }
 	}
 	
-	private SidePopupView buildMenu () {
-		Menu menu = new Menu();
-		final MenuItem addTraps = new MenuItem("Add Traps", MaterialDesignIcon.ADD.graphic());
-		
-		addTraps.setOnAction(evt -> {
-			this.getApplication().hideLayer("trapline-info-menu");
-			AddTrapView addTrapView = ((NestApplication) getApplication()).lookupView(AddTrapView.NAME);
-			addTrapView.setTrapline(trapline);
-			getApplication().switchView(AddTrapView.NAME);
-		});
-		
-		menu.getItems().add(addTraps);
-		return new MenuSidePopupView(menu, Side.LEFT);
-	}
 	
 	private Dialog<Sequence> buildSequenceDialog (int minTrap, int maxTrap) {
 		Dialog<Sequence> dialog = new Dialog<>();
@@ -329,7 +315,7 @@ public class TraplineInfoView extends View {
         
         Label endTrapLabel = new Label("End Trap:");
         Spinner<Integer> endTrapSelector = new Spinner<>(minTrap, maxTrap, maxTrap);
-        endTrapSelector.getStyleClass().add(Spinner.STYLE_CLASS_SPLIT_ARROWS_VERTICAL);
+        endTrapSelector.getStyleClass().add(Spinner.STYLE_CLASS_SPLIT_ARROWS_HORIZONTAL);
         
         GridPane.setConstraints(startTrapLabel, 0, 0);
         GridPane.setConstraints(startTrapSelector, 1, 0);
@@ -363,15 +349,22 @@ public class TraplineInfoView extends View {
 
     @Override
     protected void updateAppBar(AppBar appBar) {
-		appBar.setNavIcon(MaterialDesignIcon.MENU.button(evt -> this.getApplication().showLayer("trapline-info-menu")));
+		appBar.setNavIcon(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
 		appBar.setTitleText(trapline.getName());
-        appBar.getActionItems().add(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
+		if (trapline.canEdit()) {
+			appBar.getActionItems().add(MaterialDesignIcon.ADD.button(evt -> {
+				AddTrapView addTrapView = ((NestApplication) getApplication()).lookupView(AddTrapView.NAME);
+				addTrapView.setTrapline(trapline);
+				getApplication().switchView(AddTrapView.NAME);
+			}));
+		}
         appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> refreshTrapline()));
+
     }
     
     private void refreshTrapline () {
     	NestApplication app = (NestApplication) this.getApplication();
-    	dataService.loadTrapline(trapline).addListener((obs, oldStatus, newStatus) -> {
+    	dataService.refreshTrapline(trapline).addListener((obs, oldStatus, newStatus) -> {
     		String message = null;
     		switch (newStatus) {
 			case PENDING:

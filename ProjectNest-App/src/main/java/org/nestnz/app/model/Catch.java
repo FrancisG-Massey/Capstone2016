@@ -38,17 +38,23 @@ public final class Catch {
 	/**
 	 * The type of pest caught in the trap
 	 */
-	private final ObjectProperty<CatchType> catchTypeProperty = new SimpleObjectProperty<>();	
+	private final ObjectProperty<CatchType> catchTypeProperty = new SimpleObjectProperty<>();
+	
+	/**
+	 * An optional note for the catch log (generally used if {@link CatchType#OTHER} is selected) 
+	 */
+	private String note;
 	
 
 	public Catch(CatchType catchType) {
-		this(catchType, LocalDateTime.now());
+		this(catchType, LocalDateTime.now(), null);
 	}
 	
 
-	public Catch(CatchType catchType, LocalDateTime timestamp) {
+	public Catch(CatchType catchType, LocalDateTime timestamp, String note) {
 		this.catchTypeProperty.set(catchType);
 		this.timestamp = timestamp;
+		this.note = note;
 	}
 
 	public Optional<Integer> getId() {
@@ -87,12 +93,21 @@ public final class Catch {
 		return catchTypeProperty;
 	}
 
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((catchTypeProperty.get() == null) ? 0 : catchTypeProperty.get().hashCode());
 		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
+		result = prime * result + ((note == null) ? 0 : note.hashCode());
 		return result;
 	}
 
@@ -115,6 +130,11 @@ public final class Catch {
 				return false;
 		} else if (!timestamp.equals(other.timestamp))
 			return false;
+		if (note == null) {
+			if (other.note != null)
+				return false;
+		} else if (!note.equals(other.note))
+			return false;
 		return true;
 	}
 
@@ -122,7 +142,7 @@ public final class Catch {
 	@Override
 	public String toString() {
 		return "Catch [id=" + idProperty.get() + ", timestamp=" + timestamp + ", catchType="
-				+ catchTypeProperty.get() + "]";
+				+ catchTypeProperty.get() + ", note=" + note + "]";
 	}
 	
 	

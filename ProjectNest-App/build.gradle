@@ -6,7 +6,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'org.javafxports:jfxmobile-plugin:1.1.0'
+        classpath 'org.javafxports:jfxmobile-plugin:1.1.1'
     }
 }
 
@@ -14,6 +14,7 @@ apply plugin: 'org.javafxports.jfxmobile'
 apply plugin: 'eclipse'
 apply plugin: 'pmd'
 apply plugin: 'jdepend'
+apply plugin: 'jacoco'
 
 task jdependReport(dependsOn: jdependMain, group: 'verification', description: 'Generates a HTML report after executing jdepend checks.') << {
    ant.xslt(
@@ -85,17 +86,4 @@ jfxmobile {
                 'org.nestnz.app.ios.**.*'
         ]
     }
-}
-
-/*retrolambda {
-  jdk System.getenv("JAVA8_HOME")
-  oldJdk System.getenv("JAVA7_HOME")
-  javaVersion JavaVersion.VERSION_1_7
-  defaultMethods false
-  incremental true
-}*/
-
-//Stop the "test" task from using oldJdk (which doesn't include JavaFX)
-project.tasks.getByName("test").doFirst {
-	executable "java"
 }
