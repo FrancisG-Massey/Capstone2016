@@ -204,15 +204,12 @@ public final class Trap {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + idProperty.get();
-		result = prime * result + ((lastResetProperty.get() == null) ? 0 : lastResetProperty.get().hashCode());
 		long temp;
 		temp = Double.doubleToLongBits(latitudeProperty.get());
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(longitudeProperty.get());
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + numberProperty.get();
-		result = prime * result + ((statusProperty.get() == null) ? 0 : statusProperty.get().hashCode());
 		return result;
 	}
 
@@ -225,20 +222,11 @@ public final class Trap {
 		if (getClass() != obj.getClass())
 			return false;
 		Trap other = (Trap) obj;
-		if (idProperty.get() != other.idProperty.get())
-			return false;
-		if (lastResetProperty.get() == null) {
-			if (other.lastResetProperty.get() != null)
-				return false;
-		} else if (!lastResetProperty.get().equals(other.lastResetProperty.get()))
-			return false;
 		if (Double.doubleToLongBits(latitudeProperty.get()) != Double.doubleToLongBits(other.latitudeProperty.get()))
 			return false;
 		if (Double.doubleToLongBits(longitudeProperty.get()) != Double.doubleToLongBits(other.longitudeProperty.get()))
 			return false;
 		if (numberProperty.get() != other.numberProperty.get())
-			return false;
-		if (statusProperty.get() != other.statusProperty.get())
 			return false;
 		return true;
 	}
