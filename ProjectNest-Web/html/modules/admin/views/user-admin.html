@@ -28,7 +28,7 @@
             <td>{{user.email}}</td>
             <td>{{formatDate(user.created_timestamp) |  date:"dd MMMM yyyy"}}</td>
             <td>{{user.admin?"Admin":"Volunteer"}}</td>
-          	<td><a ng-click="passUser(user,traplines);" class='btn btn-sm btn-primary' data-toggle="modal" data-target="#view-traplines">View Traplines</a></td>
+          	<td><a ng-click="passUser(user,traplines);" class='btn btn-sm btn-primary' ng-model="showtraplines"data-toggle="modal" data-target="#view-traplines">View Traplines</a></td>
           	<td><a href="#/user-admin/{{user.id}}/edit-user" class="btn btn-sm btn-primary">Edit</a></td>
           </tr>    
         </tbody>
@@ -39,7 +39,7 @@
   <div class="modal-dialog modal-lg"" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close"  data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
         <h4 class="modal-title">View / Add Traplines for {{user_info.email}}</h4>
@@ -50,7 +50,7 @@
 		
 		<div ng-hide ="showtraplines" ng-if="user_info.registered.length > 0">
 		<!-- show registered traplines for a user -->
-           <table class="table table-striped" id="tblGrid"  data-ng-repeat = "registered in user_info.registered" ng-init="parentIndex = registered">
+           <table class="table table-striped" id="tblGrid">
           	<caption class="text-left"><strong>Registered Traplines</strong></caption>
             <thead id="tblHead" >
               <tr>
@@ -60,8 +60,8 @@
                 <th>Role</th>
               </tr>
             </thead>
-            <tbody ng-if="trapline_user.user_id == user_info.id" data-ng-repeat="trapline_user in registered.trapline_users">
-              <tr>
+            <tbody data-ng-repeat = "registered in user_info.registered" ng-init="parentIndex = registered">
+              <tr ng-if="trapline_user.user_id == user_info.id" data-ng-repeat="trapline_user in registered.trapline_users">
                 <td>{{parentIndex.name}}</td>
                 <td>{{parentIndex.start_tag}}</td>
                 <td>{{parentIndex.end_tag}}</td>
@@ -83,7 +83,7 @@
                 <td>Action</td>
               </tr>
             </thead>
-            <tbody data-ng-repeat="trapline in view_traplines">
+            <tbody data-ng-repeat="trapline in view_traplines |  filter:filtered">
               <tr>
                 <td>{{trapline.name}}</td>
                 <td>{{trapline.start_tag}}</td>
@@ -99,7 +99,7 @@
       <div class="modal-footer">
       	<a href="" ng-click="showtraplines=true" ng-hide="showtraplines" class="btn btn-info">
 		<span class="glyphicon glyphicon-plus"></span>Add</a>
-       <button ng-click ="showtraplines=false" type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+       <button  type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>

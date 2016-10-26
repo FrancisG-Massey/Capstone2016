@@ -25,7 +25,7 @@ angular.module('Authentication')
          	   callback({success:true, sessionToken: headers('session-token')});
            	})
            	.error(function(error){
-           		callback({success:false, message:"Username or passwrod is incorrect"});
+           		callback({success:false, message:"Email address or password is incorrect"});
            	});
         };
  

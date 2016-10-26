@@ -115,7 +115,7 @@ angular
 							$scope.trap_type = trap_type;
 							// get all catch types
 							$scope.catch_types = catch_types;
-							console.log($scope.traps);
+							console.log(traps);
 							// load catch history when the page loads and save them into a scope variable
 							//console.log($scope.trapline_id);
 						    var config = {
@@ -137,6 +137,11 @@ angular
 
 								  return isoDate;
 							};
+							// normal date format
+							$scope.format_Date = function(date) {
+								 var dateOut = new Date(date);
+								 return dateOut;
+							};	
 							
 							  // load catch history in json format.
 							$scope.load_history = function(trap){
@@ -500,6 +505,7 @@ angular
 								trap_type, $route) {
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
+							console.log(region.data);
 							$scope.regions = region.data;
 							$scope.baits = baits;
 							$scope.trap_types = trap_type;
@@ -578,8 +584,9 @@ angular
 						'$route',
 						'$http',
 						'users',
+						'$window',
 						function($scope, $rootScope, traplines, trapline_users, $route,
-								$http, users) {
+								$http, users,$window) {
 							// var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
@@ -630,6 +637,8 @@ angular
 								$scope.view_traplines = traplines;
 								console.log($scope.user_info);
 								console.log($scope.view_traplines);
+								console.log($scope.showtraplines);
+								$scope.showtraplines = false;
 							}
 							$scope.add_trapline = function(trapline,permission){
 								var data = {
@@ -644,11 +653,20 @@ angular
 											'https://www.nestnz.org/api/trapline-user',
 											data).then(
 											function(data, status, header, config) {
-												permission = undefined;
-												$route.reload();
+												$window.location.reload();
 											});
-							}		
-							
+							}
+							$scope.filtered = function(trapline){
+								if ($scope.user_info === undefined) {
+									return true;
+								}
+								for(var i=0; i <$scope.user_info.registered.length; i++){
+									if($scope.user_info.registered[i].id == trapline.id){
+										return false;
+									}
+								}
+								return true;
+							}
 						} ])
 			.controller(
 				'AdminEditUserController',
