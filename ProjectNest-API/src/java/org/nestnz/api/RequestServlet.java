@@ -111,14 +111,10 @@ public class RequestServlet extends HttpServlet {
         String requestEntity = m.find() ? m.group().substring(1) : "";
         String requestEntityID = m.find() ? m.group().substring(1) : "";
         
-        // Strip the data type extension off the path if there is one
+        // Strip the data type extension off the entity path if there is one
         final String[] requestEntityFull = requestEntity.split("[.]");
-        System.out.println(requestEntity.length());
         requestEntity = (requestEntityFull.length > 1) ? requestEntityFull[0] : requestEntity;
         final String requestExt = (requestEntityFull.length > 1) ? requestEntityFull[1] : "";
-        System.out.println(requestEntityFull);
-        System.out.println(requestEntity);
-        System.out.println(requestExt);
         
         LOG.log(Level.INFO, "Received incoming {0} request for {1} Entity\n",
                 new Object[]{httpMethod, requestEntity});
