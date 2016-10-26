@@ -248,6 +248,7 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
 	    		} else {
 	    			populateTrapline(oldTrapline, trapline);
 	    		}
+	    		LOG.log(Level.INFO, "Found trapline from API: "+trapline);
 	    	});
 			
 			innerStatus.addListener((obs, oldStatus, newStatus) -> {
@@ -265,14 +266,13 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
 				case FAILED_UNAUTHORISED:
 				case FAILED_NETWORK:
 				case FAILED_OTHER:
+					status.set(newStatus);
 					loadingProperty.set(false);//Signal loading is complete
 					break;
 				case PENDING:
 					break;
 	    		}
 	    	});
-			
-			status.bind(innerStatus);
 		});
 		return status;
     }

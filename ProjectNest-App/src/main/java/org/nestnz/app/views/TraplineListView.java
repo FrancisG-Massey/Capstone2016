@@ -182,6 +182,7 @@ public class TraplineListView extends View {
 				break;
 			case SUCCESS:
 				lastTraplineFetch = LocalDateTime.now();
+				LOG.log(Level.INFO, "Successfully loaded traplines!");
 				break;    		
     		}
     		app.hideLayer("loading");
