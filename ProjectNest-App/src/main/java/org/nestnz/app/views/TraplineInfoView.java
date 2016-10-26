@@ -47,6 +47,8 @@ import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.Spinner;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -184,7 +186,12 @@ public class TraplineInfoView extends View {
         
         controls.getChildren().addAll(trapSizeHeading, traplineSize, lastUpdatedHeading, 
         		lastUpdated, actionsHeading, preloadMap, sendCatchLogs, sendTraps);
-        setCenter(controls);
+        
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+        scrollPane.setContent(controls);
+        setCenter(scrollPane);
         
         preloadMap.textProperty().bind(createStringBinding(() -> {
         	int loaded = mapTileLoadedCount.get();
