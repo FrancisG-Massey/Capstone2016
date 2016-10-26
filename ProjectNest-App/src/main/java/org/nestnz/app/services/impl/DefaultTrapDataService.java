@@ -168,7 +168,7 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
 		if (pLine.getLastUpdated() != null) {
 			t.setLastUpdated(LocalDateTime.parse(pLine.getLastUpdated()));
 		}
-		t.setCanEdit(pLine.isCanEdit());
+		t.setCanEdit(pLine.getCanEdit());
 		addTrapline(t);
     }
     
@@ -278,6 +278,10 @@ public class DefaultTrapDataService implements ListChangeListener<Trapline>, Tra
     }
     
     private void populateTrapline (Trapline output, Trapline input) {
+    	output.setName(input.getName());
+    	output.setStart(input.getStart());
+    	output.setEnd(input.getEnd());
+    	output.setCanEdit(input.canEdit());
     	Region r = regions.get(input.getRegion().getId());
     	output.setRegion(Objects.requireNonNull(r, "Invalid region: "+input.getRegion().getId()));
     	CatchType ct1 = input.getCatchTypes().get(0);

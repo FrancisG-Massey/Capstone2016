@@ -149,7 +149,7 @@ public final class ParserTrapline {
 	}
 
 	@XmlElement(name="can_edit")
-	public boolean isCanEdit() {
+	public boolean getCanEdit() {
 		return canEdit;
 	}
 

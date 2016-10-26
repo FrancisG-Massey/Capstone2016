@@ -245,6 +245,7 @@ public final class Trapline {
 	@Override
 	public String toString() {
 		return "Trapline [id=" + getId() + ", name=" + getName() + ", region=" + getRegion()
-				+ ", start=" + getStart() + ", end=" + getEnd() + ", lastUpdated=" + getLastUpdated() + "]";
+				+ ", start=" + getStart() + ", end=" + getEnd() + ", lastUpdated=" + getLastUpdated() 
+				+ ", canEdit=" + canEdit() + "]";
 	}
 }

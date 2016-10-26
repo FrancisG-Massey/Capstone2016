@@ -344,11 +344,13 @@ public class TraplineInfoView extends View {
     protected void updateAppBar(AppBar appBar) {
 		appBar.setNavIcon(MaterialDesignIcon.ARROW_BACK.button(evt -> this.getApplication().switchToPreviousView()));
 		appBar.setTitleText(trapline.getName());
-        appBar.getActionItems().add(MaterialDesignIcon.ADD.button(evt -> {
-			AddTrapView addTrapView = ((NestApplication) getApplication()).lookupView(AddTrapView.NAME);
-			addTrapView.setTrapline(trapline);
-			getApplication().switchView(AddTrapView.NAME);
-		}));
+		if (trapline.canEdit()) {
+			appBar.getActionItems().add(MaterialDesignIcon.ADD.button(evt -> {
+				AddTrapView addTrapView = ((NestApplication) getApplication()).lookupView(AddTrapView.NAME);
+				addTrapView.setTrapline(trapline);
+				getApplication().switchView(AddTrapView.NAME);
+			}));
+		}
         appBar.getActionItems().add(MaterialDesignIcon.REFRESH.button(e -> refreshTrapline()));
 
     }
