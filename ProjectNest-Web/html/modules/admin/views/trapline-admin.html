@@ -49,7 +49,7 @@
       </div>
         <div class="modal-body">
 		  <h5 class="text-center"><strong>{{active_trapline.region.name}}</strong><br><br><i>{{active_trapline.name}}</i><br></h5>
-          <table class="table table-striped" id="tblGrid">
+          <table ng-if= "json_data.length>0" class="table table-striped" id="tblGrid">
             <thead id="tblHead">
               <tr>
                 <th>Trap</th>
@@ -65,9 +65,10 @@
               </tr>
             </tbody>
           </table>
+          <div ng-if="json_data.length==0">No catches logged in {{active_trapline.name}}.</div>
 	        <div class="modal-footer">
 	          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-	          <a href="https://www.nestnz.org/api/catch-report-simple.csv?trapline-id={{active_trapline.id}}" class="btn btn-success">Export</a>
+	          <a ng-if= "json_data.length>0" href="https://www.nestnz.org/api/catch-report-simple.csv?trapline-id={{active_trapline.id}}" class="btn btn-success">Export</a>
 	        </div>
 	      </div>
     </div>
