@@ -40,6 +40,7 @@ angular
 							};
 							  // load catch history in json format.
 							  $scope.loadjson = function(trapline){
+									$scope.active_trapline = trapline;
 									console.log(trapline.id);
 									var id = trapline.id;
 								    var config = {

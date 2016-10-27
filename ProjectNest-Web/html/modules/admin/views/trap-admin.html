@@ -86,7 +86,7 @@
 	        </div>
         <div class="modal-body">
 		  <h5 class="text-center"><strong>{{trapline_name}}</strong><br><br><i>Trap number: {{active_trap.number}}</i></h5>
-          <table class="table table-striped" id="tblGrid">
+          <table ng-if="trap_history.length>0" class="table table-striped" id="tblGrid">
             <thead id="tblHead">
               <tr>
                 <th>Catch</th>
@@ -100,6 +100,7 @@
               </tr>
             </tbody>
           </table>
+                    <div ng-if="trap_history.length==0">No catches logged in trap #{{active_trap.number}}.</div>
 	        <div class="modal-footer">
 	          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
 	        </div>
