@@ -522,7 +522,6 @@ var myApp = angular
 
                             $rootScope.globals = $cookieStore.get('globals')
                                     || {};
-                            console.log($rootScope.globals.currentUser);
                             if ($rootScope.globals.currentUser) {
                                 $http.defaults.headers.common['Session-Token'] = $rootScope.globals.currentUser.sessionToken; // jshint
                                                                                                                                 // ignore:line

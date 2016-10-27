@@ -20,8 +20,6 @@ angular.module('Authentication')
                     AuthenticationService.SetCredentials($scope.username, $scope.password, response.sessionToken);
             		//$rootScope.globals.loggedIn=true;
             		//$rootScope.globals.currentUser.loggedIn = true;
-            		
-            		console.log($rootScope.globals.currentUser);
                     $location.path('/trapline-admin');
                 } else {
                 	//$rootScope.globals.loggedIn=false;
