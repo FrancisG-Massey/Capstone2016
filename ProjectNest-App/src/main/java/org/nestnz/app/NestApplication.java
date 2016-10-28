@@ -25,28 +25,26 @@ import org.nestnz.app.services.MapLoadingService;
 import org.nestnz.app.services.NetworkService;
 import org.nestnz.app.services.TrapDataService;
 import org.nestnz.app.services.impl.DefaultCachingService;
+import org.nestnz.app.services.impl.DefaultTrapDataService;
 import org.nestnz.app.services.impl.GluonMapLoadingService;
 import org.nestnz.app.services.impl.RestNetworkService;
-import org.nestnz.app.services.impl.DefaultTrapDataService;
 import org.nestnz.app.views.AddTrapView;
 import org.nestnz.app.views.LoginView;
 import org.nestnz.app.views.NavigationView;
 import org.nestnz.app.views.TraplineInfoView;
 import org.nestnz.app.views.TraplineListView;
 
-import com.gluonhq.charm.glisten.application.MobileApplication;
-import com.gluonhq.charm.glisten.control.Dialog;
-import com.gluonhq.charm.glisten.license.License;
-import com.gluonhq.charm.glisten.visual.Swatch;
 import com.gluonhq.charm.down.Services;
 import com.gluonhq.charm.down.plugins.AudioServiceFactory;
 import com.gluonhq.charm.down.plugins.StorageService;
+import com.gluonhq.charm.glisten.application.MobileApplication;
+import com.gluonhq.charm.glisten.control.Dialog;
+import com.gluonhq.charm.glisten.visual.Swatch;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 
-@License(key="482637c8-d766-40fa-942e-f96a11d31da8")
 public class NestApplication extends MobileApplication {
 	
     public static final String PRIMARY_VIEW = HOME_VIEW;
