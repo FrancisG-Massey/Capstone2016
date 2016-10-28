@@ -16,14 +16,12 @@ angular
 						'$location',
 						function($scope, $rootScope, $http, region, trapline,
 								baits, trap_type, $route, $location) {
-							// console.log($scope.currentPath);
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.regions = region.data;
 							$scope.traplines = trapline;
 							// $scope.baits = baits;
 							// $scope.trap_types = trap_type;
-							console.log($scope.traplines);
 							// Valid Trapline objects are nested in each region
 							// object.
 							var region, trapline;
@@ -41,7 +39,6 @@ angular
 							  // load catch history in json format.
 							  $scope.loadjson = function(trapline){
 									$scope.active_trapline = trapline;
-									console.log(trapline.id);
 									var id = trapline.id;
 								    var config = {
 											method: 'GET',
@@ -49,7 +46,6 @@ angular
 								            }
 								     $http(config)
 								            .success(function(res){
-								                console.log(res);
 								                $scope.json_data=res;
 								            })
 								            .error(function(res){});
@@ -90,7 +86,6 @@ angular
 							// var traplineId = $routeParams.traplineId;
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
-							console.log(trapline);
 							$scope.trapline = trapline;
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
@@ -99,16 +94,13 @@ angular
 							$scope.trap_type = trap_type;
 							// get all catch types
 							$scope.catch_types = catch_types;
-							console.log(traps);
 							// load catch history when the page loads and save them into a scope variable
-							//console.log($scope.trapline_id);
 						    var config = {
 									method: 'GET',
 					       			 url: 'https://www.nestnz.org/api/catch-report-simple?trapline-id='+$scope.trapline_id+'&_='+new Date().getTime(),
 						            }
 						    $http(config)
 						            .success(function(res){
-						                console.log(res);
 						                $scope.json_data=res;
 						            })
 						            .error(function(res){});
@@ -129,7 +121,6 @@ angular
 							
 							  // load catch history in json format.
 							$scope.load_history = function(trap){
-								console.log($scope.json_data);
 								$scope.active_trap = trap;
 								$scope.trap_history=[];
 								for(var i =0; i< $scope.json_data.length; i++){
@@ -166,12 +157,10 @@ angular
 									end = size;
 									start = size - $scope.gap;
 									start = start < 0 ? 0 : start;
-									// console.log(start);
 								}
 								for (var i = start; i < end; i++) {
 									ret.push(i);
 								}
-								// console.log(ret);
 								return ret;
 							};
 
@@ -188,7 +177,6 @@ angular
 							};
 
 							$scope.setPage = function() {
-								// console.log(this.n);
 								$scope.currentPage = this.n;
 							};
 
@@ -200,7 +188,6 @@ angular
 
 							// for view traps on a map
 							$scope.showMap = function() {
-								//console.log($scope.traps[0]);
 								if (!mymap) {
 									mymap = L.map('mapid');
 									var trap;
@@ -254,9 +241,7 @@ angular
 							$scope.trapline_id = $route.current.params.traplineId;
 							$scope.trapline_name = $route.current.params.traplineName;
 							$scope.trapline_users = trapline_users;
-							console.log($scope.trapline_users);
 							$scope.users = users.data;
-							console.log($scope.users);
 
 							var usersForTrapLine = [], trapLineUser, user;
 							for (var i = 0; i < $scope.trapline_users.length; i++) {
@@ -293,7 +278,6 @@ angular
 							}
 							$scope.currentPage = 0;
 							$scope.volunteers = newArray;
-							console.log($scope.volunteers);
 
 							$scope.gap = 5;
 
@@ -304,12 +288,10 @@ angular
 									end = size;
 									start = size - $scope.gap;
 									start = start < 0 ? 0 : start;
-									// console.log(start);
 								}
 								for (var i = start; i < end; i++) {
 									ret.push(i);
 								}
-								// console.log(ret);
 								return ret;
 							};
 
@@ -326,7 +308,6 @@ angular
 							};
 
 							$scope.setPage = function() {
-								// console.log(this.n);
 								$scope.currentPage = this.n;
 							};
 
@@ -397,16 +378,7 @@ angular
 							$scope.trapline_id = $scope.trap.trapline_id;
 							$scope.baits = baits;
 							$scope.trap_type = trap_type;
-							console.log(trap);
 							$scope.Edit = function() {
-								console.log($scope.trap.id + " id");
-								console.log($scope.trap.coord_lat + " lati");
-								console.log($scope.trap.coord_long + " long");
-								console.log($scope.trap.status + " status");
-								console.log($scope.trap.bait_id + " bait id");
-								console.log($scope.trap.traptype_id
-										+ " traptype id");
-								console.log($scope.trap);
 
 								$http
 										.put(
@@ -467,7 +439,6 @@ angular
 									}
 								}
 
-								console.log(focus_trap);
 								focus_trap.popup.openPopup();
 								mymap.setView([ focus_trap.coord_lat,
 										focus_trap.coord_long ], 13);
@@ -489,18 +460,11 @@ angular
 								trap_type, $route) {
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
-							console.log(region.data);
 							$scope.regions = region.data;
 							$scope.baits = baits;
 							$scope.trap_types = trap_type;
 
 							$scope.Save = function() {
-								console.log($scope.region_id);
-								console.log($scope.line_name);
-								console.log($scope.startTag);
-								console.log($scope.endTag);
-								console.log($scope.baitId);
-								console.log($scope.traptypeId);
 
 								var data = {
 									"name" : $scope.line_name,
@@ -536,10 +500,6 @@ angular
 							$rootScope.hideHeader = true;
 
 							$scope.Save = function() {
-								console.log($scope.email);
-								console.log($scope.fullName);
-								console.log($scope.phone);
-								console.log($scope.permission);
 								
 								var data = {
 									"email" : $scope.email,
@@ -575,11 +535,9 @@ angular
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.traplines = traplines;
-							console.log($scope.traplines);
 							$scope.trapline_users = trapline_users;
 							$scope.users = users;
 							$scope.options = [["Admin",true],["Volunteer",false]];	
-							console.log($scope.trapline_users);
 							// get all traplines and trapline users.
 							// add the trapline users to their traplines 
 							
@@ -619,9 +577,6 @@ angular
 							$scope.passUser = function(user,traplines){
 								$scope.user_info = user;
 								$scope.view_traplines = traplines;
-								console.log($scope.user_info);
-								console.log($scope.view_traplines);
-								console.log($scope.showtraplines);
 								$scope.showtraplines = false;
 							}
 							$scope.add_trapline = function(trapline,permission){
@@ -630,9 +585,6 @@ angular
 										"trapline_id" : trapline.id,
 										"user_id" : $scope.user_info.id
 											};
-								console.log(data['admin']);
-								console.log(data['trapline_id']);
-								console.log(data['user_id']);
 								$http.post(
 											'https://www.nestnz.org/api/trapline-user',
 											data).then(
@@ -667,14 +619,10 @@ angular
 							$rootScope.wrapClass = undefined;
 							$rootScope.hideHeader = true;
 							$scope.user = user[0];
-							console.log($scope.user);
 							
 							// set the admin options, currently 2 options.
 							$scope.options = [["Admin",true],["Volunteer",false]];					
 							$scope.Edit = function() {
-								console.log($scope.user.email);
-								console.log($scope.user.fullname);
-								console.log($scope.user.phone);
 								var data = {
 									"email" : $scope.user.email,
 									"fullname" : $scope.user.fullname,
@@ -715,11 +663,9 @@ angular
 							$scope.baits = baits;
 							$scope.trap_types = trap_type;
 							$scope.trapline = trapline[0];
-							console.log($scope.trapline);
 							$scope.Edit = function() {
 								$scope.trapline.default_bait_id=parseInt($scope.trapline.default_bait_id);
 								$scope.trapline.traptype_id=parseInt($scope.trapline.traptype_id);
-								console.log($scope.trapline);
 
 								$http.put(
 										'https://www.nestnz.org/api/trapline/'

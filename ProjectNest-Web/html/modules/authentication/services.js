@@ -47,7 +47,6 @@ angular.module('Authentication')
             
             $http.delete('https://www.nestnz.org/api/session/')
             .then(function(response) {
-                console.log(response);
             });
             
             //$http.defaults.headers.common.Authorization = 'Basic ';
