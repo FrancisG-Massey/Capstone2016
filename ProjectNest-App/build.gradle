@@ -58,6 +58,16 @@ dependencies {
     testCompile 'org.mockito:mockito-core:2.+'  
 }
 
+// Create a variable called keystorePropertiesFile, and initialize it to your
+// keystore.properties file, in the rootProject folder.
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+
+// Initialize a new Properties() object called keystoreProperties.
+def keystoreProperties = new Properties()
+
+// Load your keystore.properties file into the keystoreProperties object.
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 jfxmobile {
 	downConfig {
         version '3.0.0'
@@ -67,11 +77,21 @@ jfxmobile {
     android {
         manifest = 'src/android/AndroidManifest.xml'
         
+        minSdkVersion = 19
+        targetSdkVersion = 22
+        
 	    dexOptions {
 	        incremental true
 	        preDexLibraries = false
 	        jumboMode = false
 	        javaMaxHeapSize "2048M"
+	    }
+	    
+	    signingConfig {
+	    	keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
 	    }
     }
     ios {

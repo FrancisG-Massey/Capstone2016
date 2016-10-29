@@ -6,3 +6,5 @@
 /.gradle/
 /.externalToolBuilders/
 gluonmobile.license
+keystore.properties
+*.jks
