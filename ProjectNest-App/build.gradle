@@ -52,7 +52,7 @@ mainClassName = 'org.nestnz.app.NestApplication'
 dependencies {
     compile 'com.gluonhq:charm-glisten:4.0.1'
     compile 'com.gluonhq:connect:1.1.0'
-    compile 'com.gluonhq:maps:1.0.1-SNAPSHOT'
+    compile 'com.gluonhq:maps:1.0.1'
     
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.+'  
