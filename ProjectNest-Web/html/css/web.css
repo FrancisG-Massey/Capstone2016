@@ -107,7 +107,11 @@ footer>.container {
 	width:340px;
 	height:480px;
 }
-
+.img-mobile {
+  height:300px;
+  width:300px;
+  object-fit: contain;
+}
 
 .mast {
   margin: 0 auto;
