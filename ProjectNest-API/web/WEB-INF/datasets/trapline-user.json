@@ -100,9 +100,24 @@
             traplineuser_id;
     ",
     "DELETE" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         DELETE FROM traplineuser
+        USING has_permission hp
         WHERE 
-            traplineuser_id = #bigint:id#
+            (traplineuser_id = #bigint:id#) AND
+            (hp.has_permission OR (traplineuser_userid = #bigint:logged-user-id#))
         RETURNING traplineuser_id;
     "
 }

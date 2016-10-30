@@ -129,6 +129,11 @@ public class RequestServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+        if (httpMethod.equals("DELETE") && requestEntityID.equals("")) {
+            LOG.log(Level.INFO, "Bad request syntax: No entity id supplied in DELETE request URL");        
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
 
         // Retrieve the SQL query string mapped to the requested entity's procedure for the method.
         try {

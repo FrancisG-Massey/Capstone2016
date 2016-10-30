@@ -103,6 +103,8 @@
             #string:email#,
             now()::timestamp,
             #bigint:logged-user-id#,
+
+            -- trapline-admins can create users, but not admin-users unless they are also user-admins
             CASE WHEN (#boolean:logged-user-isadmin# = true) THEN (#boolean:admin#) ELSE (false) END,
             false
         FROM 
@@ -115,18 +117,6 @@
             user_id;
     ",
     "PUT" : "
-        WITH has_permission AS (
-            SELECT 
-                (#boolean:logged-user-isadmin# OR 
-                (#bigint:logged-user-id# IN (
-                    SELECT 
-                        tlu.traplineuser_userid
-                    FROM 
-                        traplineuser tlu
-                    WHERE
-                        (tlu.traplineuser_isadmin = true)
-                ))) AS is_admin
-        )
         UPDATE users
         SET
             user_name = #string:username#,
@@ -135,11 +125,9 @@
             user_contactphone = #string:phone#,
             user_contactemail = #string:email#,
             user_isadmin = #boolean:admin#
-        FROM 
-            has_permission hp
         WHERE 
             (user_id = #bigint:id#) AND
-            (hp.is_admin OR (#bigint:id# = #bigint:logged-user-id#))
+            (#boolean:logged-user-isadmin# OR (user_id = #bigint:logged-user-id#))
         RETURNING
             user_id;
     ",
@@ -148,16 +136,20 @@
         SET
             user_isinactive = true
         WHERE
-            user_id = #bigint:id#
+            (user_id = #bigint:id#) AND
+            (#boolean:logged-user-isadmin# OR (user_id = #bigint:logged-user-id#))
         RETURNING user_id;
 
         DELETE FROM session s
-        WHERE s.session_userid = #bigint:id#;
+        WHERE 
+            (s.session_userid = #bigint:id#) AND
+            (#boolean:logged-user-isadmin# OR (s.session_userid = #bigint:logged-user-id#));
 
         DELETE FROM users
         WHERE 
             (user_id = #bigint:id#) AND
             (#bigint:id# NOT IN (SELECT traplineuser_userid FROM traplineuser)) AND
-            (#bigint:id# NOT IN (SELECT catch_userid FROM catch));
+            (#bigint:id# NOT IN (SELECT catch_userid FROM catch)) AND
+            (#boolean:logged-user-isadmin# OR (user_id = #bigint:logged-user-id#));
     "
 }
