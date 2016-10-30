@@ -298,16 +298,16 @@ public class NavigationView extends View {
     			distanceLabel.pseudoClassStateChanged(oldDistance.cssPseudoClass, false);
     			distanceLabel.pseudoClassStateChanged(newDistance.cssPseudoClass, true);
     			if (oldDist.doubleValue() > newDist.doubleValue()) {
-    				if (audioService.isPresent()) {
+    				//Send both audio and vibration signals
+    				audioService.ifPresent(service -> {
     					String audioName = newDistance.audioTrack;
     	    			if (Platform.isDesktop()) {
     	    				audioName = getClass().getResource("/"+newDistance.audioTrack).toExternalForm();
     	    			}
     	    			LOG.log(Level.INFO, "Trying to play audio: "+audioName);
-    	    			audioService.get().play(audioName, 1.0);    					
-    				} else {
-    					vibrationService.ifPresent(service -> service.vibrate());
-    				}
+    	    			service.play(audioName, 1.0);
+    				});
+    				vibrationService.ifPresent(service -> service.vibrate());
     			}
     		}
     	});
