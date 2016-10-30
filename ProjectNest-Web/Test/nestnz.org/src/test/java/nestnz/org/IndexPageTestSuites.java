@@ -7,6 +7,7 @@ import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.support.ui.Select;
@@ -22,13 +23,13 @@ public class IndexPageTestSuites {
 	    baseUrl = "https://www.nestnz.org/";
 	  }
 
-	  @Test
+	 /* @Test
 	  public void LaunchTestOnIE() throws Exception {
-		System.setProperty("webdriver.ie.driver",".\\Browsers\\IEDriverServer.exe");
-	    driver = new InternetExplorerDriver();
+		System.setProperty("webdriver.edge.driver",".\\Browsers\\MicrosoftWebDriver.exe");
+		driver = new EdgeDriver();
 		  driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 		  testIndexPageTestSuites();
-	  }
+	  }*/
 
 
 	  @Test
@@ -45,7 +46,8 @@ public class IndexPageTestSuites {
 	      driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 	      testIndexPageTestSuites();
 	  }
-  private void testIndexPageTestSuites() throws Exception {
+	  
+private void testIndexPageTestSuites() throws Exception {
 	/* Index page is displayed across all other pages.
 	 * This test includes the logo image element, texts, link elements present
 	 * on the navbar in index page */
