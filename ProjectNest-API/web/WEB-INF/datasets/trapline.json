@@ -108,7 +108,8 @@
             trapline_defaultbaitid = #bigint:default_bait_id#,
             trapline_defaulttraptypeid = #bigint:default_traptype_id#
         WHERE 
-            trapline_id = #bigint:id#
+            (trapline_id = #bigint:id#) AND
+            #boolean:logged-user-isadmin#
         RETURNING
             trapline_id;
     ",

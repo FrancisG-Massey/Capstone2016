@@ -80,13 +80,27 @@
             bait_id;
     ",
     "PUT" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         UPDATE bait
         SET
             bait_name = #string:name#,
             bait_imagefilename = #string:img_filename#,
             bait_note = #string:note#
+        FROM has_permission hp
         WHERE
-            bait_id = #bigint:id#
+            (bait_id = #bigint:id#) AND
+            hp.has_permission
         RETURNING
             bait_id;
     ",

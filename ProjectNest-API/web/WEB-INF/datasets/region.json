@@ -56,7 +56,8 @@
         SET
             region_name = #string:name#
         WHERE 
-            region_id = #bigint:id#
+            (region_id = #bigint:id#) AND
+            #boolean:logged-user-isadmin#
         RETURNING
             region_id;
     ",
