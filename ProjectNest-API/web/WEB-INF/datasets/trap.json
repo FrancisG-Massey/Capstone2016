@@ -95,6 +95,19 @@
             trap_id;
     ",
     "PUT" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         UPDATE trap
         SET
             trap_traplineid = #bigint:trapline_id#,
@@ -105,22 +118,56 @@
             trap_status = #bigint:status#,
             trap_lastresettimestamp = #timestamp:last_reset#,
             trap_baitid = #bigint:bait_id#
+        FROM
+            has_permission hp
         WHERE 
-            trap_id = #bigint:id#
+            (trap_id = #bigint:id#) AND
+            hp.has_permission
         RETURNING
             trap_id;
     ",
     "DELETE" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         UPDATE trap
         SET
             trap_isinactive = true
+        FROM 
+            has_permission hp
         WHERE
-            trap_id = #bigint:id#
+            (trap_id = #bigint:id#) AND
+            hp.has_permission
         RETURNING trap_id;
 
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         DELETE FROM trap
+        USING has_permission hp
         WHERE 
             (trap_id = #bigint:id#) AND
-            (#bigint:id# NOT IN (SELECT catch_trapid FROM catch));
+            (#bigint:id# NOT IN (SELECT catch_trapid FROM catch)) AND
+            hp.has_permission;
     "
 }

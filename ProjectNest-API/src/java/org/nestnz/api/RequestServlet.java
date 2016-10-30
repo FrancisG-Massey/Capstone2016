@@ -129,6 +129,11 @@ public class RequestServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+        if (httpMethod.equals("DELETE") && requestEntityID.equals("")) {
+            LOG.log(Level.INFO, "Bad request syntax: No entity id supplied in DELETE request URL");        
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
 
         // Retrieve the SQL query string mapped to the requested entity's procedure for the method.
         try {
@@ -270,7 +275,7 @@ public class RequestServlet extends HttpServlet {
             
             // Execute the main request dataset entry if one exists.
             String responseBody = null;
-            boolean formatCSV = false;
+            boolean formatIsCsv = requestExt.toLowerCase().equals("csv");
             LOG.log(Level.INFO, "Sending request with the following parameters:\n1: {0}", datasetParams);
             if (cleanSQL_main != null) {
                 try (
@@ -286,7 +291,7 @@ public class RequestServlet extends HttpServlet {
                             case "GET":
                                 if (rsh.isBeforeFirst()) {
                                     response.setStatus(HttpServletResponse.SC_OK);
-                                    if (requestExt.toLowerCase().equals("csv")) {
+                                    if (formatIsCsv) {
                                         String timeid = String.valueOf(Calendar.getInstance().getTimeInMillis());
                                         final String filename = "\"" + requestEntity + "_" + timeid + ".csv\"";
                                         response.setHeader("Content-Description","File Transfer");
@@ -301,7 +306,11 @@ public class RequestServlet extends HttpServlet {
                                     rsh.last(); LOG.log(Level.INFO, "{0} rows retrieved from database.", rsh.getRow());
                                 } else {
                                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                                    responseBody = (formatCSV) ? "" : "[]";
+                                    if (formatIsCsv) {
+                                        responseBody = "";
+                                    } else {
+                                        responseBody = "[]";
+                                    }
                                     LOG.log(Level.INFO, "Empty ResultSet received from database");
                                 }
 

@@ -56,7 +56,8 @@
         SET
             region_name = #string:name#
         WHERE 
-            region_id = #bigint:id#
+            (region_id = #bigint:id#) AND
+            #boolean:logged-user-isadmin#
         RETURNING
             region_id;
     ",
@@ -65,12 +66,14 @@
         SET
             region_isinactive = true
         WHERE
-            region_id = #bigint:id#
+            region_id = #bigint:id# AND
+            #boolean:logged-user-isadmin#
         RETURNING region_id;
 
         DELETE FROM region
         WHERE 
             (region_id = #bigint:id#) AND
-            (#bigint:id# NOT IN (SELECT trapline_regionid FROM trapline));
+            (#bigint:id# NOT IN (SELECT trapline_regionid FROM trapline)) AND
+            #boolean:logged-user-isadmin#;
     "
 }

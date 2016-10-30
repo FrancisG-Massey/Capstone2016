@@ -108,7 +108,8 @@
             trapline_defaultbaitid = #bigint:default_bait_id#,
             trapline_defaulttraptypeid = #bigint:default_traptype_id#
         WHERE 
-            trapline_id = #bigint:id#
+            (trapline_id = #bigint:id#) AND
+            #boolean:logged-user-isadmin#
         RETURNING
             trapline_id;
     ",
@@ -117,13 +118,15 @@
         SET
             trapline_isinactive = true
         WHERE
-            trapline_id = #bigint:id#
+            (trapline_id = #bigint:id#) AND
+            #boolean:logged-user-isadmin#
         RETURNING trapline_id;
 
         DELETE FROM trapline
         WHERE 
             (trapline_id = #bigint:id#) AND
             (#bigint:id# NOT IN (SELECT traplineuser_traplineid FROM traplineuser)) AND
-            (#bigint:id# NOT IN (SELECT trap_traplineid FROM trap));
+            (#bigint:id# NOT IN (SELECT trap_traplineid FROM trap)) AND
+            #boolean:logged-user-isadmin#;
     "
 }

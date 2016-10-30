@@ -78,26 +78,70 @@
             catchtype_id;
     ",
     "PUT" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         UPDATE catchtype
         SET
             catchtype_name = #string:name#,
             catchtype_imagefilename = #string:img_filename#
-        WHERE 
-            catchtype_id = #bigint:id#
+        FROM
+            has_permission hp
+        WHERE
+            (catchtype_id = #bigint:id#) AND
+            hp.has_permission
         RETURNING
             catchtype_id;
     ",
     "DELETE" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         UPDATE catchtype
         SET
             catchtype_isinactive = true
+        FROM
+            has_permission hp
         WHERE
-            catchtype_id = #bigint:id#
+            (catchtype_id = #bigint:id#) AND
+            hp.has_permission
         RETURNING catchtype_id;
 
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS has_permission
+        )
         DELETE FROM catchtype
+        USING has_permission hp
         WHERE 
             (catchtype_id = #bigint:id#) AND
-            (#bigint:id# NOT IN (SELECT catch_catchtypeid FROM catch));
+            (#bigint:id# NOT IN (SELECT catch_catchtypeid FROM catch)) AND
+            hp.has_permission;
     "
 }

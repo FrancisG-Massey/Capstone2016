@@ -12,16 +12,18 @@
         WHERE es IS NOT NULL;
     ",
     "GET" : "
-        WITH has_admin AS (
-            SELECT (count(*) > 0)::boolean as is_admin
-            FROM (
-                SELECT 1 WHERE #boolean:logged-user-isadmin# = true
-                UNION
-                SELECT 1 FROM traplineuser tlu
-                WHERE
-                (tlu.traplineuser_isadmin = true) AND
-                (tlu.traplineuser_userid = #bigint:logged-user-id#)
-            ) cte_ha
+        -- Whether the logged-in user is an admin (can be user or trapline-user) or not
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true)
+                ))) AS is_admin
         ),
         loggeduser_traplines AS (
             SELECT tlu.traplineuser_traplineid as tl_id
@@ -47,11 +49,11 @@
         FROM
             users u
             LEFT JOIN traplineuser tlu ON tlu.traplineuser_userid = u.user_id,
-            has_admin ha,
+            has_permission hp,
             loggeduser lu
         WHERE
             -- Only show user records they have permission to see
-            ((ha.is_admin = true) OR (u.user_id = #bigint:logged-user-id#) OR (u.user_id = lu.user_createduserid) OR 
+            ((hp.is_admin = true) OR (u.user_id = #bigint:logged-user-id#) OR (u.user_id = lu.user_createduserid) OR 
             ((tlu.traplineuser_id IS NOT NULL) AND (tlu.traplineuser_traplineid IN (SELECT tl_id from loggeduser_traplines)))) AND
 
             -- Allow records to be filtered by fields
@@ -101,6 +103,8 @@
             #string:email#,
             now()::timestamp,
             #bigint:logged-user-id#,
+
+            -- trapline-admins can create users, but not admin-users unless they are also user-admins
             CASE WHEN (#boolean:logged-user-isadmin# = true) THEN (#boolean:admin#) ELSE (false) END,
             false
         FROM 
@@ -122,7 +126,8 @@
             user_contactemail = #string:email#,
             user_isadmin = #boolean:admin#
         WHERE 
-            user_id = #bigint:id#
+            (user_id = #bigint:id#) AND
+            (#boolean:logged-user-isadmin# OR (user_id = #bigint:logged-user-id#))
         RETURNING
             user_id;
     ",
@@ -131,16 +136,20 @@
         SET
             user_isinactive = true
         WHERE
-            user_id = #bigint:id#
+            (user_id = #bigint:id#) AND
+            (#boolean:logged-user-isadmin# OR (user_id = #bigint:logged-user-id#))
         RETURNING user_id;
 
         DELETE FROM session s
-        WHERE s.session_userid = #bigint:id#;
+        WHERE 
+            (s.session_userid = #bigint:id#) AND
+            (#boolean:logged-user-isadmin# OR (s.session_userid = #bigint:logged-user-id#));
 
         DELETE FROM users
         WHERE 
             (user_id = #bigint:id#) AND
             (#bigint:id# NOT IN (SELECT traplineuser_userid FROM traplineuser)) AND
-            (#bigint:id# NOT IN (SELECT catch_userid FROM catch));
+            (#bigint:id# NOT IN (SELECT catch_userid FROM catch)) AND
+            (#boolean:logged-user-isadmin# OR (user_id = #bigint:logged-user-id#));
     "
 }

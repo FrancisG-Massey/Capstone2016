@@ -75,18 +75,49 @@
             traplineuser_id;
     ",
     "PUT" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         UPDATE traplineuser
         SET
             traplineuser_isadmin = #boolean:admin#
+        FROM
+            has_permission hp
         WHERE
-            traplineuser_id = #bigint:id#
+            (traplineuser_id = #bigint:id#) AND
+            hp.has_permission
         RETURNING
             traplineuser_id;
     ",
     "DELETE" : "
+        WITH has_permission AS (
+            SELECT 
+                (#boolean:logged-user-isadmin# OR 
+                (#bigint:logged-user-id# IN (
+                    SELECT 
+                        tlu.traplineuser_userid
+                    FROM 
+                        traplineuser tlu
+                    WHERE
+                        (tlu.traplineuser_isadmin = true) AND
+                        (tlu.traplineuser_traplineid = #bigint:trapline_id#)
+                ))) AS has_permission
+        )
         DELETE FROM traplineuser
+        USING has_permission hp
         WHERE 
-            traplineuser_id = #bigint:id#
+            (traplineuser_id = #bigint:id#) AND
+            (hp.has_permission OR (traplineuser_userid = #bigint:logged-user-id#))
         RETURNING traplineuser_id;
     "
 }
