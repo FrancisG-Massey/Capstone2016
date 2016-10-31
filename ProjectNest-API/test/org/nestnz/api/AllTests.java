@@ -29,7 +29,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     org.nestnz.api.ConfigFileTests.class,
     org.nestnz.api.SimpleTests.class,
-    org.nestnz.api.DBConnectTests.class,
+    //org.nestnz.api.DBConnectTests.class,
     org.nestnz.api.DBInterfaceTests.class,
     org.nestnz.api.NestHttpSessionTests.class,
     org.nestnz.api.NestHttpGetTests.class,
