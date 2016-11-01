@@ -116,7 +116,7 @@ public class RequestServlet extends HttpServlet {
         // Parse out the requested entity type and id from the request URL
         // Seems the java regex matcher isn't fully PCRE compliant? We'll have to strip slashes manually
 
-        Matcher m = Pattern.compile(Common.URLENTITY_REGEX).matcher(request.getPathInfo().toLowerCase());
+        Matcher m = Common.URLENTITY_PATTERN.matcher(request.getPathInfo().toLowerCase());
         String requestEntity = m.find() ? m.group().substring(1) : "";
         String requestEntityID = m.find() ? m.group().substring(1) : "";
         

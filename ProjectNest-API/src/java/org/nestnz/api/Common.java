@@ -60,6 +60,7 @@ public class Common {
     public final static int SESSION_TIMEOUT = 30;
 
     public final static Pattern DATASET_PATTERN = Pattern.compile(Common.DATASETPARAM_REGEX);
+    public final static Pattern URLENTITY_PATTERN = Pattern.compile(Common.URLENTITY_REGEX);
     
     // This is a better regex which captures only strictly typed dataset parameters
     // except we can't test for invalid uncaptured params easily and these will go straight to the db...
