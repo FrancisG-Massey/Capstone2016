@@ -52,7 +52,6 @@ public class Common {
     private static DataSource nestDS = null;
     private static final Logger LOG = Logger.getLogger(Common.class.getName());
 
-    //public final static String URLENTITY_REGEX = "/^\\/(?>([a-z][a-z-_]*))(?>\\/(\\d+))?/i";
     public final static String URLENTITY_REGEX = "\\/([\\w-[.]]*)";
     public final static String UUID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
     public final static String DATASETPARAM_REGEX = "(#[\\w-]+:[\\w-]+#)";
@@ -60,6 +59,8 @@ public class Common {
     public final static int BCRYPT_COST = 12;
     public final static int SESSION_TIMEOUT = 30;
 
+    public final static Pattern DATASET_PATTERN = Pattern.compile(Common.DATASETPARAM_REGEX);
+    
     // This is a better regex which captures only strictly typed dataset parameters
     // except we can't test for invalid uncaptured params easily and these will go straight to the db...
     //public final static String DATASETPARAM_REGEX "(#(?:\\binteger\\b|\\bstring\\b|\\bboolean\\b|\\bbit\\b|\\bnumeric\\b|\\bvarchar\\b|\\btimestamp\\b|\\bdate\\b|\\bbigint\\b|\\bdecimal\\b):[a-z][a-z0-9-_]*#)";
@@ -113,7 +114,7 @@ public class Common {
             return;
         }
         // Find all parameters including their datatypes
-        Matcher m = Pattern.compile(Common.DATASETPARAM_REGEX).matcher(dirtySQL.toLowerCase());
+        Matcher m = DATASET_PATTERN.matcher(dirtySQL.toLowerCase());
         while (m.find()) {
             final String param = m.group();
             // Discard the datatype in the parameter value map but not in the order list
